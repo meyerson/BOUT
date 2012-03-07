@@ -1,0 +1,187 @@
+#! /usr/bin/env python
+# note - these commands are only run by default in interactive mode
+
+#import some absolutely necessary modules
+
+import sys
+
+try:
+   sys.path.append('/home/cryosphere/BOUT/tools/pylib')
+   sys.path.append('/home/cryosphere/BOUT/tools/pylib/boutdata')
+   sys.path.append('/home/cryosphere/BOUT/tools/pylib/boututils')
+
+   import matplotlib
+   import gobject
+   import numpy as np
+except ImportError:
+   print "can't find the modules I need, you fail"
+   sys.exit() #no point in going on
+
+
+#import some bout specific modules
+try:
+   import boutdata
+   import boututils
+except:
+   print "can't find bout related modules, you fail"
+
+#import some home-brewed modules
+
+
+#create some aliases
+import matplotlib.pyplot as plt
+
+from matplotlib.backends.backend_pdf import PdfPages
+pp = PdfPages('output.pdf')
+
+
+
+#some usefull variables
+
+#eventually the default path shoudl really be the current directory
+def show(path='/home/cryosphere/BOUT/examples/Q3/data_hd', var='Ni'): 
+   print path
+   
+   boutpath = path
+   
+   
+#lets collect the data
+   print var 
+   print path
+   print sys.path
+
+   ni = boutdata.collect(var,path=path)
+
+   data = ni[:,:,5,:]
+
+   plt.figure()
+   cs = plt.contour(data[30,:,:])
+   plt.clabel(cs, inline=1, fontsize=10)
+   plt.title('Simplest default with labels')
+   plt.savefig(pp, format='pdf')
+
+   plt.figure()
+   CS = plt.contour(data[0,:,:],6,
+                    colors='k', # negative contours will be dashed by default
+                    )
+   plt.clabel(CS, fontsize=9, inline=1)
+   plt.title('Single color - negative contours dashed')
+   plt.savefig(pp, format='pdf')
+
+
+#plt.show()x
+
+ 
+   
+   a = read_inp(path=path)
+   b = parse_inp(a)
+
+   #now we also want to get some information from the grid file
+ 
+   gridfile = b['[main]']['grid']
+   f = read_grid(gridfile)
+   
+   
+
+   plt.close()
+
+   
+   
+   pp.close()
+   return f
+
+   #sys.exit()
+
+#print ni.ndims
+
+#help(ni)
+
+#import os
+#if os.path.isfile(os.environ['PYTHONSTARTUP']):
+#    execfile(os.environ['PYTHONSTARTUP'])
+
+   
+
+
+   
+def read_inp(path='',boutinp='BOUT.inp'):
+   
+   
+   boutfile = path+'/'+boutinp
+   boutinp = open(boutfile,'r').readlines()
+  
+   # start by stripping out all comments 
+   # look at the 1st character of all list elements
+   # for now use a gross loop, vectorize later
+   boutlist = []
+  
+   for i,val in enumerate(boutinp):
+      if val[0] != '#' and val.isspace() == False:
+         boutlist.append(val.split("#")[0])
+
+   return boutlist
+
+def parse_inp(boutlist):
+
+   import re
+   from ordereddict import OrderedDict
+   
+   if not boutlist:
+      return 0
+
+   import re
+   
+   #boutdic={} unordered standard dict
+   boutdic = OrderedDict()
+   
+   #regex is messy see http://docs.python.org/howto/regex.html#regex-howto
+   pattern = "\[\S*\]" #pattern for a section start [All],[Ni], etc
+   
+   pattern = re.compile(pattern)
+         
+   boutdic['[main]'] = {}
+   current='[main]'
+
+   for i,val in enumerate(boutlist):
+      #print val
+      result =pattern.match(val)
+      #while the current value is not a new section name add everything to the current section
+      
+      if result is None:
+         key,value = val.split("=")
+         #print current,key,value
+         boutdic[current][key.rstrip()] = value.rstrip()
+      else:
+         boutdic[result.group()] = {}
+         current = result.group()
+         
+   #for section in boutdic:
+   #   print section
+   
+#key,value = val.split("=")
+      #print i,val
+      
+      
+
+   return boutdic
+
+#modelled after boutdata.collect
+def read_grid(gridfile='/home/cryosphere/Q-Machine/grids/Q3_short.nc'):
+   try :
+      from netCDF4 import Dataset
+    #from Scientific.IO.Netcdf . .  a less 
+    #  complete module than netCDF4, no Dataset support
+   except ImportError:
+      print "ERROR: netcdf4-python module not found"
+      raise
+   
+   def read_var(gridfile, name):
+        var = file.variables[name]
+        return var[:]
+   
+   print gridfile
+   f = Dataset(gridfile, "r")
+   print "File format    : " + f.file_format
+   print f
+   print f.variables
+   return f

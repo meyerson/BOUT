@@ -1,0 +1,7 @@
+import post_bout
+a = post_bout.corral(cached=True)
+a.show()
+
+b = post_bout.LinRes(data=a)
+b.modes()
+dir(b)

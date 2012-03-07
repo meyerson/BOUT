@@ -1,0 +1,36 @@
+29c29
+< #rm -rf data
+---
+> rm -rf data
+31c31
+< #ilist=(0 1 2 3 4 5 6 7 8 9)
+---
+> ilist=(0 1 2 3 4 5 6 7 8 9)
+33c33
+< mkdir data
+---
+> #mkdir data
+35,38c35,38
+< #for ival in ${ilist[@]}
+< #do
+< #  mkdir ./H_Drift/data_${ival}
+< #  ln -s ./H_Drift/data_${ival} data
+---
+> for ival in ${ilist[@]}
+> do
+>   mkdir ./H_Drift/data_${ival}
+>   ln -s ./H_Drift/data_${ival} data
+41,43c41
+< cp BOUT.inp data/BOUT.inp
+< 
+< #  sed "s/10x64_grid.nc/10x64_grid${ival}.nc/g" BOUT_drift.inp > data/BOUT.inp
+---
+>   sed "s/10x64_grid.nc/10x64_grid${ival}.nc/g" BOUT_drift.inp > data/BOUT.inp
+53c51
+<   ibrun -n $NP -o 0  ./2fluid
+---
+>   ibrun -n $NP -o 0  ./2fluid_drift
+55c53
+<   #rm -rf data
+---
+>   rm -rf data

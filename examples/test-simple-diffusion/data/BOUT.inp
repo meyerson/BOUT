@@ -10,21 +10,22 @@
 ##################################################
 # settings used by the core code
 
-NOUT = 30       # number of time-steps
-TIMESTEP = 1.0e-4   # time between outputs
+NOUT = 100       # number of time-steps
+TIMESTEP = 1.0e0   # time between outputs
 
 ShiftXderivs = false # use shifted radial derivatives?
 TwistShift = false  # use twist-shift condition?
 
 MZ = 33     # number of points in z direction (2^n + 1)
 ZMIN = 0.0
-ZMAX = 0.2
+ZMAX = 0.25
 
 MXG = 2
 MYG = 2
 
-grid="data/advect.grd.cdl"  # Grid file
-
+#grid="data/advect.grd.cdl"  # Grid file
+#grid="data/slab.6b5.r1.cdl"
+grid="data/uedge.grd_std.cdl"
 dump_format = "nc" # Output format. nc = NetCDF
 
 ##################################################
@@ -32,21 +33,21 @@ dump_format = "nc" # Output format. nc = NetCDF
 
 [ddx]
 
-first = C4  # order of first x derivatives (options are 2 or 4)
-second = C4 # order of second x derivatives (2 or 4)
-upwind = U1 # order of upwinding method (1, 4, or 0 = TVD)
+first = C2 # order of first x derivatives (options are 2 or 4)
+second = C2 # order of second x derivatives (2 or 4)
+upwind = W3 # order of upwinding method (1, 4, or 0 = TVD)
 
 [ddy]
 
-first = C4
+first = C2
 second = C2
-upwind = U1
+upwind = W3
 
 [ddz]
 
 first = C4
-second = C2
-upwind = U1
+second = C4
+upwind = W3
 
 ##################################################
 # Solver settings
@@ -76,10 +77,10 @@ scale = 0.0 # default size of initial perturbations
 # 2 - Sinusoidal
 # 3 - Mix of mode numbers (like original BOUT)
 
-xs_opt = 0
+xs_opt = 3
 
-ys_opt = 5
-zs_opt = 5
+ys_opt = 6
+zs_opt = 6
 
 ys_s0 = 0.5
 ys_wd = 0.1
@@ -93,7 +94,7 @@ zs_mode = 1 # toroidal mode number
 bndry_all = neumann # Set all boundaries to Neumann
 
 [density]
-scale = 0.5
+scale = 1
 
 [solver]
 #type=petsc

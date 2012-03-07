@@ -1,0 +1,75 @@
+13,15c13,14
+< NOUT = 100       # number of time-steps
+< #TIMESTEP = 5e3   # time between outputs
+< TIMESTEP = .001
+---
+> NOUT = 1000  # number of time-steps
+> TIMESTEP = .01   # time between outputs     
+22a22,23
+> #ZMAX = .1
+> 
+30a32
+> #grid="stripped_grid.nc"
+32,34c34,38
+< grid = "helimak.nc"
+< #grid = tacc_grid0.nc
+< 
+---
+> #grid = "larger_grid.nc"
+> #grid = "slab.6b5.r1.cdl"
+> #grid = "my_grid.nc"
+> #grid = "tacc_grid.nc"
+> grid = "10x64_grid.nc"
+44c48
+< first = C2
+---
+> first = C2 
+50,51c54,55
+< first = C2
+< second = C2
+---
+> first = C4
+> second = C4
+56,57c60,61
+< first = C4
+< second = C4
+---
+> first = FFT
+> second = FFT
+68c72
+< pvode_mxstep = 15000
+---
+> pvode_mxstep = 5000
+113c117,120
+< zs_opt = 2
+---
+> zs_opt = 2 
+> 
+> xs_mode = 0
+> ys_mode = 1 #
+115d121
+< ys_mode = 1#
+131,134c137
+< scale = 1.0e-8 # only perturbing Ni
+< 
+< 
+< 
+---
+> scale = 1.0e-8 
+136,137c139,140
+< #evolve = false
+< scale = 1.0e-8 #
+---
+> evolve = false
+> 
+139,140c142,143
+< #evolve = false
+< scale = 1.0e-8 #
+---
+> scale = 1.0e-8 
+> 
+142,143c145
+< #evolve = false
+< scale = 1.0e-8 #
+---
+> evolve = false
