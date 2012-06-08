@@ -92,6 +92,8 @@ bool append = false;
 BoutReal simtime;
 int iteration;
 
+const char *data_dir;
+
 const string time_to_hms(BoutReal t);   // Converts to h:mm:ss.s format
 char get_spin();                    // Produces a spinning bar
 
@@ -109,9 +111,9 @@ int bout_init(int argc, char **argv)
 
   string grid_ext, dump_ext; ///< Extensions for restart and dump files
 
-  const char *data_dir; ///< Directory for data input/output
+  //const char *data_dir; ///< Directory for data input/output
   const char *opt_file; ///< Filename for the options file
-
+  
 #ifdef CHECK
   int msg_point; ///< Used to return the message stack to a fixed point
 #endif
@@ -382,7 +384,7 @@ int bout_run()
 {
   /// Run the solver
   output.write("Running simulation\n\n");
-  int status;
+  int status,pbstatus;
   try {
     time_t start_time = time((time_t*) NULL);
     output.write("\nRun started at  : %s\n", ctime(&start_time));
@@ -392,6 +394,10 @@ int bout_run()
     time_t end_time = time((time_t*) NULL);
     output.write("\nRun finished at  : %s\n", ctime(&end_time));
     output.write("Run time : ");
+    
+ 
+    
+    
 
     int dt = end_time - start_time;
     int i = (int) (dt / (60.*60.));
@@ -410,12 +416,33 @@ int bout_run()
     output << e->what() << endl;
     return 1;
   }
+
+   
+  try {
+    /// Post-processing
+    
+    //output << "data_dir \n" << data_dir <<endl;
+    //char *data_dir_cp;
+    char *cpy_str = (char *)malloc(strlen(data_dir) + 1 * sizeof(char));
+    //char *ptr;
+    strcpy(cpy_str,data_dir);
+    char* pbinput [3] = {"post_bout","save",cpy_str};
+    ///char* pbinput [3] = {"post_bout","save",strcat(path_key,data_dir)};
+    pbstatus = py_try(3,pbinput); 
+  }catch(BoutException *e) {
+    output << "Error encountered during post-processing\n";
+    output << e->what() << endl;
+    return 1;
+  }
+  
   return status;
 }
 
 int bout_finish()
 {
   // Delete the solver
+ 
+
   delete solver;
 
   // Get and delete the mesh data sources
@@ -440,6 +467,9 @@ int bout_finish()
   Options *options = Options::getRoot();
   options = options->getSection("solver");
   options->get("type", solver_option, "", false);
+ 
+ 
+
   if (!solver_option.empty()) type = solver_option.c_str();
 
   if (!(strcasecmp(type, SOLVERPETSC31) && strcasecmp(type, SOLVERPETSC))) PetscFinalize();
@@ -451,6 +481,8 @@ int bout_finish()
   // but might need to revisit if that isn't the case
   if (!BoutComm::getInstance()->isSet()) MPI_Finalize();
 #endif
+  
+ 
 
   return 0;
 }
