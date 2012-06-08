@@ -11,6 +11,7 @@ fi
 # Usage: scriptname -options
 # Note: dash (-) necessary
 
+cp BOUT.inp data/BOUT.inp
 
 while getopts ":n:np" Option
 do
@@ -25,6 +26,6 @@ make
 
 #-run the case       
 echo Running with NP = $NP       
-$MPIEXEC $NP ./simple_diff
+$MPIEXEC $NP ./2fluid re
 
 

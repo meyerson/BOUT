@@ -371,7 +371,7 @@ int BoutMesh::load() {
   
   //////////////////////////////////////////////////////
   /// Communicators for Y gather/scatter
-  
+  output.write("\tCommunicators for Y gather/scatter \n");
   //MPI_Comm comm_inner, comm_middle, comm_outer;
   
   MPI_Group group_world;
@@ -387,6 +387,7 @@ int BoutMesh::load() {
 
   // Outer SOL regions
   if(jyseps1_2 == jyseps2_1) {
+    output.write("\t  Outer SOL regions \n");
     // Single-null. All processors with same PE_XIND
 
     for(int i=0;i<NXPE;i++) {
@@ -429,12 +430,14 @@ int BoutMesh::load() {
       MPI_Group_free(&group);
     }
   }
+  output.write("\t  Lower PF region \n");
 
   for(int i=0;i<NXPE;i++) {
     // Lower PF region
 
     if((jyseps1_1 >= 0) || (jyseps2_2 < ny)) {
       // A lower PF region exists
+      output.write("\t  Lower PF region exists \n");
 
       if(jyseps1_1 >= 0) {
 	proc[0] = PROC_NUM(i, 0);
@@ -490,7 +493,8 @@ int BoutMesh::load() {
     }
     
     // Core region
-    
+    output.write("\tCore Region MPI setup \n");
+
     proc[0] = PROC_NUM(i, YPROC(jyseps1_1+1));
     proc[1] = PROC_NUM(i, YPROC(jyseps2_1));
     //output << "CORE1 "<< proc[0] << ", " << proc[1] << endl;
@@ -2326,8 +2330,8 @@ int BoutSurfaceIter::scatter(BoutReal **data, Field3D &f)
 {
   
 }
-
 */
+
 
 /****************************************************************
  *                 Range iteration

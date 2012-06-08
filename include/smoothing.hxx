@@ -33,6 +33,8 @@ const Field3D smooth_x(const Field3D &f, bool BoutRealspace = true);
 
 /// Smooth in Y using 1-2-1 filter
 const Field3D smooth_y(const Field3D &f);
+const Field3D lowPass_Y(const Field3D &f,int ymax);
+
 
 /// Smooth using a stencil in X and Y
 const Field3D smoothXY(const Field3D &f);

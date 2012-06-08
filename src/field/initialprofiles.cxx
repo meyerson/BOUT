@@ -431,20 +431,23 @@ BoutReal Prof1D(BoutReal s, BoutReal s0, BoutReal sMin, BoutReal sMax, BoutReal 
       // cpus will produce a different random value resulting in a sharp phase discontinuity leading to mode blowup 
       // above roughly k> N/3
     case 6:
-      res=cos(1.*sNorm*TWOPI +  0*(rand()/(100.0 * RAND_MAX + 1.0) * 1.0 )*PI)
-	+cos(2*sNorm*TWOPI)
-	+cos(3*sNorm*TWOPI)
-	+cos(4*sNorm*TWOPI)
-	+cos(5*sNorm*TWOPI)
-	+cos(6*sNorm*TWOPI +  0*(rand()/(100.0 * RAND_MAX + 1.0) * 1.0 )*PI)
-	+cos(7*sNorm*TWOPI)
-	+cos(8*sNorm*TWOPI)
-	+cos(9*sNorm*TWOPI)
-	+cos(10*sNorm*TWOPI)
-	+cos(11*sNorm*TWOPI)
-	+cos(12*sNorm*TWOPI)
-	+cos(13*sNorm*TWOPI)
-	+cos(14*sNorm*TWOPI);
+      res=cos(1.*sNorm*TWOPI +  1*(rand()/(1.0 * RAND_MAX + 1.0) * 1.0 )*PI)
+	+cos(2*sNorm*TWOPI*(rand()/(RAND_MAX + 1.0) * 1.0 )+ rand())
+	+cos(3*sNorm*TWOPI    + (rand()/(RAND_MAX + 1.0) * 1.0 )*PI)
+	+cos(4*sNorm*TWOPI       + (rand()/(RAND_MAX + 1.0) * 1.0 )*PI)
+	+cos(5*sNorm*TWOPI    + (rand()/(RAND_MAX + 1.0) * 1.0 )*PI)
+	+cos(6*rand()*sNorm*TWOPI    +(rand()/(RAND_MAX + 1.0) * 1.0 )*PI)
+	+cos(7*sNorm*TWOPI    + (rand()/(RAND_MAX + 1.0) * 1.0 )*PI)
+	+cos(8*sNorm*TWOPI    + (rand()/(RAND_MAX + 1.0) * 1.0 )*PI)
+	+cos(9*sNorm*TWOPI    +(rand()/(RAND_MAX + 1.0) * 1.0 )*PI)
+	+cos(10*sNorm*TWOPI   + (rand()/(RAND_MAX + 1.0) * 1.0 )*PI)
+	+cos(11*sNorm*TWOPI   + (rand()/(RAND_MAX + 1.0) * 1.0 )*PI)
+	+cos(12*sNorm*TWOPI   + (rand()/(RAND_MAX + 1.0) * 1.0 )*PI)
+	+cos(13*sNorm*TWOPI +10*(rand()/(RAND_MAX + 1.0) * 1.0 )*PI)
+	+cos(14*sNorm*TWOPI + (rand()/(RAND_MAX + 1.0) * 1.0 )*PI);
+
+
+      break;
     default: res=1.0;
     }
 

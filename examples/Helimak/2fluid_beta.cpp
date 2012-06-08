@@ -458,23 +458,7 @@ int physics_run(real t)
 
   F_Ni = 0.0;
   if(evolve_ni) {
-    //F_Ni -= vE_Grad(Ni, phi0) + vE_Grad(Ni0, phi) + vE_Grad(Ni, phi);
-    
-    //not evolvig Te and grad Te0 is zero here
-    //F_////Ni += vE_Grad(Ni, Te0) + vE_Grad(Ni0, Te);
-  
-    //F_Ni += 2.0*V_dot_Grad(b0xcv, pe); //shouldn't this have a 1/Bxy 
-    //F_Ni -= 2.0*Ni0*V_dot_Grad(b0xcv, phi) + Ni*V_dot_Grad(b0xcv, phi0) + Ni*V_dot_Grad(b0xcv, phi);
 
-    //F_Ni -= Ni0*Div_par(Ve) + Ni*Div_par(Ve0) + Ni*Div_par(Ve);
-    //F_Ni -= Ve*Div_par(Ni0) + Ve0*Div_par(Ni);// + Ni*Div_par(Ve);		 
-  
-    //F_Ni +=  (TWOPI/MZ)/100.0*Laplacian(Ni);
-    //    F_Ni -= F_Ni.DC();
-    //F_Ni = low_pass(F_Ni,ncz/2);
-    
-    // F_Ni -= vE_Grad(Ni0, phi); /*+ (Ni0/100000000) *sin(TWOPI * t/5e3);*/
-    //output.write("F_Ni/Ni0, F_Ni/Ni: %e, %e \n",max(F_Ni)/max(Ni0),max(F_Ni)/max(Ni));
     
     F_Ni -= vE_Grad(Ni, phi0) + vE_Grad(Ni0, phi);// + vE_Grad(Ni, phi);
     F_Ni -= Vpar_Grad_par(Ve, Ni0) + Vpar_Grad_par(Ve0, Ni);// + Vpar_Grad_par(Vi, Ni);

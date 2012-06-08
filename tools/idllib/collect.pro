@@ -13,7 +13,7 @@ END
 
 FUNCTION collect, xind=xind, yind=yind, zind=zind, tind=tind, $
              path=path, var=var, t_array=t_array, use=use, old=old,  $
-                  quiet=quiet, debug=debug
+                  quiet=quiet, debug=debug,double = double
 
   IF NOT KEYWORD_SET(debug) THEN BEGIN
     on_error,2  ; If an error occurs, return to caller
@@ -219,7 +219,7 @@ FUNCTION collect, xind=xind, yind=yind, zind=zind, tind=tind, $
         PRINT, "T indices: ", tind[0], " to ", tind[1]
     ENDIF
     
-    data = FLTARR(xsize, ysize, zsize, tsize)
+    data = DBLARR(xsize, ysize, zsize, tsize)
     
     FOR i=0, nfiles-1 DO BEGIN
       ; get X and Y processor indices

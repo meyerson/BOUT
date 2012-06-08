@@ -26,33 +26,32 @@ done
 #-run the case       
 echo Running with NP = $NP       
 
-#rm -rf data
+rm -rf data
+cp BOUT_restart.inp BOUT.inp
 
-#ilist=(0 1 2 3 4 5 6 7 8 9)
+llist=( -0.10 0.10 )
 
-#mkdir data
+for lval in ${llist[@]}
+do
+    
+    mkdir data_re_${lval}
+    ln -s data_re_${lval} data
 
-#for ival in ${ilist[@]}
-#do
-#  mkdir ./H_Drift/data_${ival}
-#  ln -s ./H_Drift/data_${ival} data
-  #sed "s/Zeff = 128.0/Zeff = ${zval}.0/g" BOUT.inp > data/BOUT.inp
-
-cp BOUT.inp data/BOUT.inp
-
-#  sed "s/10x64_grid.nc/10x64_grid${ival}.nc/g" BOUT_drift.inp > data/BOUT.inp
-  #if [ $ival -lt 128 ]
-  #    then
+    cp  data_${lval}/* data #copy the simulation data from the first part of the run
+  
+  #sed "s/..\/Helimak\/Ln_lam\/Helimak_32x32_0.10_lam_n.nc/..\/Helimak\/Ln_lam\/Helimak_32x32_${lval}_lam_n.nc/g" BOUT.inp > data/BOUT.inp
+  sed "s/Helimak_4x32_0.10_lam_n.nc/Helimak_4x32_${lval}_lam_n.nc/g" BOUT.inp > data/BOUT.inp
+  #if [ $zval -lt 128 ]
+      #then
       # reduce time-step. At large times these cases produce noise
       #sed "s/TIMESTEP = 5e3/TIMESTEP = 1e3/g" data/BOUT.inp > data/tmp
-      
-   #   mv -f data/tmp data/BOUT.inp
+      #mv -f data/tmp data/BOUT.inp
   #fi
       
-  #$MPIEXEC $NP ./2fluid
-  ibrun -n $NP -o 0  ./2fluid re
-  wait
-  #rm -rf data
+  $MPIEXEC $NP ./2fluid re
+  #ibrun -n $NP -o 0  ./2fluid 
+  #wait
+  rm -fR data
 done
 
 #-check the result

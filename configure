@@ -1687,6 +1687,7 @@ MFILE
 
   if test "$HAS_CXX" == "0"
   then
+    less petscmake$$
     echo "Error - PETSc must have C++ support"
     rm petscmake$$
     exit
@@ -1732,6 +1733,8 @@ then
   PRECON_SOURCE="$PRECON_SOURCE jstruc.cxx"
   EXTRA_INCS="$EXTRA_INCS \$(PETSC_CC_INCLUDES)"
   EXTRA_LIBS="$EXTRA_LIBS \$(PETSC_LIB)"
+  #echo "Using PETSC_CC_INCLUDES = $PETSC_CC_INCLUDES"
+  #echo "Using PETSC_LIB = $PETSC_LIB"
 fi
 
 #############################################################

@@ -508,7 +508,7 @@ int py_try(int argc, char *argv[])
       sys_path = PySys_GetObject("path"); 
       if (sys_path == NULL) 
 	return NULL; 
-      path = PyString_FromString("/home/cryosphere/BOUT/tools/pylib/post_bout_TACC");
+      path = PyString_FromString("/home/cryosphere/BOUT/tools/pylib/post_bout");
       if (path == NULL) 
 	return NULL; 
       if (PyList_Append(sys_path, path) < 0) 

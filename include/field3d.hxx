@@ -216,6 +216,7 @@ class Field3D : public Field, public FieldData {
   friend const Field3D tanh(const Field3D &f);
 
   friend const Field3D filter(const Field3D &var, int N0);
+  friend const Field3D yfilter(const Field3D &var, int N0);
   friend const Field3D lowPass(const Field3D &var, int zmax);
   friend const Field3D lowPass(const Field3D &var, int zmax, int zmin);
 

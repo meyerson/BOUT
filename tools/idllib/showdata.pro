@@ -43,8 +43,10 @@ PRO showdata, data, contour=contour, yr=yr, color=color, $
               az=az, delay=delay, _extra=_extra, $
               noscale=noscale, uedge=uedge, period=period, $
               addsym=addsym, bw=bw, bmp=bmp, output=output, $
-              numoff=numoff, nobuffer=nobuffer
-
+              numoff=numoff, nobuffer=nobuffer,$
+              data_overplot = data_overplot,$
+              normalize = normalize
+  
   on_error,2  ; If an error occurs, return to caller
 
   data = REFORM(data)
@@ -126,9 +128,35 @@ PRO showdata, data, contour=contour, yr=yr, color=color, $
                                 ;safe_colors, /first
           
           FOR i=0, nt-1 DO BEGIN
-              contour, reform(val[*,*,i]), chars=chars, zr=yr, zstyle=1, $
-                /fill, nlev=50, color=color, $
+             
+             temp = reform(val[*,*,i])
+
+
+             
+             if keyword_set(normalize) then temp = temp * .01 / max(abs(temp))
+             
+         
+              contour, temp, chars=chars, zr=yr, zstyle=1, $
+                /fill, nlevels=50, color=color, $
                 title="time = "+strtrim(string(i),2), _extra=_extra
+              
+              xyouts,.4,.03,'total field: '+string(total(reform(val[*,*,i])))$
+                    ,/norm,charsize =2
+              
+              
+              if keyword_set(data_overplot) then begin
+                 print,'overplotting'
+
+                 loadct,0
+                 contour,temp,$
+                          /overplot, nlev=10,$
+                         thick = 1
+                 loadct,39
+
+                 contour, reform(data_overplot[*,*,i]),$
+                          /overplot, nlev=10,/downhill,$
+                          color  =0
+              endif
               
               IF NOT KEYWORD_SET(nobuffer) THEN BEGIN
                 ; Copy buffer

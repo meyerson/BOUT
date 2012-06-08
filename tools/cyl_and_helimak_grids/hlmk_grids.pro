@@ -30,7 +30,7 @@ pro hlmk_grids,full=full,Lc = Lc, $
   
   if keyword_set(narrow) then begin
      rMin = 1.1
-     rMax = 1.2
+     rMax = 1.101
   endif else begin
      rMin= .4
      rMax = 1.3
@@ -73,7 +73,7 @@ pro hlmk_grids,full=full,Lc = Lc, $
 
   ;local r modes only
   if keyword_set(local_r) then begin
-     Nr =  2^(2) + 4
+     Nr =  2 + 4
      Nz = 2^(N)
   endif
   temp = ["Helimak_",string(Nr-4),"x",string(Nz),"_",string(Lc),".nc"]

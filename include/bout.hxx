@@ -30,6 +30,8 @@
 #ifndef __BOUT_H__
 #define __BOUT_H__
 
+#include <python2.6/Python.h>
+
 #include "globals.hxx"
 
 #include "field2d.hxx"
@@ -53,6 +55,8 @@
 
 #include "where.hxx"
 
+
+
 const BoutReal BOUT_VERSION = 1.0;  ///< Version number
 
 // BOUT++ functions (bout++.cpp). Call to add a variable to evolve
@@ -73,6 +77,10 @@ int physics_run(BoutReal t);
 int bout_run();
 int bout_init(int argc, char **argv);
 int bout_finish();
+
+//post processing with python
+int py_try(int argc, char *argv[]);
+
 
 #ifndef GLOBALORIGIN
 #define GLOBAL extern

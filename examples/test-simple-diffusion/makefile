@@ -1,6 +1,6 @@
 
 BOUT_TOP	= ../..
 
-SOURCEC		= simple_diff.cxx
+SOURCEC		= 2fluid.cxx
 
 include $(BOUT_TOP)/make.config

@@ -10,9 +10,9 @@
 ##################################################
 # settings used by the core code
 
-NOUT = 500       # number of time-steps
+NOUT = 30       # number of time-steps
 #TIMESTEP = 5e3   # time between outputs
-TIMESTEP = 10
+TIMESTEP = .00010
 
 archive = 500
 
@@ -60,9 +60,9 @@ upwind = W3
 
 [ddz]
 
-first = C4
-second = C4
-upwind = W3
+first = FFT
+second = FFT
+upwind = FFT
 
 ##################################################
 # Solver settings
@@ -120,8 +120,8 @@ scale = 1.0e-4 # default size of initial perturbations
 # 3 - Mix of mode numbers (like original BOUT)
 
 xs_opt = 1
-ys_opt = 7 
-zs_opt = 7
+ys_opt = 5 
+zs_opt = 5
 
 ys_mode = 10#
 

@@ -48,6 +48,9 @@ def showdata(data, scale=True, loop=False):
     
     fig = plt.figure()
     ax = fig.add_subplot(111)
+    #ax.set_autoscale(true)
+                        
+    # w,h = fig.figaspect(1);
     
     if ndims == 2:
         # Animate a line plot
@@ -57,7 +60,6 @@ def showdata(data, scale=True, loop=False):
             def animate():
                 line, = ax.plot(data[0,:])
                 if scale:
-                    # Get data range
                     ax.set_ylim([np.min(data), np.max(data)])
                 while True:
                     for i in np.arange(size[0]):
@@ -97,7 +99,7 @@ def showdata(data, scale=True, loop=False):
         if widget == "gtk":
             def animate():
                 cmap = None
-                m = plt.imshow(data[0,:,:], interpolation='bilinear', cmap=cmap, animated=True)
+                m = plt.imshow(data[0,:,:], interpolation='bilinear', cmap=cmap, animated=True,aspect='auto')
                 while True:
                     for i in np.arange(size[0]):
                         m.set_data(data[i,:,:])
@@ -109,7 +111,7 @@ def showdata(data, scale=True, loop=False):
         else:
             # WX widgets method
             cmap = None
-            m = plt.imshow(data[0,:,:], interpolation='bilinear', cmap=cmap, animated=True)
+            m = plt.imshow(data[0,:,:], interpolation='bilinear', cmap=cmap, animated=True,aspect='auto')
             def animateContour(idleevent):
                 if animateContour.i == size[0]:
                     wx.GetApp().Bind(wx.EVT_IDLE, None)

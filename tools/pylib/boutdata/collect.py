@@ -4,6 +4,8 @@
 
 try:
     from netCDF4 import Dataset
+    #from Scientific.IO.Netcdf . .  a less 
+    #  complete module than netCDF4, no Dataset support
 except ImportError:
     print "ERROR: netcdf4-python module not found"
     raise

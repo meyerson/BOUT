@@ -10,21 +10,23 @@
 ##################################################
 # settings used by the core code
 
-NOUT = 10       # number of time-steps
+NOUT = 300       # number of time-steps
 #TIMESTEP = 5e3   # time between outputs
-TIMESTEP = 10
+#TIMESTEP = .00010
+TIMESTEP = 20.0
 
-archive = 10
+archive = 300
 
 ShiftXderivs = false # use shifted radial derivatives?
 TwistShift = false  # use twist-shift condition?
 
-MZ = 33     # number of points in z direction (2^n + 1)
+MZ = 129    # number of points in z direction (2^n + 1)
 ZMIN = 0.0
 #ZMAX = 1.91125e-4
 ZMAX = 1
 
-MXG = 2
+MXG = 1
+#MXG= 2	
 MYG = 2
 
 NXPE = 1
@@ -37,7 +39,8 @@ NYPE = 4
 #grid = "helimak_narrow.nc"
 #grid = "Helimak_32x32_0.10.nc"
 #grid = "../Helimak/Ln/Helimak_32x32_0.10.nc"
-grid = "/home/cryosphere/BOUT-0.8/helimak_grids/local_r/Helimak_4x32_0.10_lam_n.nc"
+grid = "/home/cryosphere/BOUT-0.8/helimak_grids/local_r_1x128/Helimak_1x128_0.10_lam_n.nc"
+
 
 dump_format = "nc" # Output format. nc = NetCDF
 
@@ -50,20 +53,19 @@ dump_format = "nc" # Output format. nc = NetCDF
 
 first = C2
 second = C2
-upwind = W3
+upwind = U1
 
 [ddy]
 
 first = C2
 second = C2
-upwind = W3
+upwind = U1
 
 [ddz]
 
-first = C4
-second = C4
-upwind = W3
-
+first = C2
+second = C2
+upwind = U1
 ##################################################
 # Solver settings
 
@@ -72,8 +74,10 @@ upwind = W3
 # mudq, mldq, mukeep, mlkeep preconditioner options
 #ATOL = 1.0e-12 # absolute tolerance
 #RTOL = 1.0e-7  # relative tolerance
-ATOL = 1.0e-2 # absolute tolerance
-RTOL = 1.0e0  # relative tolerance
+ATOL = 1.0e-9 # absolute tolerance
+RTOL = 1.0e-1  # relative tolerance
+use_precon = no
+	  
 pvode_mxstep = 15000
 
 ##################################################
@@ -81,8 +85,8 @@ pvode_mxstep = 15000
 
 [2fluid]
 
-
-AA = 36.0  #singly ionized argon 36 ( the nonradioactive isotope)
+AA = 1.0 #hydrogen plasma
+#AA = 36.0  #singly ionized argon 36 ( the nonradioactive isotope)
 ZZ = 1.0
 
  
@@ -92,6 +96,11 @@ ZeroElMass = true  # Use Ohms law without electron inertia
 nu_perp = 1.0e-20
 
 ShearFactor = 0.0
+
+minusDC = true;
+plusDC = false;
+nonlinear = true;
+
 
 # field inversion flags: Add the following
 #  1 - Zero-gradient DC component on inner boundary
@@ -111,7 +120,7 @@ apar_flags = 0 # flags for apar inversion
 # a section of that name.
 
 [All]
-scale = 1.0e-4 # default size of initial perturbations
+scale = 1.0e-6 # default size of initial perturbations
 
 # form of initial profile:
 # 0 - constant
@@ -119,13 +128,13 @@ scale = 1.0e-4 # default size of initial perturbations
 # 2 - Sinusoidal
 # 3 - Mix of mode numbers (like original BOUT)
 
-xs_opt = 1
-ys_opt = 3
-zs_opt = 3
+xs_opt = 0
+ys_opt = 5
+zs_opt = 5
 
 ys_mode = 10#
 
-zs_mode = 7 # toroidal mode number
+zs_mode = 1 # toroidal mode number
 
 
 # boundary conditions (see boundary.h for values)
@@ -135,9 +144,9 @@ zs_mode = 7 # toroidal mode number
 # 3 = laplacian
 # 4 = laplacian with zero-gradient
 
-xinner = 2  ## Zero-gradient inner boundary
-xouter = 2  ## Zero-gradient outer boundary
-
+#xinner = 2  ## Zero-gradient inner boundary
+#xouter = 2  ## Zero-gradient outer boundary
+bndry_all = neumann
 [Ni]
 #scale = 1.0e-8 # 
 [rho] 
@@ -157,3 +166,5 @@ scale = 1.0e-8 #
 [Ti]
 evolve = false
 scale = 1.0e-8 #
+[solver]
+#type=petsc

@@ -21,7 +21,7 @@ do
 done
 
 #-compile/build local executable
-#make
+make
 
 #-run the case       
 echo Running with NP = $NP       
@@ -29,13 +29,15 @@ echo Running with NP = $NP
 rm -rf data*
 cp BOUT_relax.inp BOUT.inp
 
-llist=( -0.10 0.10 )
+#llist=(0.10 -0.10 )
+llist=(0.10)
 
 for lval in ${llist[@]}
 do
   mkdir data_${lval}
   ln -s data_${lval} data
-
+  
+  cp hlmk.cxx data/hlmk.cxx.ref #copy the source code for easy reference
   #cp  data_${lval}/* data #copy the simulation data from the first part of the run
   
   #sed "s/..\/Helimak\/Ln_lam\/Helimak_32x32_0.10_lam_n.nc/..\/Helimak\/Ln_lam\/Helimak_32x32_${lval}_lam_n.nc/g" BOUT.inp > data/BOUT.inp
@@ -47,7 +49,7 @@ do
       #mv -f data/tmp data/BOUT.inp
   #fi
       
-  $MPIEXEC $NP ./2fluid 
+  $MPIEXEC $NP ./hlmk
   #ibrun -n $NP -o 0  ./2fluid 
   #wait
   rm -f data
