@@ -33,9 +33,10 @@ externalpackages/
 *.rar
 *.tar
 *.zip
-#*.pkl
-#*.jsn
-#*.json
+*.pkl
+*.jsn
+*.json
+*.db
 
 # Logs and databases #
 ######################
