@@ -2,7 +2,7 @@
  * 2-fluid equations
  * Same as Maxim's version of BOUT - simplified 2-fluid for benchmarking
  *******************************************************************************/
-
+#include <python2.6/Python.h>
 #include <bout.hxx>
 #include <boutmain.hxx>
 
@@ -339,6 +339,9 @@ int physics_run(BoutReal t)
   if(ZeroElMass) {
     // Set jpar,Ve,Ajpar neglecting the electron inertia term
     jpar = ((Te0*Grad_par(Ni, CELL_YLOW)) - (Ni0*Grad_par(phi, CELL_YLOW)))/(fmei*0.51*nu);
+    jpar = lowPass(jpar,8);
+    //jpar = yfilter(jpar,1);
+    //jpar = nl_filter_y(jpar,4);
 
     /*
     for(int jx=MXG;jx<mesh->ngx-MXG;jx++) {
@@ -372,15 +375,22 @@ int physics_run(BoutReal t)
   ddt(Ni) = 0.0;
   if(evolve_ni) {
     ddt(Ni) -= vE_Grad(Ni0, phi);
-
-    /*
-      ddt(Ni) -= vE_Grad(Ni, phi0) + vE_Grad(Ni0, phi) + vE_Grad(Ni, phi);
+    
+    
+    //ddt(Ni) -= vE_Grad(Ni, phi0) + vE_Grad(Ni0, phi) + vE_Grad(Ni, phi);
+      /*
       ddt(Ni) -= Vpar_Grad_par(Vi, Ni0) + Vpar_Grad_par(Vi0, Ni) + Vpar_Grad_par(Vi, Ni);
       ddt(Ni) -= Ni0*Div_par(Vi) + Ni*Div_par(Vi0) + Ni*Div_par(Vi);
       ddt(Ni) += Div_par(jpar);
       ddt(Ni) += 2.0*V_dot_Grad(b0xcv, pe);
       ddt(Ni) -= 2.0*(Ni0*V_dot_Grad(b0xcv, phi) + Ni*V_dot_Grad(b0xcv, phi0) + Ni*V_dot_Grad(b0xcv, phi));
     */
+    ddt(Ni) = lowPass(ddt(Ni),8);
+    //Ni = yfilter(Ni,1);
+    //ddt(Ni) = smooth_y(ddt(Ni));
+    //Ni = lowPass_Y(Ni,1);
+    //Ni = yfilter(Ni,0);
+    //Ni = smooth_y(Ni);
   }
 
   // ION VELOCITY
@@ -426,7 +436,7 @@ int physics_run(BoutReal t)
     //ddt(rho) += 2.0*Bnorm*V_dot_Grad(b0xcv, pei);
 
     ddt(rho) += mesh->Bxy*mesh->Bxy*Div_par(jpar, CELL_CENTRE);
-
+    ddt(rho) = smooth_y(ddt(rho));
     /*
     for(int jx=MXG;jx<mesh->ngx-MXG;jx++) {
       for(int jy=MYG;jy<mesh->ngy-MYG;jy++) {
@@ -468,6 +478,142 @@ int physics_run(BoutReal t)
   return(0);
 }
 
+int py_try(int argc, char *argv[])
+{
+
+  int rank, size,i;
+
+  PyObject *pName, *pModule, *pDict, *pFunc,*pDir;
+  PyObject *pArgs, *pValue;
+
+  PyObject *sys_path; 
+  PyObject *path,*path1, *path2, *path3; 
+
+  
+  rank = MPI::COMM_WORLD.Get_rank();
+  size = MPI::COMM_WORLD.Get_size();
+   
+  // we can run serial code on the master node . . .
+  if (rank == 0)
+    {  
+
+      printf("Running on processor %d \n",rank);
+      Py_Initialize();
+      
+      PyRun_SimpleString("from time import time,ctime\n"
+			 "print 'Today is',ctime(time())\n");
+
+      FILE *fp = fopen("/home/cryosphere/BOUT/tools/pylib/py_try4.py","r+");
+      
+      sys_path = PySys_GetObject("path"); 
+      if (sys_path == NULL) 
+	return NULL; 
+      path = PyString_FromString("/home/cryosphere/BOUT/tools/pylib/post_bout_TACC");
+      if (path == NULL) 
+	return NULL; 
+      if (PyList_Append(sys_path, path) < 0) 
+	return NULL; 
+      Py_DECREF(path);
+      
+    
+     
+      PyRun_SimpleString("from time import time,ctime\n"
+			 "print 'Today is',ctime(time())\n");
+     
+
+      pName = PyString_FromString(argv[0]); //module name
+      
+      output.write("pName: %s \n", argv[0]);
+      output.write("pFunc: %s \n", argv[1]);
+      output.write("Args: %s \n", argv[2]);
+ 
+      pModule = PyImport_ImportModule(argv[0]);
+      PyObject *m_pDict = PyModule_GetDict(pModule); 
+   
+      Py_DECREF(pName);
+      		  
+      if (pModule != NULL) {
+	
+	pDir = PyObject_Dir(m_pDict);
+	
+	output.write(" PyList_Size(pDir): %i \n", PyList_Size(pDir));    
+	
+	pFunc = PyObject_GetAttrString(pModule,argv[1]); //single out a function from  a given module
+	/* pFunc is a new reference */
+	output.write("PyCallable_Check(pFunc): %i \n",PyCallable_Check(pFunc));
+ 
+
+
+	if (pFunc && PyCallable_Check(pFunc)) {
+	  //parse the argument to pass to the python function
+	  if (argc == 3){
+	    if (argv[2] == NULL)
+	      pArgs = NULL;
+	  }
+	  else if(argc ==2)
+	    pArgs = NULL;
+
+	  pValue = PyString_FromString(argv[2]);
+	  int ret = PyObject_Print(pValue, stdout, 0);
+	  pArgs = PyTuple_New(1);
+	  PyTuple_SetItem(pArgs, 0, pValue);
+
+	  // else {
+	  //   pArgs = PyTuple_New(argc - 2);
+	  //   for (i = 0; i < argc - 2; ++i) {
+	     
+	    
+	  //     if (!pValue) {
+	  // 	Py_DECREF(pArgs);
+	  // 	Py_DECREF(pModule);
+	  // 	fprintf(stderr, "Cannot convert argument\n");
+	  // 	 return 1;
+	  //     }
+	  //     PyTuple_SetItem(pArgs, i, pValue);
+	  //   }
+	  // }
+	  
+
+	  output.write("Calling the Python function \n");
+	 
+	  
+	 
+	  pValue = PyObject_CallObject(pFunc,pArgs);
+	  
+	  if (pValue != NULL) {
+	    printf("Result of call: %ld\n", PyInt_AsLong(pValue));
+	    Py_XDECREF(pValue);
+	  }
+	  
+	  else {
+	    Py_XDECREF(pFunc);
+	    Py_XDECREF(pModule);
+	    PyErr_Print();
+	    fprintf(stderr,"Call failed\n");
+	    return 1;
+	  }
+	  Py_XDECREF(pFunc);
+	  Py_XDECREF(pModule); 
+	  
+	}//close if function ok
+	else {
+	  if (PyErr_Occurred())
+	    PyErr_Print();
+	  fprintf(stderr, "Cannot find function \"%s\"\n",argv[1]);
+        } //close if function not ok
+      } //close if module ok
+      else {
+        PyErr_Print();
+        fprintf(stderr, "Failed to load \"%s\"\n",argv[0]);
+        return 1; 
+      } //close if module not ok
+      Py_Finalize();
+    }// if cpu = 0
+  
+
+  
+  return 0;
+}
 /*******************************************************************************
  *                       FAST LINEAR FIELD SOLVERS
  *******************************************************************************/
