@@ -15,6 +15,7 @@ try:
     sys.path.append('/home/cryosphere/BOUT/tools/pylib/boutdata')
     sys.path.append('/home/cryosphere/BOUT/tools/pylib/boututils')
     
+    print 'in post_bout_TACC/__init__.py'
     import matplotlib
     import gobject
     import numpy as np
@@ -47,7 +48,12 @@ except:
     print "Sorry no parse_inp"
 
 try:
-    from post_bout import show, save, read
+    from read_cxx import read_cxx
+except:
+    print "Sorry no read_cxx"
+
+try:
+    from post_bout import save, read
 except:
     print "Sorry, no show"
 
@@ -57,6 +63,11 @@ except:
     print "Sorry, no basic_info"
 
 try:
-    from corral import corral,LinRes
+    from pb_corral import corral,LinRes,subset
 except:
     print "No corral"
+
+try:
+    import ListDict
+except:
+    print "No ListDict"

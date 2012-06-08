@@ -2,6 +2,8 @@
 #import post_bout
 #post_bout.show()
 #from . import read_grid,parse_inp, read_inp,basic_info
+#import sqlite3 as sql
+
 import sys
 import pickle
 import os
@@ -13,29 +15,29 @@ try:
     sys.path.append('/home/cryosphere/BOUT/tools/pylib')
     sys.path.append('/home/cryosphere/BOUT/tools/pylib/boutdata')
     sys.path.append('/home/cryosphere/BOUT/tools/pylib/boututils')
-    sys.path.append('/home/cryosphere/BOUT/tools/pylib/post_bout')
-    import matplotlib
-    import gobject
+    sys.path.append('/home/cryosphere/BOUT/tools/pylib/post_bout_TACC')
+    
+    #import gobject
     import numpy as np
     from ordereddict import OrderedDict
+    from scipy.interpolate import interp2d,interp1d
+    from boutdata import collect
 except ImportError:
+    print 'in post_bout_TACC/post_bout.py'
+
     print "can't find the modules I need, you fail"
     sys.exit() #no point in going on
             
     #import some bout specific modules
 try:
-    import boutdata
-    import boututils
+    from boutdata import collect
+    
 except:
+    print 'in post_bout_TACC/post_bout.py'
     print "can't find bout related modules, you fail"
     sys.exit() #no point in going on, shoot yourself 
     
-    #import modules for creating pdfs    
-try:
-    import matplotlib.pyplot as plt
-    from matplotlib.backends.backend_pdf import PdfPages
-except:
-    print "can' find matplotlib"
+
 
 #i feel like I shouldn't have to include these line in virtue of __init__.py
 from read_inp import parse_inp, read_inp, read_log,metadata
@@ -44,188 +46,11 @@ from basic_info import basic_info, fft_info
 from corral import corral
 
 
-def show(path='/home/cryosphere/BOUT/examples/Q3/data_short', var='Ni',runcase='runcase.sh'): 
-    
+def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
+         savemovie=False,IConly=0): 
     #lets collect the data
-    #from . import read_grid,parse_inp, read_inp,basic_info
-
-
-    #the purpose of this function is to pull out previously 
-    #collect linear response data and present all information in  
-
-    #a single plot    
-    #collect
-
-    #figure out what to collect from runcase
-    
-
-
-
-    boutpath = path
-    
-    print var 
-    print path
-    print sys.path
-   
-    ni = boutdata.collect(var,path=path)
-
-    if len(ni.shape) ==4:
-        nt,nx,ny,nz = ni.shape
-    else:
-        print "something with dimesions"
-
-    data = ni[:,:,ny/2,:]
-    pp = PdfPages('output.pdf')
-    plt.figure()
-    cs = plt.contour(data[nt/2,:,:])
-    plt.clabel(cs, inline=1, fontsize=10)
-    plt.title('Simplest default with labels')
-    plt.savefig(pp, format='pdf')
-
-    plt.figure()
-    CS = plt.contour(data[0,:,:],6,
-                    colors='k', # negative contours will be dashed by default
-                    )
-    plt.clabel(CS, fontsize=9, inline=1)
-    plt.title('Single color - negative contours dashed')
-    plt.savefig(pp, format='pdf')
-   
-    
-    a = read_inp(path=path)
- 
-    b = parse_inp(a)
-   
-    #print b
-
-   #now we also want to get some information from the grid file
-
-    gridfile = b['[main]']['grid']
-    #print b
-    #print gridfile
-    f = read_grid(gridfile)
-
-    #we can try to bundle some key peices of data into a single meta data
-    #container
-    
-
-    evolved = []
-    #loop over the top level keys and look for any evolve subkeys, see what is evolved
-    for section in b.keys():
-        if 'evolve' in b[section]:
-            if b[section]['evolve']=='true' or b[section]['evolve']=='True':
-                evolved.append(section.strip('[]'))
-                print evolved
-            
-    
-
-    meta = OrderedDict()
-    meta['dt'] = b['[main]']['TIMESTEP']
-    meta['evolved'] = evolved
-    meta['DZ'] = b['[main]']['ZMAX']#-b['[main]']['ZMIN']
-    
-
-    #now put everything you need into an ordered dictionary
-    AA = b['[2fluid]']['AA']
-    
-    Ni0 = f.variables['Ni0'][:]*1.e14
-    bmag = f.variables['bmag'][:]*1.e4 #to cgs
-    Ni_x = f.variables['Ni_x'][:]*1.e14 # cm^-3
-    rho_s = f.variables['Te_x'][:]/bmag # in cm
-
-    # and so on just follow post_bout.pro, create a sep. function
-
-    #find a nice way to print
-    
-   
-    
-    #loop over evoled fields ?
-    #find out which are evolved to begin with
-    
-    output = OrderedDict()
-    
-    data = OrderedDict()
-
-    all_modes = []
-    for i,active in enumerate(meta['evolved']):
-       data[active] = boutdata.collect(active,path=path)
-       modes,ave = basic_info(data[active],meta)
-       output[active] = {'modes':modes,'ave':ave}
-       for x in output[active]['modes']:
-          if x['k'][0] not in  all_modes:
-              all_modes.append(x['k'][0])
-
-    #rebuild with all the relevant modes
-    output = OrderedDict()
-
-
-    for i,active in enumerate(meta['evolved']):
-        modes,ave = basic_info(data[active],meta,user_peak = all_modes)
-        output[active] = {'modes':modes,'ave':ave}
-    
-    
-
-    # let's make sure that if there any peaks that only appear
-    # in one field can compared across all field
-    
-    
-    
-    
-    # let pickle the results
-    pickled_out = open('post_bout.pkl','wb')
-    pickle.dump(output,pickled_out)
-    pickled_out.close()
-
-    
-   
-    plt.figure()
-    #ax = plt.add_subplot(2,1,1)
-    #ax.set_yscale('log')
-
-    plt.semilogy(modes[0]['amp'].max(1))
-    plt.title('simple plot - amp of the 1st dominant mode')
-    plt.savefig(pp, format='pdf')
-
-    plt.figure()
-    plt.plot(ave['amp'])
-    plt.plot(modes[0]['amp'].max(1))
-    #plt.semilogy(modes[0]['amp'].max(1))
-    plt.title('A_dom and A_ave')
-    plt.savefig(pp,format='pdf')
-
-    plt.figure()
-    plt.semilogy(ave['amp'])
-    plt.semilogy(modes[0]['amp'].max(1))
-    #plt.semilogy(modes[0]['amp'].max(1))
-    plt.title('A_dom and A_ave')
-    plt.savefig(pp,format='pdf')
-
-
-    plt.figure()
-    plt.plot(modes[0]['phase'][3:,nx/2])
-    #plt.semilogy(modes[1]['amp'].max(1))
-    #plt.semilogy(modes[2]['amp'].max(1))
-    #plt.semilogy(modes[0]['amp'].max(1))
-    plt.title('phase')
-    plt.savefig(pp,format='pdf')
-
-    plt.figure()
-    plt.semilogy(modes[0]['amp'][nt/2,:])
-    plt.title('A[r] of the 1st mode at nt/2')
-    plt.savefig(pp,format='pdf')
-    
-    #ax = plt.add_subplot(2,1,1)
-    #ax.set_yscale('log')
-
-    
-
-    plt.close() 
-    pp.close()
-
-    return output
-
-def save(path='/home/cryosphere/BOUT/examples/Q3/data_short'): 
-    #lets collect the data
-    print 'in post_bout.save'
+    print 'path :', path
+    print 'in post_bout_TACC/post_bout.save'
     boutpath = path
 
     print path
@@ -233,7 +58,8 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short'):
  
 
     meta = metadata(path=path)
-   
+    
+    #ICmodes = 
     print 'ok got meta'
     #return meta
     output = OrderedDict()
@@ -245,88 +71,247 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short'):
 
     for i,active in enumerate(meta['evolved']['v']): #loop over the fields
         print path, active
-        data[active] = boutdata.collect(active,path=path)
-        modes,ave = basic_info(data[active],meta)
-       #print modes[0]['gamma']
-        output[active] = {'modes':modes,'ave':ave}
-        for x in output[active]['modes']: #keep track of relevant harmonics
-            if x['k'][0] not in  all_modes: 
-                all_modes.append(x['k'][0])
+        data[active] = collect(active,path=path)
+        if savemovie:
+            movie(data,meta)
+        
 
-    
+    minIC = np.array([np.max(data[x][0,:,:,:]) for x in meta['evolved']['v']])
+    minIC = min(minIC[np.array(meta['IC']).nonzero()])  
+    ICmodes =[]
+
+    if(meta['ys_opt']['v']==2 and  meta['zs_opt']['v']==2): #if BOUT.inp IC indicates a single mode
+        ICmodes.append([meta['ys_mode']['v'],meta['zs_mode']['v']])
+    elif (meta['ys_opt']['v']==3 and meta['zs_opt']['v']==2): 
+        [ICmodes.append([p+1,meta['zs_mode']['v']]) for p in range(5)]
+    elif(meta['ys_opt']['v']==2 and meta['zs_opt']['v']==3):
+        [ICmodes.append([meta['ys_mode']['v'],p+1]) for p in range(8)]
+    elif(meta['ys_opt']['v']==3 and meta['zs_opt']['v']==3):
+        [ICmodes.append([p+1,q+1]) for p in range(7) for q in range(8)]          
+    elif(meta['ys_opt']['v']==0 and meta['zs_opt']['v']==3):
+        [ICmodes.append([0,p+1]) for p in range(4)]   
+  
+    #some attemps to automate peak finding
+    for i,active in enumerate(meta['evolved']['v']):
+        modes_db,ave = basic_info(data[active],meta) #basic_info does not  correct for incomplete runs
+       #print modes[0]['gamma']
+        output[active] = {'ave':ave}
+        #for x in output[active]['modes']: #keep track of relevant harmonics
+        print 'debug:', len(modes_db),type(modes_db),len(modes_db)
+        for x in modes_db: 
+            print x['mn'],all_modes
+            if x['mn'] not in  all_modes: 
+                #don't append if the mode is weak . .
+                ##minIC = np.array(meta['IC'])
+                #minIC = min(minIC[minIC.nonzero()])
+                print 'minIC: ',minIC, x['amp'][-10:,:].max()
+                #if x['amp'][-10:,:].max()>=(minIC/1.0):
+                all_modes.append(x['mn'])
+
+    if IConly or len(all_modes)==0:
+        all_modes = ICmodes
+    else:
+        z = []
+        [z.append(x) for x in all_modes]
+        [z.append(x) for x in ICmodes]
+        all_modes = z
+        print 'len(all_modes):',len(all_modes)
+        
+        
     #rebuild with all the relevant modes
     output = OrderedDict()
 
     output['meta'] = meta
-    output['fields'] = {}
+    output['ave'] = {}
+    allmodes_db =[]
 
+
+    
     for i,active in enumerate(meta['evolved']['v']): 
         print 'once again', active
-        modes,ave = basic_info(data[active],meta,user_peak = all_modes) 
-        output['fields'][active] = {'modes':modes,'ave':ave}
-        #print modes[0]['gamma']
+        print all_modes
+        print meta['ys_opt']['v'], meta['zs_opt']['v']
+        modes_db,ave = basic_info(data[active],meta,
+                                  user_peak = all_modes)     
+        
+        for j,x in enumerate(modes_db):
+            x['field'] = active
+            x['dz']=meta['dz']
+            x['IC']=meta['IC']
+            x['L']=meta['L']
+            x['Rxy']= meta['Rxy']['v']
+            x['nfields'] = len(meta['evolved']['v'])
+            x['meta'] = meta
+            x['nx']= meta['nx']
+            x['ny'] = meta['ny']
+            x['nz'] = meta['MZ']['v']-1
+            x['dt'] = meta['dt']['v']
+            x['Rxynorm'] = 100*x['Rxy']/meta['rho_s']['v']
+            x['rho_s'] = meta['rho_s']['v']
+            
+            ntt = x['nt'] #actual number of steps
+            nt = meta['NOUT']['v'] #requested number of steps
+            print j,' out of ',len(modes_db)
+    #for incomplete runs    
+            if nt > ntt: #if the run did not finish then rescale to keep data dims the same
+                
+                xx = np.array(range(0,ntt)) #dep var to interp FROM
+                xxnew = np.linspace(0,ntt-1,nt+1) #new dep var grid, nt points up to ntt-1
+                
+                print ntt/nt,x['dt']*float(ntt/nt),nt,ntt
+                x['dt'] = x['dt']*float(ntt/nt) #smaller dt if we are interp tp more points . . 
+                
+                print x['dt']
+                x['nt'] = nt
+                amp = x['amp'] #2d array ntt x nx
+                phase = x['phase']
+                ampnew=[] #will be a nx x nt 2d array
+                phasenew =[]
+                for mode_r in np.transpose(amp):
+                    f = interp1d(xx,mode_r)
+                    ampnew.append(f(xxnew))
+                
+                for mode_r in np.transpose(phase):
+                    f = interp1d(xx,mode_r)
+                    phasenew.append(f(xxnew))
+                 
+                x['amp'] = np.transpose(ampnew)
+                x['phase'] = np.transpose(phasenew)
+                print x['phase'].shape
 
-    # let's make sure that if there any peaks that only appear
-    # in one field can compared across all field
+        output['ave'][active] = {'ave':ave}
+        allmodes_db.append(modes_db)
+ 
+
+    allmodes_db = sum(allmodes_db,[])
+
+    filename_db = path+'/post_bout.db'
     
     
-    
+    pickle_db = open(filename_db,'wb')
+
+    pickle.dump(allmodes_db,pickle_db)
+
+    pickle_db.close()
+
     
     # let pickle the results
-    filename = path+'/post_bout.jsn'
-    json_out = open(filename,'wb')
-    pickle.dump(output,json_out)
-    json_out.close()
+    # filename = path+'/post_bout.jsn'
+    # json_out = open(filename,'wb')
+    # pickle.dump(output,json_out)
+    # json_out.close()
 
-    print filename
+    print filename_db
     
     
-def read(path='.',filename='post_bout.jsn'):
+def read(path='.',filename='post_bout.pkl',trysave=True,
+         gamma_updt=False):
     print 'in post_bout.read()'
 
     filepath = path+'/'+filename
-    print 'is file present: ', os.path.isfile(filepath)
-    pkl_file = open(filepath, 'rb')
-    #pkl_file = open('/tmp/data_.05/post_bout.pkl', 'rb')
- 
-    output = pickle.load(pkl_file)
-    print type(output)
-    
-    pkl_file.close()
-    
-    return output
+    filepath_db = path+'/post_bout.db'
+    datafile = path+'/BOUT.dmp.0.nc'
 
 
-
-# def convert_to_dict(object):  #takes a L000000ng time 
-#     if isinstance(object, collections.Iterable):
-#         final = type(obj)()
-#         for i,elem in enumerate(object):
-#             print i,elem, type(object).__name__ 
-#             if type(object).__name__ == 'ndarray':
-#                 print object.shape
-#             if type(object).__name__ == 'dict' or  type(object).__name__ == 'OrderedDict':
-#                 final[elem] = convert_to_dict(object[elem])
-#             else:
-#                 final[i] = convert_to_dict(object[i])    
-#         return final
-#     else:
-#         if object.__class__.__name__ == 'ValUnit':
-#             d = {}
-#             d = { '__class__':obj.__class__.__name__, 
-#                   '__module__':obj.__module__,
-#                   }
-#             d.update(object.__dict__)
-            
-#             return d
-#         else:
-#             return objec
-        
-    
-
-# def convert_to_dict(object):  #takes a L000000ng time 
-    
-#     for elem in object['meta']:
-        
-        
+    print 'is file present: ', os.path.isfile(filepath_db)
+    if trysave and not(os.path.isfile
+                       (filepath_db)) and os.path.isfile(datafile):
+        save(path=path)
   
+        
+        
+    if os.path.isfile(filepath_db):
+        #pkl_file = open(filepath, 'rb')
+        pkl_file_db = open(filepath_db, 'rb')
+        #output = pickle.load(pkl_file)
+        output_db = pickle.load(pkl_file_db)
+        
+        meta = metadata(path=path)
+        #update the meta data incase read_inp was altered . . .
+        for i,x in enumerate(output_db):
+            x['dz']=meta['dz'] 
+            x['IC']=meta['IC']
+            x['L']=meta['L']
+            x['Rxy']= meta['Rxy']['v']
+            x['nfields'] = len(meta['evolved']['v'])
+            x['meta'] = meta
+            x['nx'] = meta['nx']
+            x['ny'] = meta['ny']
+            x['nz'] = meta['MZ']['v']-1
+            x['path'] = path
+            #print x['mn']
+            x['MN'] = list([1,2])
+            x['MN'][0] = x['mn'][0]
+            x['MN'][1] = x['mn'][1]/x['dz']
+            x['modeid'] = [x['dz'],x['modeid']]
+           # print x['mn']
+            
+            #x['MN'] = x['mn']
+            #x['MN'][1] = x['MN'][1]/x['dz']
+            
+            x['Rxynorm'] = 100*x['Rxy']/meta['rho_s']['v']
+            if 'dt' not in x:
+                x['dt'] = meta['dt']['v'] #this one gets modified no read . 
+            if gamma_updt: #experimental, recalculates gamma from amp, but for a while amp was 
+                #wrong for incomplete runs s0 . . . dont' run for now
+                lnamp = np.log(x['amp']) #nt x nx
+                t = x['dt']*np.array(range(int(x['nt']))) 
+                r = np.polyfit(t[x['nt']/2:],lnamp[x['nt']/2:,2:-2],1,full=True)
+                gamma_est = r[0][0] #nx
+                f0 = np.exp(r[0][1]) #nx
+                res = r[1]
+                pad =[0,0]       
+                gamma_est = np.concatenate([pad,gamma_est,pad])
+                f0 = np.concatenate([pad,f0,pad])
+                res = np.concatenate([pad,res,pad])
+               
+                #sig = res/np.sqrt((x['nt']-2))
+                sig = np.sqrt(res/(x['nt']-2))
+                #sig0 = sig*np.sqrt(1/(x['nt'])+ ) # who cares
+                sig1 = sig*np.sqrt(1.0/(x['nt'] * t.var()))
+                res = 1 - res/(x['nt']*lnamp.var(0)) #nx 
+                res[0:2] = 0
+                res[-2:] = 0
+
+                x['gamma'] = [gamma_est,f0,sig1,res]
+    
+        pkl_file_db.close()
+        return output_db
+    else:
+        return 0
+
+def movie(data,meta,name='output.avi'):
+    #based on  Josh Lifton 2004 movie_demo.py file and showdata 
+
+    
+    #import modules for creating a movie  
+    try:
+        import matplotlib
+        matplotlib.use('Agg')
+        #import boututils
+        import subprocess    
+        import matplotlib.pyplot as plt
+        
+    except:
+        print "can' find stuff to def movie function"
+
+    not_found_msg = """
+The mencoder command was not found;
+mencoder is used by this script to make an avi file from a set of pngs.
+It is typically not installed by default on linux distros because of
+legal restrictions, but it is widely available.
+"""
+
+    try:
+        subprocess.check_call(['mencoder'])
+    except subprocess.CalledProcessError:
+        print "mencoder command was found"
+        pass # mencoder is found, but returns non-zero exit as expected
+    # This is a quick and dirty check; it leaves some spurious output
+    # for the user to puzzle over.
+    except OSError:
+        print not_found_msg
+        print 'quitting movie'
+        return 1
+
+    

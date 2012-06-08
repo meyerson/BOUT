@@ -1,7 +1,19 @@
 import post_bout
 a = post_bout.corral(cached=True)
-a.show()
+a.show2()
 
 b = post_bout.LinRes(data=a)
 b.modes()
 dir(b)
+
+import post_bout
+from replab_lineplot import LineLegendExample 
+from reportlab.platypus import *
+a = LineLegendExample()
+doc = SimpleDocTemplate('new.pdf')
+doc.build([a])
+
+
+
+a = post_bout.corral(cached=True)
+a.show2()

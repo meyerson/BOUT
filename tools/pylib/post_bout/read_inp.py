@@ -28,7 +28,7 @@ def parse_inp(boutlist):
    if not boutlist:
       return 0
 
-   
+ 
    
    #boutdic={} unordered standard dict
    boutdic = OrderedDict()
@@ -49,7 +49,7 @@ def parse_inp(boutlist):
       if result is None:
          key,value = val.split("=")
          value = value.replace('\"','')
-         #print key,value
+         print current, key,value
 
          
          boutdic[current][key.strip()] = value.strip()
@@ -88,25 +88,25 @@ def read_log(path='.',logname='status.log'):
    print loglist
    #print loglist[len(loglist)-1] == 'last one\n'
    
-   last = loglist.pop().rstrip()
+   # last = loglist.pop().rstrip()
    
-   logdict['done'] = last == 'done'
+   # logdict['done'] = last == 'done'
 
-   if last == 'done':
-      logdict['current'] = loglist.pop().rstrip()
-      for i,val in enumerate(loglist):
-         print val
-         logdict['runs'].append(val.rstrip())
-      logdict['runs'].append(logdict['current'])
-   else:
-      logdict['current'] = last
-      logdict['runs'] = []
+  
+   logdict['current'] = loglist.pop().rstrip()
+   for i,val in enumerate(loglist):
+      print val
+      logdict['runs'].append(val.rstrip())
+      
+   logdict['runs'].append(logdict['current'])
+  
 
    #print logdict
    return logdict
    
 def metadata(inpfile='BOUT.inp',path ='.',v=False):    
     filepath = path+'/'+inpfile
+    print filepath
     inp = read_inp(path=path,boutinp=inpfile)
     inp = parse_inp(inp)
     
@@ -126,9 +126,12 @@ def metadata(inpfile='BOUT.inp',path ='.',v=False):
     #print IC
        
     evolved = []
+    ICscale = []
    
     fieldkeys = ['[Ni]','[jpar]','[Te]','[Ti]','[Vi]','[rho]']
     
+    defaultIC = float(inp['[All]'].get('scale',0.0))
+
     for section in inp.keys(): #loop over section keys 
        #print section
        if section in fieldkeys: #pick the relevant sections
@@ -138,7 +141,8 @@ def metadata(inpfile='BOUT.inp',path ='.',v=False):
           if inp[section].get('evolve','True').lower().strip() == 'true':
               print 'ok reading'
               evolved.append(section.strip('[]'))
-        
+              ICscale.append(float(inp[section].get('scale',defaultIC)))
+             
            
    
 
@@ -164,6 +168,7 @@ def metadata(inpfile='BOUT.inp',path ='.',v=False):
           return metaString
     
     meta['evolved'] = ValUnit(evolved,'')
+    meta['IC']= np.array(ICscale)
     d = {}
 
     # read meta data from .inp file
@@ -174,12 +179,18 @@ def metadata(inpfile='BOUT.inp',path ='.',v=False):
               d[elem] = np.array(ToFloat(inp[section][elem]))
               
     #read in some values from the grid(IC) and scale them as needed
-    norms = {'Ni0':ValUnit(1.e-14,'cm^-3'),'bmag':ValUnit(1.0e4,'gauss'),'Ni_x':ValUnit(1.e-14,'cm^-3'),'Te_x':ValUnit(1.0,'eV'),'Ti_x':ValUnit(1.0,'eV'),'Rxy':ValUnit(1,'m'),'Bxy':ValUnit(1.0e4,'gauss'),'Bpxy':ValUnit(1.0e4,'gauss'),'dlthe':ValUnit(1,'m')}
+    norms = {'Ni0':ValUnit(1.e14,'cm^-3'),'bmag':ValUnit(1.0e4,'gauss'),
+             'Ni_x':ValUnit(1.e14,'cm^-3'),
+             'Te_x':ValUnit(1.0,'eV'),'Ti_x':ValUnit(1.0,'eV'),'Rxy':ValUnit(1,'m'),
+             'Bxy':ValUnit(1.0e4,'gauss'),'Bpxy':ValUnit(1.0e4,'gauss'),
+             'dlthe':ValUnit(1,'m'),'dx':ValUnit(1,'m'),'hthe0':ValUnit(1,'m')}
 
     for elem in norms.keys():
        #print 'elem: ',elem
        meta[elem] = ValUnit(IC.variables[elem][:]*norms[elem].v,norms[elem].u)
        d[elem] = np.array(IC.variables[elem][:]*norms[elem].v)
+    
+  
 
     #if case some values are missing   
     default = {'bmag':1,'Ni_x':1,'NOUT':100,'TIMESTEP':1,'MZ':32,'AA':1,'Zeff':1}
@@ -189,11 +200,14 @@ def metadata(inpfile='BOUT.inp',path ='.',v=False):
        meta[elem] = default[elem]
        d[elem] = np.array(default[elem])
 
-    ny,nx  = d['Rxy'].shape
+    nx,ny  = d['Rxy'].shape
     #compute some quantities that are usefull
         
     print meta['AA'].v
     
+
+    meta['nx'] = nx
+    meta['ny']= ny
     meta['dt'] = meta['TIMESTEP'] 
     
     meta['rho_s'] = ValUnit(1.02e2*np.sqrt(d['AA']*d['Te_x'])/(d['ZZ']* d['bmag']),'cm')   # ion gyrorad at T_e, in cm 
@@ -218,12 +232,11 @@ def metadata(inpfile='BOUT.inp',path ='.',v=False):
     
     meta['nueix']     = 2.91e-6*d['Ni_x']*meta['lambda_ei']/d['Te_x']**1.5 #
     meta['nuiix']     = 4.78e-8*d['ZZ']**4.*d['Ni_x']*meta['lambda_ii']/d['Ti_x']**1.5/np.sqrt(d['AA']) #
-    #meta['nu_hat']    = meta['Zeff']['v']*meta['nueix']/meta['wci'] 
+    meta['nu_hat']    = meta['Zeff'].v*meta['nueix']/meta['wci'] 
     
     meta['L_d']      = 7.43e2*np.sqrt(d['Te_x']/d['Ni_x'])
     meta['L_i_inrt']  = 2.28e7*np.sqrt(d['AA']/d['Ni_x'])/ d['ZZ'] #ion inertial length in cm
     meta['L_e_inrt']  = 5.31e5*np.sqrt(d['Ni_x']) #elec inertial length in cm
-    
     
     meta['Ve_x'] = 4.19e7*d['Te_x']
 
@@ -231,17 +244,30 @@ def metadata(inpfile='BOUT.inp',path ='.',v=False):
     meta['R0'] =  (d['Rxy'].max()+d['Rxy'].min())/2.0 
     
  
+    print d['Rxy'].mean(1) 
+    print d['ZMAX']
+    print  d['ZMIN'] 
     meta['L_z'] = 1e2 * 2*np.pi * d['Rxy'].mean(1) *(d['ZMAX'] - d['ZMIN']) # in cm toroidal range
-    
+    meta['dz'] = (d['ZMAX'] - d['ZMIN'])
  
     meta['lbNorm']=meta['L_z']*(d['Bpxy']/d['Bxy']).mean(1)     #-binormal coord range [cm]
     
     
     #meta['zPerp']=np.array(meta['lbNorm']).mean*np.array(range(d['MZ']))/(d['MZ']-1) 
+  #let's calculate some profile properties
+    dx = np.gradient(d['Rxy'])[0]
+    meta['L'] = 1e2*dx*(meta['Ni0'].v)/np.gradient(meta['Ni0'].v)[0]/meta['rho_s'].v
 
+    AA = meta['AA'].v
+    ZZ = d['ZZ']
+    Te_x = d['Te_x']
+    Ti_x = d['Ti_x']
+    fmei = meta['fmei'].v
     
-    meta['lpar']=1e2*(d['Bxy']/d['Bpxy']).mean(1)*d['dlthe'].mean(1) #function of x
-    
+    meta['lpar'] =1e2*((d['Bxy']/d['Bpxy'])*d['dlthe']).sum(1)/meta['rho_s'].v #-[normed], average over flux surfaces, parallel length
+    #meta['lpar']=1e2*(d['Bxy']/d['Bpxy']).mean(1)*d['dlthe'].mean(1) #function of x
+    meta['sig_par'] = 1.0/(fmei*0.51*meta['nu_hat'])
+    #meta['heat_nue'] = ((2*np.pi/meta['lpar'])**2)/(fmei*meta['nu_hat'])
     #kz_e = kz_i*(rho_e/rho_i)
     # kz_s = kz_i*(rho_s/rho_i)
     # kz_i = (TWOPI/L_z)*(indgen((*current_str).fft.nz+1))*rho_i
