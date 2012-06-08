@@ -54,3 +54,10 @@ Icon?
 ehthumbs.db
 Thumbs.db
 \#*\#
+
+#############some subjective choices here###
+examples/*/*.pdf
+examples/*/*.nc
+tools/cyl_and_helimak_grids/*.nc
+tools/pylib/py_try*
+tools/pylib/post_bout_TACC/
