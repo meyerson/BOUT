@@ -1,0 +1,77 @@
+from pb_plot import LinResDraw
+from pb_present import LinResPresent
+
+
+import numpy as np
+
+import post_bout_TACC as pb
+from pb_present import LinResPresent
+a = pb.corral(refresh=False,IConly=0,debug=True)
+y = LinResPresent(a.db)
+y.show()
+
+
+import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.backends.backend_pdf import PdfPages
+
+pp = PdfPages('modes.pdf')
+z.plottheory(pp)
+pp.close()
+
+
+z = a.model(plot=True)
+
+a.show2()
+
+field='Ni'
+
+s = pb.subset(a.db,'field',['Ni'])
+modelist = []
+q=1
+[modelist.append([q,p+1]) for p in range(7)]	
+s = pb.subset(s.db,'mn',modelist)
+
+y = np.array(ListDictKey(s.db,'gamma')) 
+
+z = np.linspace(0,10,11)
+z = np.repeat(z,5) #nt x nr
+z_b = np.roll(z,1,axis=0) #forward
+z_f = np.roll(z,-1,axis=0) #forward
+z = z.reshape(11,5)
+x = np.where(z > 5)
+,debug=True)
+cached=True,debug=True,IConly=0,logname='status_eig.log')
+a.show2()
+
+import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.backends.backend_pdf import PdfPages
+
+pp = PdfPages('modes.pdf')
+s = a.plotmodes(pp,yscale='linear')
+s = a.plotmodes(pp,yscale='log')
+pp.close()
+
+
+pp = PdfPages('radeig.pdf')
+
+s = a.plotradeigen(pp,yscale = 'linear')
+s = a.plotradeigen(pp,yscale='log')
+pp.close()
+
+pp = PdfPages('modes.pdf')
+s = a.plotmodes(pp,yscale='linear')
+s = a.plotmodes(pp,yscale='log')
+pp.close()
+ 
+
+
+s = a.pltexpr2(pp,field='rho')
+s = a.pltexpr2(pp,field='Vi')
+s = a.pltexpr2(pp,colorscale='linear')
+pp.close()
+
+
