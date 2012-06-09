@@ -2,7 +2,7 @@
  * 2-fluid equations
  * Same as Maxim's version of BOUT - simplified 2-fluid for benchmarking
  *******************************************************************************/
-
+#include <python2.6/Python.h>
 #include <bout.hxx>
 #include <boutmain.hxx>
 
@@ -14,21 +14,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
 // 2D initial profiles
 Field2D Ni0, Ti0, Te0, Vi0, phi0, Ve0, rho0, Ajpar0;
-Vector2D b0xcv; // for curvature terms
+Vector2D b0xcv, b0,B0; // for curvature terms
 
 // 3D evolving fields
 Field3D rho, Te, Ni, Ajpar, Vi, Ti;
 
-// Derived 3D variables
+//Flux                                                                         
+Vector3D Gamma,vEB;
+
+
+// Derived 3D variablesr
 Field3D phi, Apar, Ve, jpar;
 
 // Non-linear coefficients
 Field3D nu, mu_i, kapa_Te, kapa_Ti;
 
 // 3D total values
-Field3D Nit, Tit, Tet, Vit;
+Field3D Nit, Tit, Tet, Vit,rhot;
 
 // pressures
 Field3D pei, pe;
@@ -45,8 +50,14 @@ BoutReal beta_p;
 
 // settings
 bool estatic, ZeroElMass; // Switch for electrostatic operation (true = no Apar)
+
+bool minusDC,plusDC;
+bool nonlinear;
+
+
 BoutReal zeff, nu_perp;
 bool evolve_rho, evolve_te, evolve_ni, evolve_ajpar, evolve_vi, evolve_ti;
+bool transport;
 BoutReal ShearFactor;
 
 int phi_flags, apar_flags; // Inversion flags
@@ -77,8 +88,8 @@ int physics_init(bool restarting)
   GRID_LOAD(Ajpar0);
 
   // Load magnetic curvature term
-  b0xcv.covariant = false; // Read contravariant components
-  mesh->get(b0xcv, "bxcv"); // b0xkappa terms
+  //b0xcv.covariant = false; // Read contravariant components
+  //mesh->get(b0xcv, "bxcv"); // b0xkappa terms
 
   // Load metrics
   GRID_LOAD(Rxy);
@@ -112,6 +123,11 @@ int physics_init(bool restarting)
   OPTION(options, nu_perp,     0.0);
   OPTION(options, ShearFactor, 1.0);
   
+  OPTION(options, minusDC, false);
+  OPTION(options, plusDC, false);
+  OPTION(options,nonlinear,false);
+  OPTION(options,transport,true);
+  
   OPTION(options, phi_flags,   0);
   OPTION(options, apar_flags,  0);
   
@@ -127,10 +143,12 @@ int physics_init(bool restarting)
 
   /************* SHIFTED RADIAL COORDINATES ************/
 
-  if(mesh->ShiftXderivs) {
+  /* if(mesh->ShiftXderivs) {
     ShearFactor = 0.0;  // I disappears from metric
+    b0xcv.toContravariant();
     b0xcv.z += I*b0xcv.x;
   }
+  */
 
   /************** CALCULATE PARAMETERS *****************/
 
@@ -185,9 +203,9 @@ int physics_init(bool restarting)
   Vi0 /= Vi_x;
 
   // Normalise curvature term
-  b0xcv.x /= (bmag/1e4);
-  b0xcv.y *= rho_s*rho_s;
-  b0xcv.z *= rho_s*rho_s;
+  //b0xcv.x /= (bmag/1e4);
+  //b0xcv.y *= rho_s*rho_s;
+  //b0xcv.z *= rho_s*rho_s;
   
   // Normalise geometry 
   Rxy /= rho_s;
@@ -223,6 +241,22 @@ int physics_init(bool restarting)
   mesh->g_23 = Btxy*hthe*Rxy/Bpxy;
 
   mesh->geometry();
+  
+  B0.y = 1.0/mesh->J;
+  B0.z = 0;
+  B0.x = 0;
+  B0.covariant = false;
+  
+  b0 = B0/abs(B0);
+
+  b0xcv = b0 ^ V_dot_Grad(b0,b0);
+
+
+  if(mesh->ShiftXderivs) {
+    ShearFactor = 0.0;  // I disappears from metric
+    b0xcv.toContravariant();
+    b0xcv.z += I*b0xcv.x;
+  }
   
   /**************** SET EVOLVING VARIABLES *************/
 
@@ -281,6 +315,12 @@ int physics_init(bool restarting)
   // add extra variables to communication
   comms.add(phi);
   comms.add(Apar);
+  
+  if(transport) {
+    dump.add(Gamma.x,"Gammax",1);
+    dump.add(Gamma.y,"Gammay",1);
+    dump.add(Gamma.z,"Gammaz",1);
+  }
 
   // Add any other variables to be dumped to file
   dump.add(phi,  "phi",  1);
@@ -296,6 +336,8 @@ int physics_init(bool restarting)
   dump.add(Ni_x,  "Ni_x", 0);
   dump.add(rho_s, "rho_s", 0);
   dump.add(wci,   "wci", 0);
+
+  dump.add(Nit, "Nit", 0);
   
   return(0);
 }
@@ -318,13 +360,25 @@ int physics_run(BoutReal t)
 
   // Communicate variables
   mesh->communicate(comms);
+ 
+ 
 
 
   // Update profiles
-  Nit = Ni0;  //+ Ni.DC();
+  Nit = Ni0;// + Ni.DC();
   Tit = Ti0; // + Ti.DC();
   Tet = Te0; // + Te.DC();
-  Vit = Vi0; // + Vi;
+  Vit = Vi0;// + Vi.DC();
+  rhot = rho0;
+  
+  if(plusDC) {
+    Nit += Ni.DC();
+    Tit += Ti.DC();
+    Tet += Te.DC();
+    Vit += Vi.DC();
+    rhot += rho.DC();
+  }
+  
 
   // Update non-linear coefficients on the mesh
   nu      = nu_hat * Nit / (Tet^1.5);
@@ -340,19 +394,6 @@ int physics_run(BoutReal t)
     // Set jpar,Ve,Ajpar neglecting the electron inertia term
     jpar = ((Te0*Grad_par(Ni, CELL_YLOW)) - (Ni0*Grad_par(phi, CELL_YLOW)))/(fmei*0.51*nu);
 
-    /*
-    for(int jx=MXG;jx<mesh->ngx-MXG;jx++) {
-      for(int jy=MYG;jy<mesh->ngy-MYG;jy++) {
-	for(int jz=0;jz<mesh->ngz;jz++) {
-	  jpar[jx][jy][jz] = ( (Te0[jx][jy] * (Ni[jx][jy+1][jz] - Ni[jx][jy][jz]))
-			       - (Ni0[jx][jy] * (phi[jx][jy+1][jz] - phi[jx][jy][jz])) )
-	    / (fmei * 0.51 * nu[jx][jy][jz] * dy[jx][jy] * sqrt(mesh->g_22[jx][jy]));
-			       
-	}
-      }
-    }
-    */
-
     // Set boundary conditions on jpar (in BOUT.inp)
     jpar.applyBoundary();
     
@@ -366,38 +407,59 @@ int physics_run(BoutReal t)
     Ve = Ajpar + Apar;
     jpar = Ni0*(Vi - Ve);
   }
+  //Flux                                                                             
+  if(transport) {
+    vEB = (B0^Grad(phi))/(mesh->Bxy^2);
+    Gamma = vEB*Ni;
+  }
 
   // DENSITY EQUATION
 
   ddt(Ni) = 0.0;
   if(evolve_ni) {
-    ddt(Ni) -= vE_Grad(Ni0, phi);
+ 
+    //ddt(Ni) -= vE_Grad(Ni, phi0);
+    ddt(Ni) -= vE_Grad(Ni0, phi);// + vE_Grad(Ni, phi);
+    //Ni = vE_Grad(Ni0, phi);
+    //ddt(Ni) -= Vpar_Grad_par(Ve, Ni0) + Vpar_Grad_par(Ve0, Ni);// + Vpar_Grad_par(Ve, Ni);
 
-    /*
-      ddt(Ni) -= vE_Grad(Ni, phi0) + vE_Grad(Ni0, phi) + vE_Grad(Ni, phi);
-      ddt(Ni) -= Vpar_Grad_par(Vi, Ni0) + Vpar_Grad_par(Vi0, Ni) + Vpar_Grad_par(Vi, Ni);
-      ddt(Ni) -= Ni0*Div_par(Vi) + Ni*Div_par(Vi0) + Ni*Div_par(Vi);
-      ddt(Ni) += Div_par(jpar);
-      ddt(Ni) += 2.0*V_dot_Grad(b0xcv, pe);
-      ddt(Ni) -= 2.0*(Ni0*V_dot_Grad(b0xcv, phi) + Ni*V_dot_Grad(b0xcv, phi0) + Ni*V_dot_Grad(b0xcv, phi));
-    */
+    //ddt(Ni) -= Ni0*Div_par(Ve) + Ni*Div_par(Ve0);
+    
+    //ddt(Ni) += Div_par(jpar);
+    //ddt(Ni) += (2.0)*V_dot_Grad(b0xcv, pe);
+    //ddt(Ni) -= (2.0)*(Ni0*V_dot_Grad(b0xcv, phi) + Ni*V_dot_Grad(b0xcv, phi0));
+    
+    
+    //ddt(Ni) += 10.0*(1.0/(mesh->ngz)) *Laplacian(Ni);
+    
+    if(minusDC) 
+      ddt(Ni) -= ddt(Ni).DC(); // REMOVE TOROIDAL AVERAGE DENSITY
+    
+    ddt(Ni) = lowPass(ddt(Ni),(mesh->ngz)/6);
+ 
   }
 
   // ION VELOCITY
 
   ddt(Vi) = 0.0;
   if(evolve_vi) {
-    ddt(Vi) -= vE_Grad(Vi0, phi) + vE_Grad(Vi, phi0) + vE_Grad(Vi, phi);
-    ddt(Vi) -= Vpar_Grad_par(Vi0, Vi) + Vpar_Grad_par(Vi, Vi0) + Vpar_Grad_par(Vi, Vi);
+    ddt(Vi) -= vE_Grad(Vi0, phi) + vE_Grad(Vi, phi0);//+ vE_Grad(Vi, phi);
+    //ddt(Vi) -= Vpar_Grad_par(Vi0, Vi) + Vpar_Grad_par(Vi, Vi0);// + Vpar_Grad_par(Vi, Vi);
     ddt(Vi) -= Grad_par(pei)/Ni0;
+    //ddt(Vi) -= Vpar_Grad_par(Ve0, Vi) + Vpar_Grad_par(Ve, Vi0);// + Vpar_Grad_par(Ve, Vi);
+   
+    
+    //ddt(Vi) += .001*(1.0/(mesh->ngz)) *Laplacian(Vi);
+    if(minusDC) 
+      ddt(Vi) -= ddt(Vi).DC();
   }
 
   // ELECTRON TEMPERATURE
 
   ddt(Te) = 0.0;
   if(evolve_te) {
-    ddt(Te) -= vE_Grad(Te0, phi) + vE_Grad(Te, phi0) + vE_Grad(Te, phi);
-    ddt(Te) -= Vpar_Grad_par(Ve, Te0) + Vpar_Grad_par(Ve0, Te) + Vpar_Grad_par(Ve, Te);
+    ddt(Te) -= vE_Grad(Te0, phi) + vE_Grad(Te, phi0);// + vE_Grad(Te, phi);
+    ddt(Te) -= Vpar_Grad_par(Ve, Te0) + Vpar_Grad_par(Ve0, Te);// + Vpar_Grad_par(Ve, Te);
     ddt(Te) += 1.333*Te0*( V_dot_Grad(b0xcv, pe)/Ni0 - V_dot_Grad(b0xcv, phi) );
     ddt(Te) += 3.333*Te0*V_dot_Grad(b0xcv, Te);
     ddt(Te) += (0.6666667/Ni0)*Div_par_K_Grad_par(kapa_Te, Te);
@@ -417,16 +479,16 @@ int physics_run(BoutReal t)
   // VORTICITY
 
   ddt(rho) = 0.0;
+  
   if(evolve_rho) {
-    /*
-    ddt(rho) -= vE_Grad(rho0, phi) + vE_Grad(rho, phi0) + vE_Grad(rho, phi);
-    ddt(rho) -= Vpar_Grad_par(Vi, rho0) + Vpar_Grad_par(Vi0, rho) + Vpar_Grad_par(Vi, rho);
-    */
+      
+    ddt(rho) -= vE_Grad(rho0, phi) + vE_Grad(rho, phi0);//+ vE_Grad(rho, phi);
+    //ddt(rho) += 2.0*mesh->Bxy*V_dot_Grad(b0xcv, pei);
+ 
+    //ddt(rho) -= Vpar_Grad_par(Vi, rho0) + Vpar_Grad_par(Vi0, rho);// + Vpar_Grad_par(Vi, rho);
     
-    //ddt(rho) += 2.0*Bnorm*V_dot_Grad(b0xcv, pei);
-
     ddt(rho) += mesh->Bxy*mesh->Bxy*Div_par(jpar, CELL_CENTRE);
-
+    
     /*
     for(int jx=MXG;jx<mesh->ngx-MXG;jx++) {
       for(int jy=MYG;jy<mesh->ngy-MYG;jy++) {
@@ -436,8 +498,14 @@ int physics_run(BoutReal t)
       }
     }
     */
-
-    //ddt(rho) += 1e-2 * mu_i * Laplacian(rho);
+    //output.write("mesh->dz)^2: %e \n",(mesh->dz)^2);
+    //ddt(rho) += 10*(1.0/(mesh->ngz)) * (1.0/(mesh->ngz))*Laplacian(rho);
+    //ddt(rho) += Laplacian(rho);
+     if(minusDC) 
+       ddt(rho) -= ddt(rho).DC();
+     
+     ddt(rho) += 1e1 * mu_i * Laplacian(rho);
+     ddt(rho) = lowPass(ddt(rho),(mesh->ngz)/6);
   }
   
 
@@ -468,6 +536,155 @@ int physics_run(BoutReal t)
   return(0);
 }
 
+//try to do some primitv post-processing automatically 
+/*
+void process_expression(char* filename,
+                        int num,
+                        char** exp)
+{
+    FILE*       exp_file;
+
+    // Initialize a global variable for
+    // display of expression results
+    PyRun_SimpleString("x = 0");
+
+    // Open and execute the file of
+    // functions to be made available
+    // to user expressions
+    exp_file = fopen(filename, "r");
+    PyRun_SimpleFile(exp_file, exp);
+
+    // Iterate through the expressions
+    // and execute them
+    while(num--) {
+        PyRun_SimpleString(*exp++);
+        PyRun_SimpleString("print x");
+    }
+}
+*/
+
+ 
+int py_try(int argc, char *argv[])
+{
+
+  int rank, size,i;
+
+  PyObject *pName, *pModule, *pDict, *pFunc,*pDir;
+  PyObject *pArgs, *pValue;
+
+  PyObject *sys_path; 
+  PyObject *path,*path1, *path2, *path3; 
+
+  
+  rank = MPI::COMM_WORLD.Get_rank();
+  size = MPI::COMM_WORLD.Get_size();
+   
+  // we can run serial code on the master node . . .
+  if (rank == 0)
+    {  
+
+      printf("Running on processor %d \n",rank);
+      Py_Initialize();
+      
+      PyRun_SimpleString("from time import time,ctime\n"
+			 "print 'Today is',ctime(time())\n");
+
+      FILE *fp = fopen("/home/cryosphere/BOUT/tools/pylib/py_try4.py","r+");
+      
+      sys_path = PySys_GetObject("path"); 
+      if (sys_path == NULL) 
+	return NULL; 
+      path = PyString_FromString("/home/cryosphere/BOUT/tools/pylib/post_bout");
+      if (path == NULL) 
+	return NULL; 
+      if (PyList_Append(sys_path, path) < 0) 
+	return NULL; 
+      Py_DECREF(path);
+      
+    
+     
+      PyRun_SimpleString("from time import time,ctime\n"
+			 "print 'Today is',ctime(time())\n");
+     
+
+      pName = PyString_FromString(argv[0]); //module name
+      
+      output.write("pName: %s \n", argv[0]);
+
+      pModule = PyImport_ImportModule(argv[0]);
+      PyObject *m_pDict = PyModule_GetDict(pModule); 
+   
+      Py_DECREF(pName);
+      		  
+      if (pModule != NULL) {
+	
+	pDir = PyObject_Dir(m_pDict);
+	
+	output.write(" PyList_Size(pDir): %i \n", PyList_Size(pDir));    
+	
+	pFunc = PyObject_GetAttrString(pModule,argv[1]); //single out a function from  a given module
+	/* pFunc is a new reference */
+	output.write("PyCallable_Check(pFunc): %i \n",PyCallable_Check(pFunc));
+
+	
+	if (pFunc && PyCallable_Check(pFunc)) {
+	  //parse the argument to pass to the python function
+	  if (argc == 3){
+	    if (argv[3] == NULL)
+	      pArgs = NULL;
+	  }
+	  else if(argc ==2)
+	    pArgs = NULL;
+	  else {
+	    pArgs = PyTuple_New(argc - 2);
+	    for (i = 0; i < argc - 2; ++i) {
+	      pValue = PyInt_FromLong(atoi(argv[i + 2]));
+	      if (!pValue) {
+		Py_DECREF(pArgs);
+		Py_DECREF(pModule);
+	      fprintf(stderr, "Cannot convert argument\n");
+	      return 1;
+	      }
+	      PyTuple_SetItem(pArgs, i, pValue);
+	    }
+	  }
+	  
+	  pValue = PyObject_CallObject(pFunc,pArgs);
+  
+	  if (pValue != NULL) {
+	    printf("Result of call: %ld\n", PyInt_AsLong(pValue));
+	    Py_XDECREF(pValue);
+	  }
+	  
+	  else {
+	    Py_XDECREF(pFunc);
+	    Py_XDECREF(pModule);
+	    PyErr_Print();
+	    fprintf(stderr,"Call failed\n");
+	    return 1;
+	  }
+	  Py_XDECREF(pFunc);
+	  Py_XDECREF(pModule); 
+	  
+	}//close if function ok
+	else {
+	  if (PyErr_Occurred())
+	    PyErr_Print();
+	  fprintf(stderr, "Cannot find function \"%s\"\n",argv[1]);
+        } //close if function not ok
+      } //close if module ok
+      else {
+        PyErr_Print();
+        fprintf(stderr, "Failed to load \"%s\"\n",argv[0]);
+        return 1; 
+      } //close if module not ok
+      Py_Finalize();
+    }// if cpu = 0
+  
+
+  
+  return 0;
+}
 /*******************************************************************************
  *                       FAST LINEAR FIELD SOLVERS
  *******************************************************************************/

@@ -177,7 +177,11 @@ class LinResDraw(LinRes):
       # else:
       #    legend(dzhandles,dzlabels,loc=3,prop={'size':6})
 
-        plt.yscale(yscale)
+        try:
+            plt.yscale(yscale)
+        except:
+            plt.yscale('symlog')
+            
         plt.xscale(xscale)
       #plt.savefig(pp, format='pdf')
         plt.xlabel(r'$k \rho_{ci}$',fontsize=18)
