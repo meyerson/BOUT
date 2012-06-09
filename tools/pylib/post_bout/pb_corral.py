@@ -1,12 +1,24 @@
 #! /usr/bin/env python
 # note - these commands are only run by default in interactive mode
-
+import os
 import sys
-sys.path.append('/home/cryosphere/pylib')
-sys.path.append('/home/cryosphere/BOUT/tools/pylib')
-sys.path.append('/home/cryosphere/BOUT/tools/pylib/boutdata')
-sys.path.append('/home/cryosphere/BOUT/tools/pylib/boututils')
-sys.path.append('/home/cryosphere/BOUT/tools/pylib/post_bout')
+try:
+    boutpath = os.environ['BOUT_TOP']
+    pylibpath = boutpath+'/pylib'
+    pbpath = pylibpath+'/post_bout'
+    boutdatapath = pylibpath+'/boutdata'
+    boututilpath = pylibpath+'/boututils'
+    
+    allpath = [boutpath,pylibpath,pbpath,boutdatapath,boututilpath]
+    [sys.path.append(elem) for elem in allpath]
+# sys.path.append('/home/cryosphere/pylib')
+# sys.path.append('/home/cryosphere/BOUT/tools/pylib')
+# sys.path.append('/home/cryosphere/BOUT/tools/pylib/boutdata')
+# sys.path.append('/home/cryosphere/BOUT/tools/pylib/boututils')
+# sys.path.append('/home/cryosphere/BOUT/tools/pylib/post_bout')
+except:
+   print 'unable to append needed .py files'
+
 sys.path.append('/usr/local/pylib')
 
 import post_bout as post_bout

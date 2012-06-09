@@ -1,8 +1,18 @@
 import sys
-sys.path.append('/home/cryosphere/BOUT/tools/pylib')
-sys.path.append('/home/cryosphere/BOUT/tools/pylib/boutdata')
-sys.path.append('/home/cryosphere/BOUT/tools/pylib/boututils')
-sys.path.append('/home/cryosphere/BOUT/tools/pylib/post_bout')
+import os
+
+try:
+    boutpath = os.environ['BOUT_TOP']
+    pylibpath = boutpath+'/pylib'
+    pbpath = pylibpath+'/post_bout'
+    boutdatapath = pylibpath+'/boutdata'
+    boututilpath = pylibpath+'/boututils'
+    
+    allpath = [boutpath,pylibpath,pbpath,boutdatapath,boututilpath]
+    [sys.path.append(elem) for elem in allpath]
+except:
+   print 'meh'
+
 import numpy as np
 
 
