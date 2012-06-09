@@ -12,18 +12,29 @@ import json
     #print list(sys.modules.keys())
 
 try:
-    sys.path.append('/home/cryosphere/BOUT/tools/pylib')
-    sys.path.append('/home/cryosphere/BOUT/tools/pylib/boutdata')
-    sys.path.append('/home/cryosphere/BOUT/tools/pylib/boututils')
-    sys.path.append('/home/cryosphere/BOUT/tools/pylib/post_bout_TACC')
+    boutpath = os.environ['BOUT_TOP']
+    pylibpath = boutpath+'/pylib'
+    pbpath = pylibpath+'/post_bout'
+    boutdatapath = pylibpath+'/boutdata'
+    boututilpath = pylibpath+'/boututils'
     
+    allpath = [boutpath,pylibpath,pbpath,boutdatapath,boututilpath]
+    # sys.path.append('/home/cryosphere/BOUT/tools/pylib')
+    # sys.path.append('/home/cryosphere/BOUT/tools/pylib/boutdata')
+    # sys.path.append('/home/cryosphere/BOUT/tools/pylib/boututils')
+    # sys.path.append('/home/cryosphere/BOUT/tools/pylib/post_bout')
+    #sys.path.append(allpath)
+    [sys.path.append(elem) for elem in allpath]
+    
+        
+
     #import gobject
     import numpy as np
     from ordereddict import OrderedDict
     from scipy.interpolate import interp2d,interp1d
     from boutdata import collect
 except ImportError:
-    print 'in post_bout_TACC/post_bout.py'
+    print 'in post_bout/post_bout.py'
 
     print "can't find the modules I need, you fail"
     sys.exit() #no point in going on
@@ -33,7 +44,7 @@ try:
     from boutdata import collect
     
 except:
-    print 'in post_bout_TACC/post_bout.py'
+    print 'in post_bout/post_bout.py'
     print "can't find bout related modules, you fail"
     sys.exit() #no point in going on, shoot yourself 
     
@@ -50,7 +61,7 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
          savemovie=False,IConly=0): 
     #lets collect the data
     print 'path :', path
-    print 'in post_bout_TACC/post_bout.save'
+    print 'in post_bout/post_bout.save'
     boutpath = path
 
     print path

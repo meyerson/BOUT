@@ -42,7 +42,7 @@ do
     echo $current_dir
     
     rm -r $current_dir
-    mkdir $current_dir
+    mkdir -p $current_dir
     
     rm -r $PWD/data_${lval}
     #mkdir $PWD/data_${lval}

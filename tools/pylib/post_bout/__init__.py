@@ -15,7 +15,7 @@ try:
     sys.path.append('/home/cryosphere/BOUT/tools/pylib/boutdata')
     sys.path.append('/home/cryosphere/BOUT/tools/pylib/boututils')
     
-    print 'in post_bout_TACC/__init__.py'
+    print 'in post_bout/__init__.py'
     import matplotlib
     import gobject
     import numpy as np

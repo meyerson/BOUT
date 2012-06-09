@@ -6,10 +6,10 @@ sys.path.append('/home/cryosphere/pylib')
 sys.path.append('/home/cryosphere/BOUT/tools/pylib')
 sys.path.append('/home/cryosphere/BOUT/tools/pylib/boutdata')
 sys.path.append('/home/cryosphere/BOUT/tools/pylib/boututils')
-sys.path.append('/home/cryosphere/BOUT/tools/pylib/post_bout_TACC')
+sys.path.append('/home/cryosphere/BOUT/tools/pylib/post_bout')
 sys.path.append('/usr/local/pylib')
 
-import post_bout_TACC as post_bout
+import post_bout as post_bout
 from ListDict import ListDictKey, ListDictFilt
 from read_inp import parse_inp, read_inp, read_log
 from basic_info import weighted_avg_and_std

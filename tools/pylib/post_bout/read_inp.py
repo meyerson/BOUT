@@ -193,7 +193,8 @@ def metadata(inpfile='BOUT.inp',path ='.',v=False):
   
 
     #if case some values are missing   
-    default = {'bmag':1,'Ni_x':1,'NOUT':100,'TIMESTEP':1,'MZ':32,'AA':1,'Zeff':1}
+    default = {'bmag':1,'Ni_x':1,'NOUT':100,'TIMESTEP':1,
+               'MZ':32,'AA':1,'Zeff':ValUnit(1,'')}
     diff = set(default.keys()).difference(set(d.keys()))
        
     for elem in diff:
