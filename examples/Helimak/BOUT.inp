@@ -13,7 +13,7 @@
 NOUT = 100       # number of time-steps
 #TIMESTEP = 5e3   # time between outputs
 #TIMESTEP = .00010
-TIMESTEP = 1e2
+TIMESTEP = 5e2
 
 archive = 300
 
@@ -31,6 +31,8 @@ MYG = 2
 
 NXPE = 1
 NYPE = 4
+
+StaggeredGrids = True
 
 #grid="uedge.grd_std.cdl"
 #grid="fix_grid.cdl"
@@ -59,13 +61,13 @@ upwind = U1
 
 first = C2
 second = C2
-upwind = U1
+upwind = C2
 
 [ddz]
 
 first = C2
 second = C2
-upwind = U1
+upwind = C2
 ##################################################
 # Solver settings
 
@@ -75,7 +77,7 @@ type = cvode
 #ATOL = 1.0e-12 # absolute tolerance
 #RTOL = 1.0e-7  # relative tolerance
 ATOL = 1.0e-12 # absolute tolerance
-RTOL = 1.0e-9  # relative tolerance
+RTOL = 1.0e-8  # relative tolerance
 use_precon = no
 	  
 pvode_mxstep = 15000

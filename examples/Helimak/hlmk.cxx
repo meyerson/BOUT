@@ -382,7 +382,7 @@ int physics_run(BoutReal t)
   if(evolve_ni) {
  
     ddt(Ni) -= vE_Grad(Ni, phi0) + vE_Grad(Ni0, phi);// + vE_Grad(Ni, phi);
-    ddt(Ni) -= Vpar_Grad_par(Ve, Ni0) + Vpar_Grad_par(Ve0, Ni);// + Vpar_Grad_par(Ve, Ni);
+    //ddt(Ni) -= Vpar_Grad_par(Ve, Ni0) + Vpar_Grad_par(Ve0, Ni);// + Vpar_Grad_par(Ve, Ni);
 
     
     //ddt(Ni) -= Ni0*Div_par(Ve) + Ni*Div_par(Ve0);// + Ni*Div_par(Vi);
@@ -444,7 +444,7 @@ int physics_run(BoutReal t)
   
   if(evolve_rho) {
       
-    ddt(rho) -= vE_Grad(rho0, phi) + vE_Grad(rho, phi0);//+ vE_Grad(rho, phi);
+    //ddt(rho) -= vE_Grad(rho0, phi) + vE_Grad(rho, phi0);//+ vE_Grad(rho, phi);
     ddt(rho) += 2.0*mesh->Bxy*V_dot_Grad(b0xcv, pei);
   /*
       ddt(rho) -= Vpar_Grad_par(Vi, rho0) + Vpar_Grad_par(Vi0, rho);// + Vpar_Grad_par(Vi, rho);

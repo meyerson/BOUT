@@ -4,7 +4,7 @@ import os
 import sys
 try:
     boutpath = os.environ['BOUT_TOP']
-    pylibpath = boutpath+'/pylib'
+    pylibpath = boutpath+'tools/pylib'
     pbpath = pylibpath+'/post_bout'
     boutdatapath = pylibpath+'/boutdata'
     boututilpath = pylibpath+'/boututils'

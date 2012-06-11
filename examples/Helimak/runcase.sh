@@ -32,18 +32,24 @@ rm -rf data*
 #llist=(0.10 -0.10 )
 
 current_dir=$PWD
-data_dir='/tmp/hmlk'
+data_dir='/tmp/hlmk'
 
 
-llist=(0.10)
-rm status.log
+#llist=(0.10)
+
+NOUTS=(100 100 100 200 200 200 200 100)
+tstep=(1e2 1e2 1e2 1e2 1e2 1e2 1e2 1e2)
+
+llist=(1 1e-1 1e-2 1e-3)
+
+#rm status.log
 i=0
 for lval in ${llist[@]}
 do
   mkdir data_${lval}
   ln -s data_${lval} data
   
-  current_dir=$data_dir/data_short_${lval}
+  current_dir=$data_dir/data_simp_${lval}
   echo $current_dir
     
   rm -r $current_dir
@@ -55,6 +61,10 @@ do
   cp hlmk.cxx   $current_dir/hlmk.cxx.ref
 
   cp hlmk.cxx   $PWD/data_${lval}/hlmk.cxx.ref
+
+  sed "s/ZMAX = 1/ZMAX = ${lval}/g" BOUT.inp > temp.inp
+  sed "s/NOUT = 100/NOUT = ${NOUTS[$i]}/g" temp.inp > temp2.inp
+  sed "s/TIMESTEP = 5e2/TIMESTEP =  ${tstep[$i]}/g" temp2.inp > $current_dir/BOUT.inp
 
 #  cp hlmk.cxx data/2fluid.cxx.ref
  # cp hlmk.cxx data/hlmk.cxx.ref #copy the source code for easy reference
@@ -68,7 +78,7 @@ do
       #sed "s/TIMESTEP = 5e3/TIMESTEP = 1e3/g" data/BOUT.inp > data/tmp
       #mv -f data/tmp data/BOUT.inp
   #fi
-  cp BOUT.inp $current_dir/BOUT.inp
+  #cp BOUT.inp $current_dir/BOUT.inp
   echo "$((i++))"  
   
   $MPIEXEC $NP ./hlmk -d $current_dir

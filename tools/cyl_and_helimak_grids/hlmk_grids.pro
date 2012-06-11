@@ -114,7 +114,7 @@ pro hlmk_grids,full=full,Lc = Lc, $
                   ti_profile_type = ti_profile_type,phi_profile_type = phi_profile_type,$            
                   slope_te = slope_te, slope_ti = slope_ti,$
                   slope_n = slope_n,lam_n = lam_n
-     read_uedata3, /s, d, /noref, /NOPLOTS,filename = filename
+     read_uedata3, /s, d, /noref, /NOPLOTS,/nopdb,filename = filename
      spawn,"rm *.pdb"
 
   endfor
