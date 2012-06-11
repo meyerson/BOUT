@@ -37,6 +37,7 @@ do
   mkdir data_${lval}
   ln -s data_${lval} data
   
+  cp hlmk.cxx data/2fluid.cxx.ref
   cp hlmk.cxx data/hlmk.cxx.ref #copy the source code for easy reference
   #cp  data_${lval}/* data #copy the simulation data from the first part of the run
   

@@ -54,8 +54,7 @@
 #include "datafile.hxx"
 
 #include "where.hxx"
-
-
+#include "callPy.hxx"
 
 const BoutReal BOUT_VERSION = 1.0;  ///< Version number
 
@@ -79,7 +78,7 @@ int bout_init(int argc, char **argv);
 int bout_finish();
 
 //post processing with python
-int py_try(int argc, char *argv[]);
+//int callPy(int argc, char *argv[]);
 
 
 #ifndef GLOBALORIGIN

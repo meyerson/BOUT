@@ -73,7 +73,7 @@ do
     #echo "scale=10; 4*$lval*100000.0" | bc -l > ltime
     
     
-    #for smaller domains we need to cut down the timestep
+    #for slower growing domains we need to up the timestep
   
     cp 2fluid.cxx   $current_dir/2fluid.cxx.ref
     cp 2fluid.cxx   $PWD/data_${lval}/2fluid.cxx.ref

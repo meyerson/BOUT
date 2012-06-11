@@ -59,6 +59,8 @@ static char help[] = "BOUT++: Uses finite difference methods to solve plasma flu
 #include <boutmesh.hxx>
 #include <boutexception.hxx>
 #include <optionsreader.hxx>
+#include <callPy.hxx>
+
 
 #include <boundary_factory.hxx>
 #include <boundary_standard.hxx>
@@ -428,7 +430,7 @@ int bout_run()
     strcpy(cpy_str,data_dir);
     char* pbinput [3] = {"post_bout","save",cpy_str};
     ///char* pbinput [3] = {"post_bout","save",strcat(path_key,data_dir)};
-    pbstatus = py_try(3,pbinput); 
+    pbstatus = callPy(3,pbinput); 
   }catch(BoutException *e) {
     output << "Error encountered during post-processing\n";
     output << e->what() << endl;
