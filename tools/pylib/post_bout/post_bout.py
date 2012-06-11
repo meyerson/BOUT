@@ -13,7 +13,7 @@ import json
 
 try:
     boutpath = os.environ['BOUT_TOP']
-    pylibpath = boutpath+'/pylib'
+    pylibpath = boutpath+'/tools/pylib'
     pbpath = pylibpath+'/post_bout'
     boutdatapath = pylibpath+'/boutdata'
     boututilpath = pylibpath+'/boututils'
@@ -25,14 +25,19 @@ try:
     # sys.path.append('/home/cryosphere/BOUT/tools/pylib/post_bout')
     #sys.path.append(allpath)
     [sys.path.append(elem) for elem in allpath]
-    
+    print sys.path
         
 
     #import gobject
     import numpy as np
+    print 'in post_bout/post_bout.py'
     from ordereddict import OrderedDict
+    print 'in post_bout/post_bout.py'
     from scipy.interpolate import interp2d,interp1d
+    
     from boutdata import collect
+
+    
 except ImportError:
     print 'in post_bout/post_bout.py'
 
