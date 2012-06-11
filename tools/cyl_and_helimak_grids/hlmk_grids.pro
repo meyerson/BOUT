@@ -9,7 +9,7 @@ pro hlmk_grids,full=full,Lc = Lc, $
                grid_size= N,Te0 = Te0,Ti0 = Ti0,$
                narrow= narrow,simple = simple,$
                small_y_res=small_y_res,$
-               name= name,local_r = local_r
+               name= name,local_r = local_r,gridname=gridname
   
   ;to avoid making this thing too general I will myself to 
   ;assuming that this script will simply allow the user to tweak
@@ -26,6 +26,7 @@ pro hlmk_grids,full=full,Lc = Lc, $
      ti_profile_type=0
      te_profile_type=0
      phi_profile_type = 0
+     N = 5
   endif
   
   if keyword_set(narrow) then begin
@@ -40,6 +41,8 @@ pro hlmk_grids,full=full,Lc = Lc, $
   
                                 ;bphi is typically fixed
   if not keyword_set(bphi0)then bphi0 = .1
+  
+  if not keyword_set(gridname) then gridname = 'Helimak' 
   
                                 ;Bz0 specification overides Lc
   if not keyword_set(Bz0) then begin
@@ -73,10 +76,10 @@ pro hlmk_grids,full=full,Lc = Lc, $
 
   ;local r modes only
   if keyword_set(local_r) then begin
-     Nr =  2 + 4
+     Nr =  1 + 4
      Nz = 2^(N)
   endif
-  temp = ["Helimak_",string(Nr-4),"x",string(Nz),"_",string(Lc),".nc"]
+  temp = [gridname+"_",string(Nr-4),"x",string(Nz),"_",string(Lc),".nc"]
 
   if (not keyword_set(filename)) then filename = strcompress(strjoin(temp),/remove_all)
 

@@ -41,7 +41,7 @@ StaggeredGrids = True
 #grid = "helimak_narrow.nc"
 #grid = "Helimak_32x32_0.10.nc"
 #grid = "../Helimak/Ln/Helimak_32x32_0.10.nc"
-grid = "/home/cryosphere/BOUT-0.8/helimak_grids/local_r_1x128/Helimak_1x128_0.10_lam_n.nc"
+grid = "/home/cryosphere/BOUT-0.8/helimak_grids/local_r_1x64/Helimak_1x128_0.10_lam_n.nc"
 
 
 dump_format = "nc" # Output format. nc = NetCDF
