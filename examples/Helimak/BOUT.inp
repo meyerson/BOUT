@@ -10,10 +10,10 @@
 ##################################################
 # settings used by the core code
 
-NOUT = 300       # number of time-steps
+NOUT = 100       # number of time-steps
 #TIMESTEP = 5e3   # time between outputs
 #TIMESTEP = .00010
-TIMESTEP = 20.0
+TIMESTEP = 1e2
 
 archive = 300
 
@@ -70,12 +70,12 @@ upwind = U1
 # Solver settings
 
 [solver]
-
+type = cvode
 # mudq, mldq, mukeep, mlkeep preconditioner options
 #ATOL = 1.0e-12 # absolute tolerance
 #RTOL = 1.0e-7  # relative tolerance
-ATOL = 1.0e-9 # absolute tolerance
-RTOL = 1.0e-1  # relative tolerance
+ATOL = 1.0e-12 # absolute tolerance
+RTOL = 1.0e-9  # relative tolerance
 use_precon = no
 	  
 pvode_mxstep = 15000
@@ -120,7 +120,7 @@ apar_flags = 0 # flags for apar inversion
 # a section of that name.
 
 [All]
-scale = 1.0e-6 # default size of initial perturbations
+scale = 1.0e-8 # default size of initial perturbations
 
 # form of initial profile:
 # 0 - constant
@@ -129,10 +129,10 @@ scale = 1.0e-6 # default size of initial perturbations
 # 3 - Mix of mode numbers (like original BOUT)
 
 xs_opt = 0
-ys_opt = 5
-zs_opt = 5
+ys_opt = 2
+zs_opt = 3
 
-ys_mode = 10#
+ys_mode = 1#
 
 zs_mode = 1 # toroidal mode number
 
