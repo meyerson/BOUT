@@ -37,10 +37,13 @@ data_dir='/tmp/hlmk'
 
 #llist=(0.10)
 
-NOUTS=(100 100 100 200 200 200 200 100)
-tstep=(1e2 1e2 1e2 1e2 1e2 1e2 1e2 1e2)
+NOUTS=(200 200 20 200 200 200 200 200)
+tstep=(1e3 1e3 1e3 1e2 1e2 1e2 1e2 1e1)
 
-llist=(1 1e-1 1e-2 1e-3)
+llist=(1 1e-1 1e-2 1e-3 1e-5 1e-4)
+
+tstep=(1e2 1e2)
+llist=(1e-3 1e-4)
 
 #rm status.log
 i=0

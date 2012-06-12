@@ -56,6 +56,7 @@ int callPy(int argc, char *argv[])
       pName = PyString_FromString(argv[0]); //module name
       
       output.write("pName: %s \n", argv[0]);
+      output.write("path: %s \n", argv[2]);
 
       pModule = PyImport_ImportModule(argv[0]);
       PyObject *m_pDict = PyModule_GetDict(pModule); 
@@ -71,29 +72,33 @@ int callPy(int argc, char *argv[])
 	pFunc = PyObject_GetAttrString(pModule,argv[1]); //single out a function from  a given module
 	/* pFunc is a new reference */
 	output.write("PyCallable_Check(pFunc): %i \n",PyCallable_Check(pFunc));
-
+	
+	pValue = PyString_FromString(argv[2]);
+	pArgs = PyTuple_New(1);
+	PyTuple_SetItem(pArgs, 0, pValue);
 	
 	if (pFunc && PyCallable_Check(pFunc)) {
-	  //parse the argument to pass to the python function
-	  if (argc == 3){
-	    if (argv[3] == NULL)
-	      pArgs = NULL;
-	  }
-	  else if(argc ==2)
-	    pArgs = NULL;
-	  else {
-	    pArgs = PyTuple_New(argc - 2);
-	    for (i = 0; i < argc - 2; ++i) {
-	      pValue = PyInt_FromLong(atoi(argv[i + 2]));
-	      if (!pValue) {
-		Py_DECREF(pArgs);
-		Py_DECREF(pModule);
-	      fprintf(stderr, "Cannot convert argument\n");
-	      return 1;
-	      }
-	      PyTuple_SetItem(pArgs, i, pValue);
-	    }
-	  }
+	//   //parse the argument to pass to the python function
+	   if (argc == 3){
+	     if (argv[2] == NULL)
+	       pArgs = NULL;
+	   }
+	   else if(argc ==2)
+	     pArgs = NULL;
+	   else {
+	//     pArgs = PyTuple_New(argc - 2);
+	//     for (i = 0; i < argc - 2; ++i) {
+	//       //pValue = PyInt_FromLong(atoi(argv[i + 2]));
+	//       pValue = PyString_FromString(argv[i + 2]);
+	//       if (!pValue) {
+	// 	Py_DECREF(pArgs);
+	// 	Py_DECREF(pModule);
+	//       fprintf(stderr, "Cannot convert argument\n");
+	//       return 1;
+	//       }
+	//       PyTuple_SetItem(pArgs, i, pValue);
+	//     }
+	   }
 	  
 	  pValue = PyObject_CallObject(pFunc,pArgs);
   

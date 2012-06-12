@@ -381,7 +381,7 @@ int physics_run(BoutReal t)
   ddt(Ni) = 0.0;
   if(evolve_ni) {
  
-    ddt(Ni) -= vE_Grad(Ni, phi0) + vE_Grad(Ni0, phi);// + vE_Grad(Ni, phi);
+    ddt(Ni) -= vE_Grad(Ni0, phi) + vE_Grad(Ni, phi0);// + vE_Grad(Ni, phi);
     //ddt(Ni) -= Vpar_Grad_par(Ve, Ni0) + Vpar_Grad_par(Ve0, Ni);// + Vpar_Grad_par(Ve, Ni);
 
     
@@ -444,14 +444,16 @@ int physics_run(BoutReal t)
   
   if(evolve_rho) {
       
-    //ddt(rho) -= vE_Grad(rho0, phi) + vE_Grad(rho, phi0);//+ vE_Grad(rho, phi);
-    ddt(rho) += 2.0*mesh->Bxy*V_dot_Grad(b0xcv, pei);
+    ddt(rho) -= vE_Grad(rho0, phi) + vE_Grad(rho, phi0);//+ vE_Grad(rho, phi);
+    ddt(rho) += mesh->Bxy*mesh->Bxy*Div_par(jpar, CELL_CENTRE);
+    //ddt(rho) += 2.0*mesh->Bxy*V_dot_Grad(b0xcv, pei);
+    ddt(rho) = smooth_y(ddt(rho));
   /*
       ddt(rho) -= Vpar_Grad_par(Vi, rho0) + Vpar_Grad_par(Vi0, rho);// + Vpar_Grad_par(Vi, rho);
     
     
-
-    ddt(rho) += mesh->Bxy*mesh->Bxy*Div_par(jpar, CELL_CENTRE);
+      
+    
     */
     /*
     for(int jx=MXG;jx<mesh->ngx-MXG;jx++) {
@@ -469,7 +471,7 @@ int physics_run(BoutReal t)
        ddt(rho) -= ddt(rho).DC();
      
      //ddt(rho) += 1e-4 * mu_i * Laplacian(rho);
-     ddt(rho) = lowPass(ddt(rho),8);
+     //ddt(rho) = lowPass(ddt(rho),8);
   }
   
 

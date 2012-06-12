@@ -118,11 +118,14 @@ class LinResPresent(LinResDraw):
        s.plotgamma(pp,yscale='log',xscale='log',overplot=True)
        s.plotgamma(pp,yscale='log',xscale='log',field='rho')
       
-       s.plotfreq2(pp,xscale='log',yscale='linear',overplot=True)
-       s.plotfreq2(pp,xscale='log',yscale='symlog',overplot=True)
-       s.plotfreq2(pp,xscale='log',yscale='linear',field='rho')
+       try:
+          s.plotfreq2(pp,xscale='log',yscale='linear',overplot=True)
+          s.plotfreq2(pp,xscale='log',yscale='symlog',overplot=True)
+          s.plotfreq2(pp,xscale='log',yscale='linear',field='rho')
        
-       s.plotfreq2(pp,xscale='log',yscale='symlog')
+          s.plotfreq2(pp,xscale='log',yscale='symlog')
+       except:
+          print 'something terrible'
 
        s.plotradeigen(pp,yscale='linear')
        s.plotradeigen(pp,field ='Vi',yscale='linear')

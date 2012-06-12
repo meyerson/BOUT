@@ -42,12 +42,12 @@ llist=(1e-1 5e-1 5e-2 1e-2 1e-3 1e-4 1e-5 1e-6 1e-7)
 #tstep=(1e2 1e2 1e3)
 #tstep=(1e3 2e3)
 
-NOUTS=(20 200 200 200 200 200 200 100)
+NOUTS=(200 200 200 200 200 200 200 100)
 tstep=(1e2 1e2 1e2 1e2 1e2 1e2 1e2 1e2)
 
 llist=(5e-5 4e-4 2e-4 2e-5 8e-3 1e-3 5e-3)
 
-llist=(5e-5)
+#llist=(5e-5)
 # 4e-4 2e-4 2e-5 8e-3 1e-3 5e-3)
 #rm status.log
 rm run.log

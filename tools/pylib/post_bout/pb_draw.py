@@ -177,10 +177,14 @@ class LinResDraw(LinRes):
       # else:
       #    legend(dzhandles,dzlabels,loc=3,prop={'size':6})
 
+        
         try:
             plt.yscale(yscale)
         except:
-            plt.yscale('symlog')
+            try:
+                plt.yscale('symlog')
+            except:
+                print 'scaling failed'
             
         plt.xscale(xscale)
       #plt.savefig(pp, format='pdf')
@@ -238,7 +242,11 @@ class LinResDraw(LinRes):
                 plt.plot(k[:,1,sub_s.nx/2],
                          gamma[:,0,sub_s.nx/2],'k:',alpha=.1)
 
-        plt.yscale(yscale)
+        try:
+            plt.yscale(yscale)
+        except:
+            print 'yscale fail'
+
         plt.xscale(xscale)
       
         plt.xlabel(r'$k \rho_{ci}$',fontsize=14)
@@ -341,8 +349,11 @@ class LinResDraw(LinRes):
             if yscale=='linear':
                 ax.yaxis.set_major_formatter(formatter)
             else:
-                ax.set_yscale(yscale)  
-            
+                try:
+                    ax.set_yscale(yscale)  
+                except:
+                    print 'may get weird axis'
+                    #ax.set_yscale('symlog')
 
             artist.setp(ax.axes.get_xticklabels(), fontsize=6)
             artist.setp(ax.axes.get_yticklabels(), fontsize=8)
@@ -401,7 +412,10 @@ class LinResDraw(LinRes):
         if yscale=='linear':
             allcurves.yaxis.set_major_formatter(formatter)
         else:
-            allcurves.set_yscale(yscale) 
+            try:
+                allcurves.set_yscale(yscale) 
+            except:
+                print 'may get weird axis scaling'
             if yscale=='log':
                 allcurves.axis('tight')
             #allcurves.set_ylim(data.min(),data.max())
@@ -683,13 +697,15 @@ class LinResDraw(LinRes):
         metasection.append(meta_title)
       
         for i,elem in enumerate(self.meta):
-            if type(self.meta[elem])== type(np.array([])):
-                data = self.meta[elem]
-                unit_label = ''
+            #if type(self.meta[elem]) != type(np.array([])):
+                
             if type(self.meta[elem])== type({}):
                 data = np.array(self.meta[elem]['v'])
                 unit_label = str(self.meta[elem]['u'])
-            
+            else:
+                data = np.array(self.meta[elem])
+                unit_label = ''
+
             xaxis = self.meta['Rxy']['v'][:,self.ny/2]
             if data.shape == (self.nx,self.ny):
                 datastr = data[:,self.ny/2]

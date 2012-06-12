@@ -212,7 +212,7 @@ class LinRes(object):
       for i,k in enumerate(allk):
          print i
          #M =np.matrix(np.random.rand(3,3),dtype=complex)
-         M = np.zeros([2,2],dtype=complex)
+         M = np.zeros([3,3],dtype=complex)
          M[0,0] = 0
          M[0,1] = k/(self.L[i,self.nx/2,self.ny/2])
          M[1,0] = (2*np.pi/self.meta['lpar'][self.nx/2])**2 * self.meta['sig_par'][0]*complex(0,k**-2)

@@ -70,7 +70,7 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
     boutpath = path
 
     print path
-    print sys.path
+    #print sys.path
  
 
     meta = metadata(path=path)

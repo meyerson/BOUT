@@ -41,8 +41,9 @@ StaggeredGrids = True
 #grid = "helimak_narrow.nc"
 #grid = "Helimak_32x32_0.10.nc"
 #grid = "../Helimak/Ln/Helimak_32x32_0.10.nc"
-grid = "/home/cryosphere/BOUT-0.8/helimak_grids/local_r_1x64/Helimak_1x128_0.10_lam_n.nc"
-
+#grid = "/home/cryosphere/BOUT-0.8/helimak_grids/local_r_1x64/Helimak_1x128_0.10_lam_n.nc"
+#grid = "../../tools/cyl_and_helimak_grids/Helimak_1x32_0.10_lam_n.nc"
+grid = "../drift-instability/uedge.grd_std.cdl"
 
 dump_format = "nc" # Output format. nc = NetCDF
 
@@ -65,9 +66,9 @@ upwind = C2
 
 [ddz]
 
-first = C2
-second = C2
-upwind = C2
+first = C4
+second = C4
+upwind = FFT
 ##################################################
 # Solver settings
 
@@ -87,10 +88,10 @@ pvode_mxstep = 15000
 
 [2fluid]
 
-AA = 1.0 #hydrogen plasma
+AA = 2.0 #hydrogen plasma
 #AA = 36.0  #singly ionized argon 36 ( the nonradioactive isotope)
 ZZ = 1.0
-
+Zeff = 1 #remove later
  
 estatic = true    # if true, electrostatic (Apar = 0)
 ZeroElMass = true  # Use Ohms law without electron inertia
@@ -122,7 +123,7 @@ apar_flags = 0 # flags for apar inversion
 # a section of that name.
 
 [All]
-scale = 1.0e-8 # default size of initial perturbations
+scale = 0 # default size of initial perturbations
 
 # form of initial profile:
 # 0 - constant
@@ -150,7 +151,9 @@ zs_mode = 1 # toroidal mode number
 #xouter = 2  ## Zero-gradient outer boundary
 bndry_all = neumann
 [Ni]
-#scale = 1.0e-8 # 
+scale = 1.0e-8 # 
+zs_phase = .5
+
 [rho] 
 #scale = 3.0e-7
 [Vi]

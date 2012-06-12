@@ -22,7 +22,7 @@ pro hlmk_grids,full=full,Lc = Lc, $
   
                                 ;simple exp profiles, constant ExB
   if keyword_set(simple)then begin
-     ni_profile_type=2
+     ni_profile_type=2 ;simple linear slope, lam_n ignored
      ti_profile_type=0
      te_profile_type=0
      phi_profile_type = 0
@@ -101,7 +101,7 @@ pro hlmk_grids,full=full,Lc = Lc, $
      slope_n = (i-4.)/4. * slope_n_amp 
      slope_te = 0.0
      slope_ti = 0.0
-     lam_n = -(1+(i-4.)/10.)*.10    
+     lam_n = (1+(i-4.)/10.)*.10    
      te0 = 10.0
      print,"lam_n: ",lam_n
     
