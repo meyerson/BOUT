@@ -194,7 +194,7 @@ def metadata(inpfile='BOUT.inp',path ='.',v=False):
 
     #if case some values are missing   
     default = {'bmag':1,'Ni_x':1,'NOUT':100,'TIMESTEP':1,
-               'MZ':32,'AA':1,'Zeff':ValUnit(1,'')}
+               'MZ':32,'AA':1,'Zeff':ValUnit(1,''),'ZZ':1}
     diff = set(default.keys()).difference(set(d.keys()))
        
     for elem in diff:
@@ -251,13 +251,15 @@ def metadata(inpfile='BOUT.inp',path ='.',v=False):
     meta['L_z'] = 1e2 * 2*np.pi * d['Rxy'].mean(1) *(d['ZMAX'] - d['ZMIN']) # in cm toroidal range
     meta['dz'] = (d['ZMAX'] - d['ZMIN'])
  
-    meta['lbNorm']=meta['L_z']*(d['Bpxy']/d['Bxy']).mean(1)     #-binormal coord range [cm]
-    
+    #meta['lbNorm']=meta['L_z']*(d['Bpxy']/d['Bxy']).mean(1)     #-binormal coord range [cm]
+    meta['lbNorm']=meta['L_z']*(d['Bxy']/d['Bpxy']).mean(1)
     
     #meta['zPerp']=np.array(meta['lbNorm']).mean*np.array(range(d['MZ']))/(d['MZ']-1) 
   #let's calculate some profile properties
     dx = np.gradient(d['Rxy'])[0]
     meta['L'] = 1e2*dx*(meta['Ni0'].v)/np.gradient(meta['Ni0'].v)[0]/meta['rho_s'].v
+    
+    meta['w_Ln']     =  meta['c_s']/(np.min(abs(meta['L']))*meta['wci'] *meta['rho_s'].v) #normed to wci
 
     AA = meta['AA'].v
     ZZ = d['ZZ']

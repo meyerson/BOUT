@@ -32,7 +32,7 @@ MYG = 2
 NXPE = 1
 NYPE = 4
 
-StaggeredGrids = True
+#StaggeredGrids = True
 
 #grid="uedge.grd_std.cdl"
 #grid="fix_grid.cdl"
@@ -43,7 +43,9 @@ StaggeredGrids = True
 #grid = "../Helimak/Ln/Helimak_32x32_0.10.nc"
 #grid = "/home/cryosphere/BOUT-0.8/helimak_grids/local_r_1x64/Helimak_1x128_0.10_lam_n.nc"
 #grid = "../../tools/cyl_and_helimak_grids/Helimak_1x32_0.10_lam_n.nc"
-grid = "../drift-instability/uedge.grd_std.cdl"
+#grid = "../drift-instability/uedge.grd_std.cdl"
+#grid = "../../tools/cyl_and_helimak_grids/Helimak_Bz_1x32_0.14_lam_n.nc"
+grid = "../../tools/cyl_and_helimak_grids/Helimak_Bz_1x32_100_lam_n.nc"
 
 dump_format = "nc" # Output format. nc = NetCDF
 
@@ -60,9 +62,9 @@ upwind = U1
 
 [ddy]
 
-first = C2
-second = C2
-upwind = C2
+first = C4
+second = C4
+upwind = U1
 
 [ddz]
 
@@ -88,10 +90,10 @@ pvode_mxstep = 15000
 
 [2fluid]
 
-AA = 2.0 #hydrogen plasma
-#AA = 36.0  #singly ionized argon 36 ( the nonradioactive isotope)
+#AA = 2.0 #hydrogen plasma
+AA = 36.0  #singly ionized argon 36 ( the nonradioactive isotope)
 ZZ = 1.0
-Zeff = 1 #remove later
+Zeff = 1 
  
 estatic = true    # if true, electrostatic (Apar = 0)
 ZeroElMass = true  # Use Ohms law without electron inertia
@@ -152,12 +154,12 @@ zs_mode = 1 # toroidal mode number
 bndry_all = neumann
 [Ni]
 scale = 1.0e-8 # 
-zs_phase = .5
+#zs_phase = .5
 
 [rho] 
-#scale = 3.0e-7
+scale = -3.0e-7
 [Vi]
-#evolve = false
+evolve = false
 #scale = 1.0e-8 #
 
 

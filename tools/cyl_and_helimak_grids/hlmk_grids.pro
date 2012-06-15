@@ -4,12 +4,21 @@
 
 ;for example to create  grid to analyze radially localized modes
 ;hlmk_grids,/simple,/narrow,/local_r
+
+;to create simple local grid with only Bz field
+;hlmk_grids,/simple,/narrow,/local_r,Bz0=.1,bphi0=0.0,gridname =
+;'Helimak_Bz'
+
+;create a grid with a super weak density gradient
+;hlmk_grids,/simple,/narrow,/local_r,Bz0=.1,bphi0=0.0,gridname ='Helimak_Bz'
+
 pro hlmk_grids,full=full,Lc = Lc, $
                Ln = Ln, Lphi = Lphi,Lte = Lte,$
-               grid_size= N,Te0 = Te0,Ti0 = Ti0,$
+                 grid_size= N,Te0 = Te0,Ti0 = Ti0,$                 
                narrow= narrow,simple = simple,$
                small_y_res=small_y_res,$
-               name= name,local_r = local_r,gridname=gridname
+               name= name,local_r = local_r,gridname=gridname,$
+               bphi0 = bphi0, Bz0 = Bz0
   
   ;to avoid making this thing too general I will myself to 
   ;assuming that this script will simply allow the user to tweak
@@ -22,7 +31,7 @@ pro hlmk_grids,full=full,Lc = Lc, $
   
                                 ;simple exp profiles, constant ExB
   if keyword_set(simple)then begin
-     ni_profile_type=2 ;simple linear slope, lam_n ignored
+     ni_profile_type=2 ;simple exp profile, lam_n ignored
      ti_profile_type=0
      te_profile_type=0
      phi_profile_type = 0
@@ -40,23 +49,27 @@ pro hlmk_grids,full=full,Lc = Lc, $
 
   
                                 ;bphi is typically fixed
-  if not keyword_set(bphi0)then bphi0 = .1
+  
+  if not arg_present(bphi0)then bphi0 = 0.1
+  
   
   if not keyword_set(gridname) then gridname = 'Helimak' 
   
                                 ;Bz0 specification overides Lc
   if not keyword_set(Bz0) then begin
-     if not keyword_set(Lc)then begin
+     if not keyword_set(Lc)then begin ;no Bz0 or Lc
         Bz0 = bphi0/10.
         
         Btot = sqrt(Bz0^2 + bphi0^2)
         Lc = Zmax*Btot/Bz0
-     endif else begin
+     endif else begin ;Lc set but Bz0 is not
         
-        Bz0 = bphi0/sqrt((Lc/Zmax)^2 -1)
+        Bz0 = bphi0/sqrt((Lc/Zmax)^2 -1) 
      endelse
-     
-  endif
+  endif else begin              ;Bz0 set but no LC
+     Btot = sqrt(Bz0^2 + bphi0^2)
+     Lc = Zmax*Btot/Bz0
+  endelse
   
   if (not keyword_set(N)) then N = 4 
   
@@ -101,11 +114,12 @@ pro hlmk_grids,full=full,Lc = Lc, $
      slope_n = (i-4.)/4. * slope_n_amp 
      slope_te = 0.0
      slope_ti = 0.0
-     lam_n = (1+(i-4.)/10.)*.10    
+     lam_n = (1+(i-4.)/10.)*100 
      te0 = 10.0
      print,"lam_n: ",lam_n
-    
-     temp = ["Helimak_",string(Nr-4),"x",string(Nz),"_",sigfig(lam_n,2,sci = sci),"_lam_n.nc"]
+     
+     
+     temp = [gridname,"_",string(Nr-4),"x",string(Nz),"_",sigfig(lam_n,2,sci = sci),"_lam_n.nc"]
 
      filename = strcompress(strjoin(temp),/remove_all)
 

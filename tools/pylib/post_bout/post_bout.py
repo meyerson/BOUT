@@ -72,7 +72,7 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
     print path
     #print sys.path
  
-
+    
     meta = metadata(path=path)
     
     #ICmodes = 

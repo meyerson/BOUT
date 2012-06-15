@@ -262,36 +262,7 @@ const Field3D lowPass_Y(const Field3D &var, int ymax)
   
   g = 0.0;
   d = g.getData();
-  BoutReal rptr =0.0;
-  int stat = g.getData(2,8,11,&rptr);
-  //output.write("(%e),%d \n ",rptr,stat);
-
-  //SurfaceIter * iterateSurfaces ( ) ;
-  // Create an iterator over surfaces
-  SurfaceIter* surf = mesh->iterateSurfaces();
-  //int ysize = surf->ysize();
-  //output.write("%d \n ",ysize);
-  // for(surf->first(); !surf->isDone(); surf->next()) {
-  //   int ysize = surf->ysize(); // Size of this surface
-  //   //output.write("%d \n ",ysize);
-  // }
-
-  // output.write("sizeof(d) = %d,%d,%d,%d,\n %d,%d,%d \n ",sizeof(d),sizeof(d[0]),
-  // 	       sizeof(*d),sizeof(*d[0]),
-  // 	       mesh->ngz,mesh->ngy,mesh->ngx);
-  // output.write("sizeof data[jx] = %d\n ",sizeof(var[0]));
-
-
-
-  //return var;
-  //g = var[0][0]; //crappy for now
-  // #pragma omp parallel for
-  // for(int j=0;j<mesh->ngx*mesh->ngy;j++) {
-  //   for(int jz=0;jz<(mesh->ngz-1);jz++)
-  //     d[0][j] = var[0][j][jz];  
-  // }
-  //return var;
-  
+ 
   for(int jx=0;jx<mesh->ngx;jx++)
     for(int jz=0;jz<mesh->ngz-1;jz++){
       for(jy=0;jy<mesh->ngy;jy++){

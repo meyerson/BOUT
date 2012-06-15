@@ -47,7 +47,7 @@ tstep=(1e2 1e2 1e2 1e2 1e2 1e2 1e2 1e2)
 
 llist=(5e-5 4e-4 2e-4 2e-5 8e-3 1e-3 5e-3)
 
-#llist=(5e-5)
+llist=(5e-3)
 # 4e-4 2e-4 2e-5 8e-3 1e-3 5e-3)
 #rm status.log
 rm run.log

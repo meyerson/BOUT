@@ -195,7 +195,7 @@ class LinRes(object):
       
       #enrich the object
       allk = self.k[:,1,self.nx/2] #one location for now
-   
+      allkpar = self.k[:,0,self.nx/2] #one location for now
       
       self.M = []
       self.eigsys = []
@@ -206,7 +206,7 @@ class LinRes(object):
       self.omegamax = []
 
       #allk = np.arange(0.1,100.0,.1)
-     # allk=  np.sort(list(set(allk).union()))
+      #allk=  np.sort(list(set(allk).union()))
 
       
       for i,k in enumerate(allk):
@@ -215,8 +215,11 @@ class LinRes(object):
          M = np.zeros([3,3],dtype=complex)
          M[0,0] = 0
          M[0,1] = k/(self.L[i,self.nx/2,self.ny/2])
-         M[1,0] = (2*np.pi/self.meta['lpar'][self.nx/2])**2 * self.meta['sig_par'][0]*complex(0,k**-2)
-         M[1,1]= -(2*np.pi/self.meta['lpar'][self.nx/2])**2 * self.meta['sig_par'][0]*complex(0,k**-2)
+         # M[1,0] = (2*np.pi/self.meta['lpar'][self.nx/2])**2 * self.meta['sig_par'][0]*complex(0,k**-2)
+         # M[1,1]= -(2*np.pi/self.meta['lpar'][self.nx/2])**2 * self.meta['sig_par'][0]*complex(0,k**-2)
+         
+         M[1,0] = (allkpar[i])**2 * self.meta['sig_par'][0]*complex(0,k**-2)
+         M[1,1]= -(allkpar[i])**2 * self.meta['sig_par'][0]*complex(0,k**-2)
          
          eigsys= np.linalg.eig(M)  
          gamma = (eigsys)[0].imag

@@ -186,10 +186,15 @@ class LinResDraw(LinRes):
             except:
                 print 'scaling failed'
             
-        plt.xscale(xscale)
+        try:
+            plt.xscale(xscale)
+        except:
+            plt.xscale('symlog', linthreshx=0.1)  
       #plt.savefig(pp, format='pdf')
         plt.xlabel(r'$k \rho_{ci}$',fontsize=18)
+
         plt.ylabel(r'$\frac{\gamma}{\omega_{ci}}$',fontsize=18)
+
       #title = r'$\'+comp+'$ '+ 'computed from '+field'
       #title = 'r\$\'
       #title = r'$\frac{Ni}{Ni_0}$'
@@ -247,8 +252,11 @@ class LinResDraw(LinRes):
         except:
             print 'yscale fail'
 
-        plt.xscale(xscale)
-      
+       
+        try:
+            plt.xscale(yscale)
+        except:
+            plt.xscale('symlog')
         plt.xlabel(r'$k \rho_{ci}$',fontsize=14)
         plt.ylabel(r'$\frac{\omega}{\omega_{ci}}$',fontsize=14)
       #plt.title(r'$\frac{\omega}\{\omega_{ci}}$ '+ 'computed from'+field+ 'field',fontsize=10)
@@ -302,6 +310,7 @@ class LinResDraw(LinRes):
             xr = range(s.nx/2-xrange/2,s.nx/2+xrange/2+1)
             data = np.array(ListDictKey(s.db,comp)) #pick component should be ok for a fixed dz key
          
+            data = data + 1e-32
             ax =fig2.add_subplot(round(Nplots/3.0 + 1.0),3,k+1)  
             ax.grid(True,linestyle='-',color='.75')
             handles=[]
@@ -313,8 +322,8 @@ class LinResDraw(LinRes):
             where = d == d.max()
             z = where.nonzero() #mode index and n index
             imax = z[0][0]
-            xi_max = z[1][0]
-         
+            #xi_max = z[1][0]
+            xi_max = s.nx/2
 
             if debug and yscale=='log':
                 gamma = np.array(ListDictKey(s.db,'gamma'))  #nmodes x 2 x nx
@@ -353,7 +362,7 @@ class LinResDraw(LinRes):
                     ax.set_yscale(yscale)  
                 except:
                     print 'may get weird axis'
-                    #ax.set_yscale('symlog')
+                    ax.set_yscale('symlog')
 
             artist.setp(ax.axes.get_xticklabels(), fontsize=6)
             artist.setp(ax.axes.get_yticklabels(), fontsize=8)
@@ -512,7 +521,11 @@ class LinResDraw(LinRes):
             allcurves.yaxis.set_major_formatter(formatter)
         else:
             allcurves.set_yscale(yscale)
-        allcurves.set_xscale(xscale)
+        try:
+            allcurves.set_xscale(xscale)
+        except:
+            allcurves.set_xscale('symlog')
+
       #allcurves.xaxis.set_major_formatter(ticker.NullFormatter())
         allcurves.legend(modeleg,loc='best',prop={'size':6})
         allcurves.set_xlabel(r'$\frac{x}{\rho_{ci}}$')

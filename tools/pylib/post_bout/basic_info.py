@@ -126,9 +126,20 @@ def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=Fal
     #dom_mode = [{'amp':[],'amp_n':[],'phase':[],'freq':[],'gamma':[]} for x in net_peak]
     dom_mode_db = []
     
-    L_z = meta['L_z']
-    L_y = meta['lpar']
+    
+    
+    Bp = meta['Bpxy']['v'][:,ny/2]
+    B = meta['Bxy']['v'][:,ny/2]
+    
+
     rho_s = meta['rho_s']['v']
+    
+    L_z = meta['L_z']/rho_s
+    #L_z = 
+    L_y = meta['lpar'] #already normalized earlier in read_inp.py
+    L_norm = meta['lbNorm']/rho_s
+
+    hthe0_n = 1e2*meta['hthe0']['v']/rho_s
 
     print 'L_z,Ly: ' , L_z,L_y
 
@@ -260,9 +271,23 @@ def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=Fal
         #         gamma_est2[-5:,:],weights=np.ones(gamma_est2[-5:,:].shape))  
         
         
+        # k = [[p['y_i'],p['z_i']],
+        #      [2*math.pi*rho_s*float(p['y_i'])/L_y,2*math.pi*rho_s*p['z_i']/L_z]]
+        #L_y is normalized
+        
+        #k = [[p['y_i'],p['z_i']],
+         #     [2*math.pi*float(p['y_i'])/L_y,2*math.pi*rho_s*p['z_i']/L_norm]]
+        
         k = [[p['y_i'],p['z_i']],
-             [2*math.pi*rho_s*float(p['y_i'])/L_y,2*math.pi*rho_s*p['z_i']/L_z]]
-      
+              [((Bp/B)*float(p['y_i'])/(hthe0_n)) +
+               2*np.pi*p['z_i']*np.sqrt(1-(Bp/B)**2)/L_z,
+               2*math.pi*p['z_i']/L_norm - 
+               float(p['y_i'])*np.sqrt(1-(Bp/B)**2)/(hthe0_n)]]
+
+        k = [[p['y_i'],p['z_i']],
+             [((Bp/B)*float(p['y_i'])/(hthe0_n)),
+              2*math.pi*p['z_i']/L_norm - 
+              float(p['y_i'])*np.sqrt(1-(Bp/B)**2)/(hthe0_n)]]
 
         dom_mode_db.append({'modeid':i,'k':k[1],'gamma':gamma,'freq': freq,
                             'amp': amp,'amp_n':amp_n,'phase':phase,'mn':k[0],

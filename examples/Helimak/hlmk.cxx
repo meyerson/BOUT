@@ -313,6 +313,7 @@ int physics_init(bool restarting)
 
 // just define a macro for V_E dot Grad
 #define vE_Grad(f, p) ( b0xGrad_dot_Grad(p, f) / mesh->Bxy )
+#define ParLaplac(f) (mesh->G2*DDY(f)+mesh->g22*D2DY2(f))
 
 int physics_run(BoutReal t)
 {
@@ -359,7 +360,8 @@ int physics_run(BoutReal t)
   
   if(ZeroElMass) {
     // Set jpar,Ve,Ajpar neglecting the electron inertia term
-    jpar = ((Te0*Grad_par(Ni, CELL_YLOW)) - (Ni0*Grad_par(phi, CELL_YLOW)))/(fmei*0.51*nu);
+    //jpar = ((Te0*Grad_par(Ni, CELL_YLOW)) - (Ni0*Grad_par(phi, CELL_YLOW)))/(fmei*0.51*nu);
+    jpar = ((Tet*Grad_par_LtoC(Ni)) - (Nit*Grad_par_LtoC(phi)))/(fmei*0.51*nu);
     jpar = lowPass(jpar,8);
 
     // Set boundary conditions on jpar (in BOUT.inp)
@@ -381,13 +383,14 @@ int physics_run(BoutReal t)
   ddt(Ni) = 0.0;
   if(evolve_ni) {
  
-    ddt(Ni) -= vE_Grad(Ni0, phi) + vE_Grad(Ni, phi0);// + vE_Grad(Ni, phi);
+    ddt(Ni) -= vE_Grad(Ni0, phi);// + vE_Grad(Ni, phi0);// + vE_Grad(Ni, phi);
     //ddt(Ni) -= Vpar_Grad_par(Ve, Ni0) + Vpar_Grad_par(Ve0, Ni);// + Vpar_Grad_par(Ve, Ni);
 
     
     //ddt(Ni) -= Ni0*Div_par(Ve) + Ni*Div_par(Ve0);// + Ni*Div_par(Vi);
+    
+    //ddt(Ni) += Div_par(jpar);
     /*
-    ddt(Ni) += Div_par(jpar);
     ddt(Ni) += (2.0)*V_dot_Grad(b0xcv, pe);
     ddt(Ni) -= (2.0)*(Ni0*V_dot_Grad(b0xcv, phi) + Ni*V_dot_Grad(b0xcv, phi0));
     */
@@ -395,8 +398,10 @@ int physics_run(BoutReal t)
     //ddt(Ni) += .001*(1.0/(mesh->ngz)) *Laplacian(Ni);
     if(minusDC) 
       ddt(Ni) -= ddt(Ni).DC(); // REMOVE TOROIDAL AVERAGE DENSITY
-   
+ 
     ddt(Ni) = lowPass(ddt(Ni),8);
+    //ddt(Ni) = lowPass_Y(ddt(Ni),1);
+    //ddt(Ni) = smooth_y(ddt(Ni));
   }
 
   // ION VELOCITY
@@ -414,6 +419,7 @@ int physics_run(BoutReal t)
       ddt(Vi) -= ddt(Vi).DC();
 
     ddt(Vi) = lowPass(ddt(Vi),8);
+    //ddt(Vi) = lowPass_Y(ddt(Vi),1);
   }
 
   // ELECTRON TEMPERATURE
@@ -444,17 +450,17 @@ int physics_run(BoutReal t)
   
   if(evolve_rho) {
       
-    ddt(rho) -= vE_Grad(rho0, phi) + vE_Grad(rho, phi0);//+ vE_Grad(rho, phi);
-    ddt(rho) += mesh->Bxy*mesh->Bxy*Div_par(jpar, CELL_CENTRE);
-    //ddt(rho) += 2.0*mesh->Bxy*V_dot_Grad(b0xcv, pei);
-    ddt(rho) = smooth_y(ddt(rho));
-  /*
-      ddt(rho) -= Vpar_Grad_par(Vi, rho0) + Vpar_Grad_par(Vi0, rho);// + Vpar_Grad_par(Vi, rho);
+    //ddt(rho) -= vE_Grad(rho0, phi) + vE_Grad(rho, phi0);//+ vE_Grad(rho, phi);
+    //ddt(rho) += mesh->Bxy*mesh->Bxy*Div_par(jpar, CELL_CENTRE);
+    ddt(rho) += mesh->Bxy*mesh->Bxy*Grad_par_CtoL(jpar); 
+    // ddt(rho) += 2.0*mesh->Bxy*V_dot_Grad(b0xcv, pei);
+    
+    //ddt(rho) -= Vpar_Grad_par(Vi, rho0) + Vpar_Grad_par(Vi0, rho);// + Vpar_Grad_par(Vi, rho);
     
     
       
     
-    */
+    
     /*
     for(int jx=MXG;jx<mesh->ngx-MXG;jx++) {
       for(int jy=MYG;jy<mesh->ngy-MYG;jy++) {
@@ -471,7 +477,11 @@ int physics_run(BoutReal t)
        ddt(rho) -= ddt(rho).DC();
      
      //ddt(rho) += 1e-4 * mu_i * Laplacian(rho);
-     //ddt(rho) = lowPass(ddt(rho),8);
+     ddt(rho) = lowPass(ddt(rho),8);
+     ddt(rho) = smooth_y(ddt(rho));
+     //ddt(rho) = lowPass_Y(ddt(rho),1);
+
+
   }
   
 
@@ -538,3 +548,6 @@ int solve_apar_tridag(Field3D &aj, Field3D &ap, int flags)
 
   return(0);
 }
+
+
+
