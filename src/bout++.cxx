@@ -423,11 +423,12 @@ int bout_run()
   try {
     /// Post-processing
     
-    //output << "data_dir \n" << data_dir <<endl;
+    output << "data_dir \n" << data_dir <<endl;
     //char *data_dir_cp;
     char *cpy_str = (char *)malloc(strlen(data_dir) + 1 * sizeof(char));
     //char *ptr;
     strcpy(cpy_str,data_dir);
+    output << "data_dir \n" << cpy_str <<endl;
     char* pbinput [3] = {"post_bout","save",cpy_str};
     ///char* pbinput [3] = {"post_bout","save",strcat(path_key,data_dir)};
     pbstatus = callPy(3,pbinput); 

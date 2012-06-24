@@ -338,7 +338,8 @@ int physics_run(BoutReal t)
   
   if(ZeroElMass) {
     // Set jpar,Ve,Ajpar neglecting the electron inertia term
-    jpar = ((Te0*Grad_par_LtoC(Ni, CELL_YLOW)) - (Ni0*Grad_par_LtoC(phi, CELL_YLOW)))/(fmei*0.51*nu);
+    //jpar = ((Te0*Grad_par(Ni, CELL_YLOW)) - (Ni0*Grad_par_LtoC(phi, CELL_YLOW)))/(fmei*0.51*nu);
+    jpar = ((Te0*Grad_par_LtoC(Ni)) - (Ni0*Grad_par_LtoC(phi)))/(fmei*0.51*nu);
     jpar = lowPass(jpar,8);
     //jpar = yfilter(jpar,1);
     //jpar = nl_filter_y(jpar,4);
@@ -435,7 +436,7 @@ int physics_run(BoutReal t)
     
     //ddt(rho) += 2.0*Bnorm*V_dot_Grad(b0xcv, pei);
 
-    ddt(rho) += mesh->Bxy*mesh->Bxy*Div_par_CtoL(jpar, CELL_CENTRE);
+    ddt(rho) += mesh->Bxy*mesh->Bxy*Div_par_CtoL(jpar);
     //ddt(rho) = smooth_y(ddt(rho));
     /*
     for(int jx=MXG;jx<mesh->ngx-MXG;jx++) {
