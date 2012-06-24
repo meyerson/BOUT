@@ -32,7 +32,6 @@ try:
     import numpy as np
     print 'in post_bout/post_bout.py'
     from ordereddict import OrderedDict
-    print 'in post_bout/post_bout.py'
     from scipy.interpolate import interp2d,interp1d
     
     from boutdata import collect
@@ -60,10 +59,11 @@ from read_inp import parse_inp, read_inp, read_log,metadata
 from read_grid import read_grid
 from basic_info import basic_info, fft_info
 from corral import corral
-
+from rotate_mp import rotate
 
 def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
-         savemovie=False,IConly=0): 
+         savemovie=False,IConly=0,transform=False,fast = False,
+         debug = False): 
     #lets collect the data
     print 'path :', path
     print 'in post_bout/post_bout.save'
@@ -90,7 +90,10 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
         data[active] = collect(active,path=path)
         if savemovie:
             movie(data,meta)
-        
+        if transform:
+            data_r = rotate(data['Ni'],meta) # keep it simpy for now
+    if debug:
+        return 0
 
     minIC = np.array([np.max(data[x][0,:,:,:]) for x in meta['evolved']['v']])
     minIC = min(minIC[np.array(meta['IC']).nonzero()])  

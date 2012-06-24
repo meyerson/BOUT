@@ -97,8 +97,10 @@ def corral(cached=True,refresh=False,debug=False,IConly=1,logname='status.log'):
    t = range(nt)             
    i = 0
     
-   
-   return LinRes(alldb)
+   if debug:
+       return alldb
+   else:
+       return LinRes(alldb)
    
 class LinRes(object):
    def __init__(self,alldb):
@@ -215,11 +217,11 @@ class LinRes(object):
          M = np.zeros([3,3],dtype=complex)
          M[0,0] = 0
          M[0,1] = k/(self.L[i,self.nx/2,self.ny/2])
-         # M[1,0] = (2*np.pi/self.meta['lpar'][self.nx/2])**2 * self.meta['sig_par'][0]*complex(0,k**-2)
-         # M[1,1]= -(2*np.pi/self.meta['lpar'][self.nx/2])**2 * self.meta['sig_par'][0]*complex(0,k**-2)
+         M[1,0] = (2*np.pi/self.meta['lpar'][self.nx/2])**2 * self.meta['sig_par'][0]*complex(0,k**-2)
+         M[1,1]= -(2*np.pi/self.meta['lpar'][self.nx/2])**2 * self.meta['sig_par'][0]*complex(0,k**-2)
          
-         M[1,0] = (allkpar[i])**2 * self.meta['sig_par'][0]*complex(0,k**-2)
-         M[1,1]= -(allkpar[i])**2 * self.meta['sig_par'][0]*complex(0,k**-2)
+         #M[1,0] = (allkpar[i])**2 * self.meta['sig_par'][0]*complex(0,k**-2)
+         #M[1,1]= -(allkpar[i])**2 * self.meta['sig_par'][0]*complex(0,k**-2)
          
          eigsys= np.linalg.eig(M)  
          gamma = (eigsys)[0].imag

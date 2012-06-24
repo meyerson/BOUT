@@ -139,7 +139,8 @@ def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=Fal
     L_y = meta['lpar'] #already normalized earlier in read_inp.py
     L_norm = meta['lbNorm']/rho_s
 
-    hthe0_n = 1e2*meta['hthe0']['v']/rho_s
+    hthe0_n = 1e2*meta['hthe0']['v']/rho_s #no x dep
+    hthe0_n_x = L_y/(2*np.pi) #no x dep
 
     print 'L_z,Ly: ' , L_z,L_y
 
@@ -275,19 +276,29 @@ def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=Fal
         #      [2*math.pi*rho_s*float(p['y_i'])/L_y,2*math.pi*rho_s*p['z_i']/L_z]]
         #L_y is normalized
         
-        #k = [[p['y_i'],p['z_i']],
-         #     [2*math.pi*float(p['y_i'])/L_y,2*math.pi*rho_s*p['z_i']/L_norm]]
-        
-        k = [[p['y_i'],p['z_i']],
-              [((Bp/B)*float(p['y_i'])/(hthe0_n)) +
-               2*np.pi*p['z_i']*np.sqrt(1-(Bp/B)**2)/L_z,
-               2*math.pi*p['z_i']/L_norm - 
-               float(p['y_i'])*np.sqrt(1-(Bp/B)**2)/(hthe0_n)]]
+        #simple k def, works in drift-instability fine
+        # k = [[p['y_i'],p['z_i']],
+        #      [(B/Bp)**-1*2*math.pi*float(p['y_i'])/(L_y),(B/Bp)*2*math.pi*p['z_i']/L_z]]
 
         k = [[p['y_i'],p['z_i']],
-             [((Bp/B)*float(p['y_i'])/(hthe0_n)),
-              2*math.pi*p['z_i']/L_norm - 
-              float(p['y_i'])*np.sqrt(1-(Bp/B)**2)/(hthe0_n)]]
+             [(Bp/B)*2*math.pi*float(p['y_i'])/(L_y),
+              (B/Bp)*2*math.pi*p['z_i']/L_z]]
+      
+        #what I think is the most general one, works in drift-instability again 
+        # seems to work for Bz only helimak, now trying Bp = Bt
+        # k = [[p['y_i'],p['z_i']],
+        #      [((Bp/B)*float(p['y_i'])/(hthe0_n)) +
+        #       2*np.pi*p['z_i']*np.sqrt(1-(Bp/B)**2)/L_z,
+        #       2*math.pi*p['z_i']/L_norm - 
+        #       float(p['y_i'])*np.sqrt(1-(Bp/B)**2)/(hthe0_n)]]
+        # k = [[p['y_i'],p['z_i']],
+        #      [((Bp/B)*float(p['y_i'])/(hthe0_n)),
+        #       2*math.pi*p['z_i']/L_norm]]
+        #BOTH SEEM TO PRODOCE SAME RESULTS
+
+        # k = [[p['y_i'],p['z_i']],
+        #      [(float(p['y_i'])/(hthe0_n_x)),
+        #       2*math.pi*float(p['z_i'])/L_norm]]
 
         dom_mode_db.append({'modeid':i,'k':k[1],'gamma':gamma,'freq': freq,
                             'amp': amp,'amp_n':amp_n,'phase':phase,'mn':k[0],

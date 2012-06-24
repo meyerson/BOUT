@@ -38,22 +38,23 @@ data_dir='/tmp/hlmk'
 #llist=(0.10)
 
 NOUTS=(100 100 100 100 100 100 100 100)
-tstep=(1e2 5e1 5e1 2e0 1e1 1e1 1e1)
-
+#tstep=(2e1 2e1 1e1 1e1 1e1 1e1 1e1) #helimak cases
+tstep=(2e0 2e0 1e0 1e0)
 llist=(1e-1 1e-2 1e-3 1e-4)
-#tstep=(2e0)
-#llist=(1e-4)
+
+#tstep=(1e1 1e1)
+#llist=(1e-3 1e-4)
 
 
 
-#rm status.log
+rm status.log
 i=0
 for lval in ${llist[@]}
 do
   mkdir data_${lval}
   ln -s data_${lval} data
   
-  current_dir=$data_dir/data_bz_slow_${lval}
+  current_dir=$data_dir/data_bz_${lval}
   echo $current_dir
     
   rm -r $current_dir
@@ -88,7 +89,7 @@ do
   $MPIEXEC $NP ./hlmk -d $current_dir
 
   ln -s $current_dir $PWD/data_${lval}
-  #echo $current_dir >> status.log
+  echo $current_dir >> status.log
   #ibrun -n $NP -o 0  ./2fluid 
   #wait
   rm -f data

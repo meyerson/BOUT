@@ -50,28 +50,37 @@ pro hlmk_grids,full=full,Lc = Lc, $
   
                                 ;bphi is typically fixed
   
-  if not arg_present(bphi0)then bphi0 = 0.1
-  
+  if not keyword_set(bphi0) then begin
+     print, 'seting bphi0 = 0.0'
+     bphi0 = 0.0
+  endif
   
   if not keyword_set(gridname) then gridname = 'Helimak' 
   
                                 ;Bz0 specification overides Lc
-  if not keyword_set(Bz0) then begin
+  if keyword_set(Bz0) then begin
+     if Bz0 EQ 'zero' then Bz0 = 0
+     Btot = sqrt(Bz0^2 + bphi0^2)
+     Lc = Zmax*Btot/Bz0
+  endif else begin
      if not keyword_set(Lc)then begin ;no Bz0 or Lc
         Bz0 = bphi0/10.
         
         Btot = sqrt(Bz0^2 + bphi0^2)
         Lc = Zmax*Btot/Bz0
-     endif else begin ;Lc set but Bz0 is not
+     endif else begin           ;Lc set but Bz0 is not
         
         Bz0 = bphi0/sqrt((Lc/Zmax)^2 -1) 
      endelse
-  endif else begin              ;Bz0 set but no LC
-     Btot = sqrt(Bz0^2 + bphi0^2)
-     Lc = Zmax*Btot/Bz0
-  endelse
+  endelse            ;Bz0 set but no LC
   
+  Btot = sqrt(Bz0^2 + bphi0^2)
+  Lc = Zmax*Btot/Bz0
+ 
+
+
   if (not keyword_set(N)) then N = 4 
+  
   
 
 ;Nz here is in fact the number of grid point ALONG the field lines,

@@ -360,7 +360,7 @@ int physics_run(BoutReal t)
   
   if(ZeroElMass) {
     // Set jpar,Ve,Ajpar neglecting the electron inertia term
-    //jpar = ((Te0*Grad_par(Ni, CELL_YLOW)) - (Ni0*Grad_par(phi, CELL_YLOW)))/(fmei*0.51*nu);
+    //jpar = ((Te0*Gradpar(Ni, CELL_YLOW)) - (Ni0*Grad_par(phi, CELL_YLOW)))/(fmei*0.51*nu);
     jpar = ((Tet*Grad_par_LtoC(Ni)) - (Nit*Grad_par_LtoC(phi)))/(fmei*0.51*nu);
     jpar = lowPass(jpar,8);
 

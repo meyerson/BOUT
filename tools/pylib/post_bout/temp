@@ -1,3 +1,21 @@
+import post_bout as pb
+meta
+
+import post_bout as pb
+from pb_present import LinResPresent
+a = pb.corral(refresh=False,IConly=0,debug=False)
+y = LinResPresent(a.db)
+y.show()
+
+
+import post_bout as pb
+meta = pb.metadata(path='./')
+pb.save(path='./',transform=True,debug=True)
+
+import post_bout as pb
+pb.save(path='./',transform=True,debug=True)
+
+
 import post_bout
 a = post_bout.corral(cached=True)
 a.show2()

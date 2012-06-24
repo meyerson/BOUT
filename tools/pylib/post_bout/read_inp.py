@@ -183,6 +183,7 @@ def metadata(inpfile='BOUT.inp',path ='.',v=False):
              'Ni_x':ValUnit(1.e14,'cm^-3'),
              'Te_x':ValUnit(1.0,'eV'),'Ti_x':ValUnit(1.0,'eV'),'Rxy':ValUnit(1,'m'),
              'Bxy':ValUnit(1.0e4,'gauss'),'Bpxy':ValUnit(1.0e4,'gauss'),
+             'Btxy':ValUnit(1.0e4,'gauss'),'Zxy':ValUnit(1,'m'),
              'dlthe':ValUnit(1,'m'),'dx':ValUnit(1,'m'),'hthe0':ValUnit(1,'m')}
 
     for elem in norms.keys():

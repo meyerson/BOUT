@@ -9,11 +9,21 @@ print "Loading BOUT++ post processing routines"
 
 # Load routines from separate files
 import sys
+import os
 
 try:
-    sys.path.append('/home/cryosphere/BOUT/tools/pylib')
-    sys.path.append('/home/cryosphere/BOUT/tools/pylib/boutdata')
-    sys.path.append('/home/cryosphere/BOUT/tools/pylib/boututils')
+
+    boutpath = os.environ['BOUT_TOP']
+    pylibpath = boutpath+'/tools/pylib'
+    boutdatapath = pylibpath+'/boutdata'
+    boututilpath = pylibpath+'/boututils'
+    allpath = [boutpath,pylibpath,boutdatapath,boututilpath]
+    [sys.path.append(elem) for elem in allpath]
+    print sys.path
+        
+    # sys.path.append('/home/cryosphere/BOUT/tools/pylib')
+    # sys.path.append('/home/cryosphere/BOUT/tools/pylib/boutdata')
+    # sys.path.append('/home/cryosphere/BOUT/tools/pylib/boututils')
     
     print 'in post_bout/__init__.py'
     import matplotlib
@@ -71,3 +81,8 @@ try:
     import ListDict
 except:
     print "No ListDict"
+
+try:
+    from rotate_mp import rotate
+except:
+    print "No rotate"
