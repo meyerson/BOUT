@@ -73,7 +73,8 @@ from corral import corral
 def rotate(data,meta,rt=False,spectrum=False,view=False,save=False):
     dims = data.shape
     ndims = len(dims)
-
+    
+    print 'rotate_mp'
     print 'dims: ', dims
     TWOPI = 2*np.pi
     #one can simply pass a slice or a full 4D simuation array 
@@ -85,6 +86,10 @@ def rotate(data,meta,rt=False,spectrum=False,view=False,save=False):
             print nt,nx,ny
         if ndims == 2:
             ny,nz =dims
+            nx = meta['nx']
+            #nt = meta['NOUT']+1
+            nt = 0
+            data = np.array([[data]])
     except:
         print "something with dimesions"
         
@@ -142,8 +147,8 @@ def rotate(data,meta,rt=False,spectrum=False,view=False,save=False):
     print 'N_turns: ',N_turns
 
     
-    sz = 3.0
-    sy = 3.0
+    sz = 1.0
+    sy = 1.0
     dz= dz/sz
     dy = dy/sy
     
@@ -191,11 +196,11 @@ def rotate(data,meta,rt=False,spectrum=False,view=False,save=False):
     def rotor(t,x,out_q,p_id):            
         hd_image = griddata((i2d.flatten(),j2d.flatten()), 
                             (data[t,x,:,:]).flatten(), 
-                            (ii,jj), method='nearest')
+                            (ii,jj), method='linear')
         rot_image = griddata((ii.flatten(),jj.flatten()), 
                              hd_image.flatten(), 
                              (ii2,jj), 
-                             method='nearest')
+                             method='linear')
 
         print 't,x,p_id',t,x,p_id
         out = {'data':rot_image,'t':t,'x':x}
@@ -240,6 +245,14 @@ def rotate(data,meta,rt=False,spectrum=False,view=False,save=False):
         return output      
     else:
 
+        tile_image = data[0,2,:,:]
+        print tile_image.shape
+        
+        new_image0 = griddata((i2d.flatten(),j2d.flatten()), 
+                            (data[0,2,:,:]).flatten(), 
+                            (ii,jj), method='linear')
+        
+        new_image1 = output[0,2,:,:]
         N_zeta2 = np.round(N_turns*n_zz)     #assume that N_zeta Ny are even
         Nyy = np.round(ny)
         

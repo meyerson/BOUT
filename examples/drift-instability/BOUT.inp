@@ -30,7 +30,8 @@ MYG = 2
 restart = false
 
 #grid="/home/cryosphere/BOUT/examples/drift-instability/uedge.grd_std.cdl"
-grid = "/home/cryosphere/BOUT/tools/cyl_and_helimak_grids/Helimak_11_1x32_140_lam_n.nc"
+#grid = "/home/cryosphere/BOUT/tools/cyl_and_helimak_grids/Helimak_11_1x32_140_lam_n.nc"
+grid = "/home/cryosphere/BOUT/tools/cyl_and_helimak_grids/Helimak_1_10_1x32_140_lam_n.nc"
 
 dump_format = "nc" # Output format. nc = NetCDF
 

@@ -15,6 +15,37 @@ pb.save(path='./',transform=True,debug=True)
 import post_bout as pb
 pb.save(path='./',transform=True,debug=True)
 
+import post_bout as pb
+pb.save(path='./',transform=True)
+
+
+import post_bout as pb
+meta = pb.metadata(path='./')
+ni = pb.boutdata.collect('Ni')
+z = pb.rotate(ni[0:10,:,:,:],meta,view=True)
+
+
+#test the old spectral method on new data
+ICmodes =[[1,1],[1,2],[1,3],[1,4],[1,5]]
+import post_bout as pb
+meta = pb.metadata(path='./')
+ni = pb.boutdata.collect('Ni')
+z = pb.rotate(ni,meta,view=False) #make this more flexibable
+modes_db,ave = basic_info(z,meta,user_peak = ICmodes) 
+	   
+modes_db,ave = basic_info(data_r[active],meta,
+                                      user_peak = ICmodes)
+	
+
+#for testing the original rotate routine
+from boutdata import collect
+from read_inp import metadata
+path = '/tmp/2fluid/data_bz_11_1'
+ni = collect('Ni',path=path)
+meta = metadata(path=path)
+from rotate import rotate
+z = rotate(ni,meta,debug=True)
+
 
 import post_bout
 a = post_bout.corral(cached=True)

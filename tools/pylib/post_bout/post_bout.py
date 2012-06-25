@@ -62,7 +62,7 @@ from corral import corral
 from rotate_mp import rotate
 
 def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
-         savemovie=False,IConly=0,transform=False,fast = False,
+         savemovie=False,IConly=0,transform=True,fast = False,
          debug = False): 
     #lets collect the data
     print 'path :', path
@@ -80,6 +80,7 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
     #return meta
     output = OrderedDict()
     data = OrderedDict()
+    data_r = data
 
    
     all_modes = []
@@ -91,7 +92,7 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
         if savemovie:
             movie(data,meta)
         if transform:
-            data_r = rotate(data['Ni'],meta) # keep it simpy for now
+            data_r[active] = rotate(data[active],meta) # keep it simple for now
     if debug:
         return 0
 
@@ -151,7 +152,11 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
         print all_modes
         print meta['ys_opt']['v'], meta['zs_opt']['v']
         modes_db,ave = basic_info(data[active],meta,
-                                  user_peak = all_modes)     
+                                  user_peak = all_modes)   
+
+        if transform:
+            modes_db_r,ave_r = basic_info(data_r[active],meta,
+                                      user_peak = all_modes) #for now data_r must maintain same shape as data
         
         for j,x in enumerate(modes_db):
             x['field'] = active
@@ -167,7 +172,14 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
             x['dt'] = meta['dt']['v']
             x['Rxynorm'] = 100*x['Rxy']/meta['rho_s']['v']
             x['rho_s'] = meta['rho_s']['v']
-            
+            #for now if there was rotation just loop a few keys
+            if transform:
+                x['amp_r'] = modes_db_r[j]['amp']
+                x['phase_r'] = modes_db_r[j]['phase']
+                x['k_r']= modes_db_r[j]['k']
+                x['freq_r']= modes_db_r[j]['freq']
+                x['gamma_r'] =modes_db_r[j]['gamma']
+                
             ntt = x['nt'] #actual number of steps
             nt = meta['NOUT']['v'] #requested number of steps
             print j,' out of ',len(modes_db)
