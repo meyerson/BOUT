@@ -178,9 +178,14 @@ class LinRes(object):
       #self.C_s = 
       self.modeid = np.array(ListDictKey(alldb,'modeid'))
 
-      self.model()
-      
-      #self.model = model(self.k,self.L)
+      self.trans = np.array(ListDictKey(alldb,'transform'))
+
+      if self.trans:
+          self.phase_r = ListDictKey(alldb,'phase_r')
+          self.amp_r = ListDictKey(alldb,'amp_r')
+          self.freq_r = ListDictKey(alldb,'freq_r')
+          
+      self.M = self.model(self.k,self.L)
    
    def _amp(self,tind,xind):
       #first select modes that actually have valid (tind,xind)

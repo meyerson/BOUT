@@ -69,12 +69,23 @@ class LinResDraw(LinRes):
             fig1.savefig(pp, format='pdf')
             plt.close(fig1)
 
-    def plotomega(self,pp,field='Ni',yscale='symlog',clip=0,
+    def plotomega(self,pp,canvas=None,field='Ni',yscale='symlog',clip=0,
                   xaxis='t',xscale='linear',xrange=1,comp='gamma',
                   pltlegend='both',overplot=False):
         colors = ['b.','r.','k.','c.','g.','y.','m.','b.','r.','k.','c.','g.','y.','m.']
         colordash = ['b','r','k','c','g','y','m','b','r','k','c','g','y','m']
-        plt.figure()
+
+        
+        if canvas is None:
+            ownpage = True
+        else:
+            ownpage = False
+        
+        if ownpage:    
+            fig1 = plt.figure()
+            canvas = fig1.add_subplot(1,1,1) 
+
+        #plt.figure()
       #plt.savefig(pp, format='pdf')
         dzhandles = []
         parhandles =[]
@@ -103,7 +114,7 @@ class LinResDraw(LinRes):
          #              y[:,0,s.nx/2],
          #              yerr=y[:,2,s.nx/2],
          #              fmt=colors[q])
-        parhandles.append(plt.errorbar(k[:,1,s.nx/2],
+        parhandles.append(canvas.errorbar(k[:,1,s.nx/2],
                                        y[:,0,s.nx/2],
                                        yerr=y[:,1,s.nx/2],
                                        fmt=colors[q]))
@@ -122,8 +133,14 @@ class LinResDraw(LinRes):
             y = np.array(ListDictKey(sub_s.db,comp))
             k = sub_s.k ##
             if q == m_shift:
-               dzhandles.append(plt.plot(k[s_i,1,sub_s.nx/2],
+               dzhandles.append(canvas.plot(k[s_i,1,sub_s.nx/2],
                         y[s_i,0,sub_s.nx/2],color=colordash[jj],alpha=.5))
+
+               if self.trans:
+                   y2 = np.array(ListDictKey(sub_s.db,'freq_r'))
+                   canvas.plot(k[s_i,1,sub_s.nx/2],
+                               y2[s_i,0,sub_s.nx/2],'k.',ms = 3)
+ 
                print 'dzhandle color', jj
                #dzlabels.append("DZ: "+ str(2*j)+r'$\pi$')
                dzlabels.append(j) 
@@ -133,18 +150,18 @@ class LinResDraw(LinRes):
                else:
                   factor = 2
                print 'annotating'
-               plt.annotate(str(j),(k[s_i[0],1,sub_s.nx/2],y[s_i[0],0,sub_s.nx/2]),fontsize = 8)
+               canvas.annotate(str(j),(k[s_i[0],1,sub_s.nx/2],y[s_i[0],0,sub_s.nx/2]),fontsize = 8)
                # plt.annotate(str(j),xy=(k[s_i[0],1,sub_s.nx/2],y[s_i[0],0,sub_s.nx/2]),
                #              xytext=(k[s_i[0],1,sub_s.nx/2],factor*y[s_i[0],0,sub_s.nx/2]),
                #              arrowprops=dict(arrowstyle="->",
                #                              connectionstyle="angle3,angleA=-90,angleB=90"),
                #              textcoords='offset points')
                #l = plt.axvline(x=k[s_i[0],1,sub_s.nx/2],color=colordash[jj],alpha=.5)
-               p = plt.axvspan(k[s_i[0],1,sub_s.nx/2], k[s_i[-1],1,sub_s.nx/2], 
+               p = canvas.axvspan(k[s_i[0],1,sub_s.nx/2], k[s_i[-1],1,sub_s.nx/2], 
                                facecolor=colordash[jj], alpha=0.01)
                print 'done annotating'
             else:
-               plt.plot(k[s_i,1,sub_s.nx/2],
+               canvas.plot(k[s_i,1,sub_s.nx/2],
                         y[s_i,0,sub_s.nx/2],color=colordash[jj],alpha=.3)
 
             jj=jj+1
@@ -179,21 +196,21 @@ class LinResDraw(LinRes):
 
         
         try:
-            plt.yscale(yscale)
+            canvas.set_yscale(yscale)
         except:
             try:
-                plt.yscale('symlog')
+                canvas.set_yscale('symlog')
             except:
                 print 'scaling failed'
             
         try:
-            plt.xscale(xscale)
+            canvas.set_xscale(xscale)
         except:
-            plt.xscale('symlog', linthreshx=0.1)  
-      #plt.savefig(pp, format='pdf')
-        plt.xlabel(r'$k \rho_{ci}$',fontsize=18)
+            canvas.set_xscale('symlog', linthreshx=0.1)  
+      #canvas.savefig(pp, format='pdf')
+        canvas.set_xlabel(r'$k \rho_{ci}$',fontsize=18)
 
-        plt.ylabel(r'$\frac{\gamma}{\omega_{ci}}$',fontsize=18)
+        canvas.set_ylabel(r'$\frac{\gamma}{\omega_{ci}}$',fontsize=18)
 
       #title = r'$\'+comp+'$ '+ 'computed from '+field'
       #title = 'r\$\'
@@ -204,13 +221,17 @@ class LinResDraw(LinRes):
          #return str(input)
 
         title = comp+ ' computed from '+field
-        plt.title(title,fontsize=14)
+        canvas.set_title(title,fontsize=14)
       
         if overplot==True:
-            self.plottheory(pp,canvas=plt,comp=comp)
-            
-        plt.savefig(pp, format='pdf')
-        plt.close()
+            self.plottheory(pp,canvas=canvas,comp=comp)
+        
+        # if self.trans and overplot:
+        #     self.plotomega(pp,canvas=canvas,overplot=False,comp='gamma_r')
+        
+        if ownpage:    
+            fig1.savefig(pp, format='pdf')
+            plt.close(fig1)
 
     def plotfreq(self,pp,field='Ni',clip=0,
                  xaxis='t',xscale='linear',yscale='linear'):

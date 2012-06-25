@@ -92,7 +92,9 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
         if savemovie:
             movie(data,meta)
         if transform:
+            #if you take the time to rotate the data go ahead and save it
             data_r[active] = rotate(data[active],meta) # keep it simple for now
+            
     if debug:
         return 0
 
@@ -173,12 +175,14 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
             x['Rxynorm'] = 100*x['Rxy']/meta['rho_s']['v']
             x['rho_s'] = meta['rho_s']['v']
             #for now if there was rotation just loop a few keys
+            x['transform'] = transform
             if transform:
                 x['amp_r'] = modes_db_r[j]['amp']
                 x['phase_r'] = modes_db_r[j]['phase']
                 x['k_r']= modes_db_r[j]['k']
                 x['freq_r']= modes_db_r[j]['freq']
                 x['gamma_r'] =modes_db_r[j]['gamma']
+                
                 
             ntt = x['nt'] #actual number of steps
             nt = meta['NOUT']['v'] #requested number of steps
