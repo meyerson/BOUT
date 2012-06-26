@@ -17,8 +17,7 @@
 ;hlmk_grids,/simple,/narrow,/local_r,Bz0=.1,bphi0=0.0,gridname
 ;='Helimak_Bz',grid_size = 6 
 
-;hlmk_grids,/simple,/narrow,/local_r,Bz0=.1,bphi0=1.0,gridname
-;='Helimak_bz_1_10',grid_size = 6 
+;hlmk_grids,/simple,/narrow,/local_r,Bz0=.1,bphi0=1.0,gridname='Helimak_bz_1_10',grid_size = 6 
 
 
 pro hlmk_grids,full=full,Lc = Lc, $

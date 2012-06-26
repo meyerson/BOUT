@@ -35,12 +35,29 @@ int callPy(int argc, char *argv[])
       PyRun_SimpleString("from time import time,ctime\n"
 			 "print 'Today is',ctime(time())\n");
 
-      FILE *fp = fopen("/home/cryosphere/BOUT/tools/pylib/py_try4.py","r+");
+     
+
+      
       
       sys_path = PySys_GetObject("path"); 
       if (sys_path == NULL) 
 	return NULL; 
-      path = PyString_FromString("/home/cryosphere/BOUT/tools/pylib/post_bout");
+      
+
+      char * bPath;
+      bPath = getenv ("BOUT_TOP");
+
+      if (bPath!=NULL){
+	char pbstr[100];
+	strcpy(pbstr,"/tools/pylib/post_bout");
+	char abspbstr[100];
+	strcat(abspbstr,bPath);
+	strcat(abspbstr,pbstr);
+	path = PyString_FromString(abspbstr); //had to generate absolute path
+      }
+      else
+	path = PyString_FromString("/home/cryosphere/BOUT/tools/pylib/post_bout");
+
       if (path == NULL) 
 	return NULL; 
       if (PyList_Append(sys_path, path) < 0) 
