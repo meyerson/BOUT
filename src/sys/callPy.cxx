@@ -51,8 +51,10 @@ int callPy(int argc, char *argv[])
 	char pbstr[100];
 	strcpy(pbstr,"/tools/pylib/post_bout");
 	char abspbstr[100];
-	strcat(abspbstr,bPath);
+	strcpy(abspbstr,bPath);
 	strcat(abspbstr,pbstr);
+	output << "pb_path \n" << abspbstr <<endl;
+	output << "bPath \n" << bPath <<endl;
 	path = PyString_FromString(abspbstr); //had to generate absolute path
       }
       else
