@@ -10,7 +10,16 @@
 ;'Helimak_Bz'
 
 ;create a grid with a super weak density gradient
-;hlmk_grids,/simple,/narrow,/local_r,Bz0=.1,bphi0=0.0,gridname ='Helimak_Bz'
+;hlmk_grids,/simple,/narrow,/local_r,Bz0=.1,bphi0=0.0,gridname
+;='Helimak_Bz'
+
+;build a 5x64 grid
+;hlmk_grids,/simple,/narrow,/local_r,Bz0=.1,bphi0=0.0,gridname
+;='Helimak_Bz',grid_size = 6 
+
+;hlmk_grids,/simple,/narrow,/local_r,Bz0=.1,bphi0=1.0,gridname
+;='Helimak_bz_1_10',grid_size = 6 
+
 
 pro hlmk_grids,full=full,Lc = Lc, $
                Ln = Ln, Lphi = Lphi,Lte = Lte,$
@@ -35,7 +44,7 @@ pro hlmk_grids,full=full,Lc = Lc, $
      ti_profile_type=0
      te_profile_type=0
      phi_profile_type = 0
-     N = 5
+     if not(keyword_set(N))then N = 5
   endif
   
   if keyword_set(narrow) then begin
