@@ -62,7 +62,7 @@ from corral import corral
 from rotate_mp import rotate
 
 def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
-         savemovie=False,IConly=0,transform=True,fast = False,
+         savemovie=False,IConly=0,transform=False,fast = False,
          debug = False): 
     #lets collect the data
     print 'path :', path
