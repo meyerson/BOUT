@@ -389,9 +389,10 @@ int physics_run(BoutReal t)
     
     //ddt(Ni) -= Ni0*Div_par(Ve) + Ni*Div_par(Ve0);// + Ni*Div_par(Vi);
     
-    //ddt(Ni) += Div_par(jpar);
+    ddt(Ni) += Grad_par_CtoL(jpar);
+    
+    //ddt(Ni) += (2.0)*V_dot_Grad(b0xcv, pe);
     /*
-    ddt(Ni) += (2.0)*V_dot_Grad(b0xcv, pe);
     ddt(Ni) -= (2.0)*(Ni0*V_dot_Grad(b0xcv, phi) + Ni*V_dot_Grad(b0xcv, phi0));
     */
     
@@ -399,7 +400,7 @@ int physics_run(BoutReal t)
     if(minusDC) 
       ddt(Ni) -= ddt(Ni).DC(); // REMOVE TOROIDAL AVERAGE DENSITY
  
-    ddt(Ni) = lowPass(ddt(Ni),8);
+    ddt(Ni) = lowPass(ddt(Ni),3);
     //ddt(Ni) = lowPass_Y(ddt(Ni),1);
     //ddt(Ni) = smooth_y(ddt(Ni));
   }
@@ -450,7 +451,7 @@ int physics_run(BoutReal t)
   
   if(evolve_rho) {
       
-    //ddt(rho) -= vE_Grad(rho0, phi) + vE_Grad(rho, phi0);//+ vE_Grad(rho, phi);
+    ddt(rho) -= vE_Grad(rho0, phi);// + vE_Grad(rho, phi0);//+ vE_Grad(rho, phi);
     //ddt(rho) += mesh->Bxy*mesh->Bxy*Div_par(jpar, CELL_CENTRE);
     ddt(rho) += mesh->Bxy*mesh->Bxy*Grad_par_CtoL(jpar); 
     // ddt(rho) += 2.0*mesh->Bxy*V_dot_Grad(b0xcv, pei);
@@ -477,8 +478,8 @@ int physics_run(BoutReal t)
        ddt(rho) -= ddt(rho).DC();
      
      //ddt(rho) += 1e-4 * mu_i * Laplacian(rho);
-     ddt(rho) = lowPass(ddt(rho),8);
-     ddt(rho) = smooth_y(ddt(rho));
+     ddt(rho) = lowPass(ddt(rho),3);
+     //ddt(rho) = smooth_y(ddt(rho));
      //ddt(rho) = lowPass_Y(ddt(rho),1);
 
 

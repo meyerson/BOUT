@@ -136,8 +136,9 @@ class LinResDraw(LinRes):
                dzhandles.append(canvas.plot(k[s_i,1,sub_s.nx/2],
                         y[s_i,0,sub_s.nx/2],color=colordash[jj],alpha=.5))
 
-               if self.trans:
+               if sub_s.trans[0]:
                    y2 = np.array(ListDictKey(sub_s.db,'freq_r'))
+                   print y2.shape,y2.shape
                    canvas.plot(k[s_i,1,sub_s.nx/2],
                                y2[s_i,0,sub_s.nx/2],'k.',ms = 3)
  
