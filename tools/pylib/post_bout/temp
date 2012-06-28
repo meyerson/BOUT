@@ -20,6 +20,9 @@ pb.save(path='./',transform=True)
 
 
 import post_bout as pb
+pb.save(path='./',transform)
+
+import post_bout as pb
 meta = pb.metadata(path='./')
 ni = pb.boutdata.collect('Ni')
 z = pb.rotate(ni[0:10,:,:,:],meta,view=True)

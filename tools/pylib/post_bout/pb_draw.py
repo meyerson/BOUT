@@ -23,6 +23,7 @@ from reportlab.graphics.widgets.markers import makeMarker
 from reportlab.lib import colors
 
 from replab_x_vs_y import RL_Plot
+from matplotlib.ticker import ScalarFormatter, FormatStrFormatter, MultipleLocator
 
 
 class LinResDraw(LinRes):
@@ -69,7 +70,7 @@ class LinResDraw(LinRes):
             fig1.savefig(pp, format='pdf')
             plt.close(fig1)
 
-    def plotomega(self,pp,canvas=None,field='Ni',yscale='symlog',clip=0,
+    def plotomega(self,pp,canvas=None,field='Ni',yscale='linear',clip=0,
                   xaxis='t',xscale='linear',xrange=1,comp='gamma',
                   pltlegend='both',overplot=False):
         colors = ['b.','r.','k.','c.','g.','y.','m.','b.','r.','k.','c.','g.','y.','m.']
@@ -83,10 +84,14 @@ class LinResDraw(LinRes):
         
         if ownpage:    
             fig1 = plt.figure()
+            fig1.subplots_adjust(bottom=0.12)
+            fig1.subplots_adjust(top=0.80)
+            fig1.subplots_adjust(right=0.83)
+            fig1.subplots_adjust(left=0.17)
             canvas = fig1.add_subplot(1,1,1) 
+            clonex = canvas.twinx()
+            #cloney = canvas.twiny()
 
-        #plt.figure()
-      #plt.savefig(pp, format='pdf')
         dzhandles = []
         parhandles =[]
         parlabels =[]
@@ -122,6 +127,10 @@ class LinResDraw(LinRes):
          
          #loop over dz sets and connect with dotted line  . . .
         jj=0
+
+        ymin_data =np.max(np.array(ListDictKey(s.db,comp)))
+        ymax_data = 0 #for bookeeping
+
         for p in list(set(s.path).union()):
             print p, 'in plotomega'
             
@@ -131,17 +140,26 @@ class LinResDraw(LinRes):
             s_i = np.argsort(sub_s.mn[:,1]) #sort by 'local' m, global m is ok also
             #print s_i, sub_s.mn, sub_s.nx, jj
             y = np.array(ListDictKey(sub_s.db,comp))
+            y_alt = 2.0*np.array(ListDictKey(sub_s.db,comp))
+
             k = sub_s.k ##
-            if q == m_shift:
+            if q == m_shift: #fix the parallel mode
                dzhandles.append(canvas.plot(k[s_i,1,sub_s.nx/2],
-                        y[s_i,0,sub_s.nx/2],color=colordash[jj],alpha=.5))
+                                            y[s_i,0,sub_s.nx/2],color=colordash[jj],alpha=.5))
+               #clonex.plot(k[s_i,1,sub_s.nx/2],
+                           #y_alt[s_i,0,sub_s.nx/2],color=colordash[jj],alpha=.5)
+               ymin_data = np.min([np.min(y[s_i,0,sub_s.nx/2]),ymin_data])
+               ymax_data = np.max([np.max(y[s_i,0,sub_s.nx/2]),ymax_data])
+               
 
                if sub_s.trans[0]:
-                   y2 = np.array(ListDictKey(sub_s.db,'freq_r'))
-                   print y2.shape,y2.shape
+                   comp_r = comp+'_r'
+                   y2 = np.array(ListDictKey(sub_s.db,comp_r))
                    canvas.plot(k[s_i,1,sub_s.nx/2],
                                y2[s_i,0,sub_s.nx/2],'k.',ms = 3)
- 
+                   #cloney.plot(k[s_i,1,sub_s.nx/2],
+                    #           y2[s_i,0,sub_s.nx/2],'k.',ms = 3)
+                   
                print 'dzhandle color', jj
                #dzlabels.append("DZ: "+ str(2*j)+r'$\pi$')
                dzlabels.append(j) 
@@ -152,12 +170,6 @@ class LinResDraw(LinRes):
                   factor = 2
                print 'annotating'
                canvas.annotate(str(j),(k[s_i[0],1,sub_s.nx/2],y[s_i[0],0,sub_s.nx/2]),fontsize = 8)
-               # plt.annotate(str(j),xy=(k[s_i[0],1,sub_s.nx/2],y[s_i[0],0,sub_s.nx/2]),
-               #              xytext=(k[s_i[0],1,sub_s.nx/2],factor*y[s_i[0],0,sub_s.nx/2]),
-               #              arrowprops=dict(arrowstyle="->",
-               #                              connectionstyle="angle3,angleA=-90,angleB=90"),
-               #              textcoords='offset points')
-               #l = plt.axvline(x=k[s_i[0],1,sub_s.nx/2],color=colordash[jj],alpha=.5)
                p = canvas.axvspan(k[s_i[0],1,sub_s.nx/2], k[s_i[-1],1,sub_s.nx/2], 
                                facecolor=colordash[jj], alpha=0.01)
                print 'done annotating'
@@ -194,24 +206,64 @@ class LinResDraw(LinRes):
       
       # else:
       #    legend(dzhandles,dzlabels,loc=3,prop={'size':6})
-
+        if overplot==True:
+            self.plottheory(pp,canvas=canvas,comp=comp)
+        
+                
+        #cloney.set_xlim(xmin,xmax)
         
         try:
             canvas.set_yscale(yscale)
+            [xmin, xmax, ymin, ymax] = canvas.axis()
+            #clonex.plot([xmin,xmax],[20*ymin_data,20*ymax_data],alpha=0.001)
+            #clonex.set_ylim(2*ymin,2*ymax)
+            print '[xmin, xmax, ymin, ymax] ',[xmin, xmax, ymin, ymax]
+            #cloney.set_yscale(yscale)
+            clonex.set_yscale(yscale) #must be called before limits are set
+            clonex.set_ylim(20*ymin, 20*ymax)
+            #clonex.set_yscale(yscale) #seems to overide set_ylim prefs, for now pick one
         except:
             try:
                 canvas.set_yscale('symlog')
             except:
                 print 'scaling failed'
-            
+        
+       
+                
         try:
             canvas.set_xscale(xscale)
+            #cloney.set_xscale(xscale)
+            #clonex.set_xscale(xscale)
         except:
             canvas.set_xscale('symlog', linthreshx=0.1)  
       #canvas.savefig(pp, format='pdf')
-        canvas.set_xlabel(r'$k \rho_{ci}$',fontsize=18)
+        #canvas.set_xlabel(r'$k_{\zeta} \rho_{ci}$',fontsize=18)
+        if s.trans[0]:
+            canvas.set_xlabel(r'$k_{\perp} \rho_{ci}$',fontsize=18)
 
-        canvas.set_ylabel(r'$\frac{\gamma}{\omega_{ci}}$',fontsize=18)
+
+        canvas.set_ylabel(r'$\frac{\gamma}{\omega_{ci}}$',fontsize=18,rotation='horizontal')
+        #if yscale == 'linear':
+        #canvas.yaxis.set_major_locator(ticker.LinearLocator(numticks=8))
+    
+        
+        # minorLocator   = MultipleLocator(.005)
+        # canvas.yaxis.set_minor_locator(minorLocator)
+        #spawn another y label
+        
+       
+
+        #clone = canvas.twinx()
+        #s2 = np.sin(2*np.pi*t)
+        #ax2.plot(x, s2, 'r.')
+        
+        
+        #ion_acoust_str = r"$\frac{c_s}{L_{\partial_r n}}}$"
+        
+        clonex.set_ylabel(r'$\frac{\gamma}{\frac{c_s}{L_{\partial_r n}}}$', color='k',fontsize=18,rotation='horizontal')
+        
+        # for tl in clone.get_yticklabels():
+        #     tl.set_color('r')
 
       #title = r'$\'+comp+'$ '+ 'computed from '+field'
       #title = 'r\$\'
@@ -220,15 +272,24 @@ class LinResDraw(LinRes):
       #title = title+'$ '+ ' computed from '+field
       #def totex(input):
          #return str(input)
+        
+        #cloney = canvas.twiny()
+        #cloney.set_xlabel(r'$k_{\zeta} \rho_{ci}$',fontsize=18)
 
-        title = comp+ ' computed from '+field
-        canvas.set_title(title,fontsize=14)
+        
       
-        if overplot==True:
-            self.plottheory(pp,canvas=canvas,comp=comp)
+        if yscale == 'linear':
+            formatter = ticker.ScalarFormatter()
+            formatter.set_powerlimits((0, 0))  #force scientific notation
+            canvas.yaxis.set_major_formatter(formatter)
+            clonex.yaxis.set_major_formatter(formatter)
         
         # if self.trans and overplot:
         #     self.plotomega(pp,canvas=canvas,overplot=False,comp='gamma_r')
+        
+        title = comp+ ' computed from '+field
+        #canvas.set_title(title,fontsize=14)
+        fig1.suptitle(title,fontsize=14)
         
         if ownpage:    
             fig1.savefig(pp, format='pdf')

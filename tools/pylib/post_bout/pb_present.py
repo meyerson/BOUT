@@ -112,8 +112,8 @@ class LinResPresent(LinResDraw):
        all_fields = list(set(s.field).union())
 
 
-       s.plotomega(pp,xscale='log',overplot=True)
-       s.plotgamma(pp,xscale='log',overplot=True)
+       s.plotomega(pp,xscale='log',yscale='linear',overplot=True)
+       s.plotgamma(pp,xscale='log',yscale='linear',overplot=True)
   
        s.plotgamma(pp,yscale='log',xscale='log',overplot=True)
        s.plotgamma(pp,yscale='log',xscale='log',field='rho')
