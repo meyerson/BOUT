@@ -72,7 +72,7 @@ class LinResDraw(LinRes):
 
     def plotomega(self,pp,canvas=None,field='Ni',yscale='linear',clip=0,
                   xaxis='t',xscale='linear',xrange=1,comp='gamma',
-                  pltlegend='both',overplot=False,gridON=True):
+                  pltlegend='both',overplot=False,gridON=True,trans=True):
         colors = ['b.','r.','k.','c.','g.','y.','m.','b.','r.','k.','c.','g.','y.','m.']
         colordash = ['b','r','k','c','g','y','m','b','r','k','c','g','y','m']
 
@@ -90,7 +90,8 @@ class LinResDraw(LinRes):
             fig1.subplots_adjust(left=0.17)
             canvas = fig1.add_subplot(1,1,1) 
             clonex = canvas.twinx()
-            cloney = canvas.twiny()
+            if np.any(self.trans) and trans:
+                cloney = canvas.twiny()
 
        
         dzhandles = []
@@ -153,7 +154,7 @@ class LinResDraw(LinRes):
                ymax_data = np.max([np.max(y[s_i,0,sub_s.nx/2]),ymax_data])
                
 
-               if sub_s.trans[0]:
+               if np.any(sub_s.trans) and trans:
                    comp_r = comp+'_r'
                    y2 = np.array(ListDictKey(sub_s.db,comp_r))
                    #canvas.plot(k[s_i,1,sub_s.nx/2],
@@ -243,28 +244,30 @@ class LinResDraw(LinRes):
             #cloney.set_yscale(yscale)
            
             clonex.set_yscale(yscale) #must be called before limits are set 
-            cloney.set_yscale(yscale)  
-            cloney.set_xscale(xscale)
+              
+            if np.any(s.trans) and trans:
+                cloney.set_yscale(yscale)
+                cloney.set_xscale(xscale)
             
             if yscale =='symlog':
                 clonex.set_yscale(yscale,linthreshy=1e-9)
-                cloney.set_yscale(yscale,linthreshy=1e-9)  
+                  
                 
-            if xscale =='symlog':
+            if xscale =='symlog' and np.any(s.trans) and trans:
+                cloney.set_yscale(yscale,linthreshy=1e-9)
                 cloney.set_xscale(xscale,linthreshy=1e-9)
             
             Ln_drive_scale = s.meta['w_Ln'][0]**-1
             #Ln_drive_scale = 2.1e3
             clonex.set_ylim(Ln_drive_scale*ymin, Ln_drive_scale*ymax)
-            cloney.set_xlim(xmin, xmax)
-            cloney.set_ylim(ymin,ymax) #because cloney shares the yaxis with canvas it may overide them, this fixes that
+            if np.any(s.trans) and trans:
+                cloney.set_xlim(xmin, xmax)
+                cloney.set_ylim(ymin,ymax) #because cloney shares the yaxis with canvas it may overide them, this fixes that
+                cloney.set_xlabel(r'$k_{\perp} \rho_{ci}$',fontsize=18)
             #clonex.set_xscale(xscale)
         except:
             #canvas.set_xscale('symlog', linthreshx=0.1)  
             print 'extra axis FAIL'
-     
-        if s.trans[0]:
-            cloney.set_xlabel(r'$k_{\perp} \rho_{ci}$',fontsize=18)
 
 
         canvas.set_ylabel(r'$\frac{\gamma}{\omega_{ci}}$',fontsize=18,rotation='horizontal')
@@ -375,17 +378,17 @@ class LinResDraw(LinRes):
       
     def plotgamma(self,pp,field='Ni',yscale='symlog',clip=0,
                   xaxis='t',xscale='linear',xrange=1,comp='gamma',
-                  overplot=False):
+                  overplot=False,trans=True):
         self.plotomega(pp,field=field,yscale=yscale,clip=clip,
                      xaxis=xaxis,xscale=xscale,xrange=xrange,comp=comp,
-                     overplot=overplot)
+                     overplot=overplot,trans=trans)
    
     def plotfreq2(self,pp,field='Ni',yscale='symlog',clip=0,
                   xaxis='t',xscale='linear',xrange=1,comp='freq',
-                  overplot=False):
+                  overplot=False,trans=True):
         self.plotomega(pp,field=field,yscale=yscale,clip=clip,
                        xaxis=xaxis,xscale=xscale,xrange=xrange,comp=comp,
-                       overplot=overplot)
+                       overplot=overplot,trans=trans)
 
     def plotmodes(self,pp,field='Ni',comp='amp',math='1',ylim=1,
                   yscale='symlog',clip=False,xaxis='t',xscale='linear',

@@ -78,13 +78,9 @@ class LinResPresent(LinResDraw):
      
        plt.savefig(pp, format='pdf')
        plt.close() 
-      
-
-       s.plotomega(pp,xscale='linear')
-       s.plotmodes(pp,yscale='linear',comp='phase',linestyle='.')
+  
+            
        
-       
-       s.plotomega(pp,xscale='linear',field='rho')
        s.plotmodes(pp,yscale='linear',comp='phase',linestyle='.',field='rho')
  
        s.plotmodes(pp,yscale='linear')
@@ -113,7 +109,7 @@ class LinResPresent(LinResDraw):
 
 
        s.plotomega(pp,xscale='log',yscale='linear',overplot=True)
-       s.plotgamma(pp,xscale='log',yscale='linear',overplot=True)
+       s.plotgamma(pp,xscale='log',yscale='linear',overplot=True,trans=False)
   
        s.plotgamma(pp,yscale='log',xscale='log',overplot=True)
        s.plotgamma(pp,yscale='log',xscale='log',field='rho')

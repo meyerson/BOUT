@@ -184,6 +184,7 @@ class LinRes(object):
           self.phase_r = ListDictKey(alldb,'phase_r')
           self.amp_r = ListDictKey(alldb,'amp_r')
           self.freq_r = ListDictKey(alldb,'freq_r')
+          self.k_r = ListDictKey(alldb,'k_r')
           
       self.M = self.model(self.k,self.L)
    
