@@ -72,7 +72,7 @@ class LinResDraw(LinRes):
 
     def plotomega(self,pp,canvas=None,field='Ni',yscale='linear',clip=0,
                   xaxis='t',xscale='linear',xrange=1,comp='gamma',
-                  pltlegend='both',overplot=False):
+                  pltlegend='both',overplot=False,gridON=True):
         colors = ['b.','r.','k.','c.','g.','y.','m.','b.','r.','k.','c.','g.','y.','m.']
         colordash = ['b','r','k','c','g','y','m','b','r','k','c','g','y','m']
 
@@ -90,8 +90,9 @@ class LinResDraw(LinRes):
             fig1.subplots_adjust(left=0.17)
             canvas = fig1.add_subplot(1,1,1) 
             clonex = canvas.twinx()
-            #cloney = canvas.twiny()
+            cloney = canvas.twiny()
 
+       
         dzhandles = []
         parhandles =[]
         parlabels =[]
@@ -155,10 +156,11 @@ class LinResDraw(LinRes):
                if sub_s.trans[0]:
                    comp_r = comp+'_r'
                    y2 = np.array(ListDictKey(sub_s.db,comp_r))
-                   canvas.plot(k[s_i,1,sub_s.nx/2],
-                               y2[s_i,0,sub_s.nx/2],'k.',ms = 3)
-                   #cloney.plot(k[s_i,1,sub_s.nx/2],
+                   #canvas.plot(k[s_i,1,sub_s.nx/2],
                     #           y2[s_i,0,sub_s.nx/2],'k.',ms = 3)
+                   
+                   cloney.plot(k[s_i,1,sub_s.nx/2],
+                               y2[s_i,0,sub_s.nx/2],'k.',ms = 3)
                    
                print 'dzhandle color', jj
                #dzlabels.append("DZ: "+ str(2*j)+r'$\pi$')
@@ -211,35 +213,58 @@ class LinResDraw(LinRes):
         
                 
         #cloney.set_xlim(xmin,xmax)
-        
         try:
             canvas.set_yscale(yscale)
-            [xmin, xmax, ymin, ymax] = canvas.axis()
-            #clonex.plot([xmin,xmax],[20*ymin_data,20*ymax_data],alpha=0.001)
-            #clonex.set_ylim(2*ymin,2*ymax)
-            print '[xmin, xmax, ymin, ymax] ',[xmin, xmax, ymin, ymax]
-            #cloney.set_yscale(yscale)
-            clonex.set_yscale(yscale) #must be called before limits are set
-            clonex.set_ylim(20*ymin, 20*ymax)
-            #clonex.set_yscale(yscale) #seems to overide set_ylim prefs, for now pick one
+            canvas.set_xscale(xscale)
+            
+            if yscale =='symlog':
+                canvas.set_yscale(yscale,linthreshy=1e-9)
+            if xscale =='symlog':
+                canvas.set_xscale(xscale,linthreshy=1e-9)
+            
+            if gridON:
+                canvas.grid()
         except:
             try:
                 canvas.set_yscale('symlog')
             except:
-                print 'scaling failed'
-        
-       
-                
+                print 'scaling failed completely'
+   
+        [xmin, xmax, ymin, ymax] = canvas.axis()    
+
         try:
-            canvas.set_xscale(xscale)
-            #cloney.set_xscale(xscale)
+            #canvas.set_yscale(yscale)
+            #canvas.grid(axis='x')
+            #canvas.grid(axis='y')
+        
+            #clonex.plot([xmin,xmax],[20*ymin_data,20*ymax_data],alpha=0.001)
+            #clonex.set_ylim(2*ymin,2*ymax)
+            #print '[xmin, xmax, ymin, ymax] ',[xmin, xmax, ymin, ymax]
+            #cloney.set_yscale(yscale)
+           
+            clonex.set_yscale(yscale) #must be called before limits are set 
+            cloney.set_yscale(yscale)  
+            cloney.set_xscale(xscale)
+            
+            if yscale =='symlog':
+                clonex.set_yscale(yscale,linthreshy=1e-9)
+                cloney.set_yscale(yscale,linthreshy=1e-9)  
+                
+            if xscale =='symlog':
+                cloney.set_xscale(xscale,linthreshy=1e-9)
+            
+            Ln_drive_scale = s.meta['w_Ln'][0]**-1
+            #Ln_drive_scale = 2.1e3
+            clonex.set_ylim(Ln_drive_scale*ymin, Ln_drive_scale*ymax)
+            cloney.set_xlim(xmin, xmax)
+            cloney.set_ylim(ymin,ymax) #because cloney shares the yaxis with canvas it may overide them, this fixes that
             #clonex.set_xscale(xscale)
         except:
-            canvas.set_xscale('symlog', linthreshx=0.1)  
-      #canvas.savefig(pp, format='pdf')
-        #canvas.set_xlabel(r'$k_{\zeta} \rho_{ci}$',fontsize=18)
+            #canvas.set_xscale('symlog', linthreshx=0.1)  
+            print 'extra axis FAIL'
+     
         if s.trans[0]:
-            canvas.set_xlabel(r'$k_{\perp} \rho_{ci}$',fontsize=18)
+            cloney.set_xlabel(r'$k_{\perp} \rho_{ci}$',fontsize=18)
 
 
         canvas.set_ylabel(r'$\frac{\gamma}{\omega_{ci}}$',fontsize=18,rotation='horizontal')
@@ -260,7 +285,8 @@ class LinResDraw(LinRes):
         
         #ion_acoust_str = r"$\frac{c_s}{L_{\partial_r n}}}$"
         
-        clonex.set_ylabel(r'$\frac{\gamma}{\frac{c_s}{L_{\partial_r n}}}$', color='k',fontsize=18,rotation='horizontal')
+        clonex.set_ylabel(r'$\frac{\gamma}{\frac{c_s}{L_n}}$', color='k',fontsize=18,rotation='horizontal')
+        canvas.set_xlabel(r'$k_{\zeta} \rho_{ci}$',fontsize=18)
         
         # for tl in clone.get_yticklabels():
         #     tl.set_color('r')
@@ -274,7 +300,7 @@ class LinResDraw(LinRes):
          #return str(input)
         
         #cloney = canvas.twiny()
-        #cloney.set_xlabel(r'$k_{\zeta} \rho_{ci}$',fontsize=18)
+        
 
         
       
