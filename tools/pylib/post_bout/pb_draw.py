@@ -162,7 +162,8 @@ class LinResDraw(LinRes):
                    
                    cloney.plot(k[s_i,1,sub_s.nx/2],
                                y2[s_i,0,sub_s.nx/2],'k.',ms = 3)
-                   
+                   print 'np.sum(np.abs(y-y2)): ',np.sum(np.abs(y-y2)),comp_r
+
                print 'dzhandle color', jj
                #dzlabels.append("DZ: "+ str(2*j)+r'$\pi$')
                dzlabels.append(j) 

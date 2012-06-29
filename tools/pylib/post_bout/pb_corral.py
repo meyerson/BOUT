@@ -180,12 +180,13 @@ class LinRes(object):
 
       self.trans = np.array(ListDictKey(alldb,'transform'))
 
-      if self.trans[0]:
+      if np.any(self.trans):
           self.phase_r = ListDictKey(alldb,'phase_r')
+          self.gamma_r = np.array(ListDictKey(alldb,'gamma_r'))
           self.amp_r = ListDictKey(alldb,'amp_r')
-          self.freq_r = ListDictKey(alldb,'freq_r')
-          self.k_r = ListDictKey(alldb,'k_r')
-          
+          self.freq_r = np.array(ListDictKey(alldb,'freq_r'))
+          self.k_r = np.array(ListDictKey(alldb,'k_r'))
+
       self.M = self.model(self.k,self.L)
    
    def _amp(self,tind,xind):

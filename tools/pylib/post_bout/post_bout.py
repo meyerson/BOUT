@@ -62,7 +62,7 @@ from corral import corral
 from rotate_mp import rotate
 
 def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
-         savemovie=False,IConly=0,transform=False,fast = False,
+         savemovie=False,IConly=0,transform=True,fast = False,
          debug = False): 
     #lets collect the data
     print 'path :', path
@@ -80,7 +80,7 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
     #return meta
     output = OrderedDict()
     data = OrderedDict()
-    data_r = data
+    data_r = OrderedDict()
 
    
     all_modes = []
@@ -93,10 +93,11 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
             movie(data,meta)
         if transform:
             #if you take the time to rotate the data go ahead and save it
-            data_r[active] = rotate(data[active],meta) # keep it simple for now
+            cpydata = data[active]
+            data_r[active] = rotate(cpydata,meta) # keep it simple for now
             
-    if debug:
-        return 0
+        if debug:
+            return data[active],data_r[active]
 
     minIC = np.array([np.max(data[x][0,:,:,:]) for x in meta['evolved']['v']])
     minIC = min(minIC[np.array(meta['IC']).nonzero()])  
@@ -159,6 +160,9 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
         if transform:
             modes_db_r,ave_r = basic_info(data_r[active],meta,
                                       user_peak = all_modes) #for now data_r must maintain same shape as data
+        
+        # if debug:
+        #     return modes_db_r,modes_db
         
         for j,x in enumerate(modes_db):
             x['field'] = active
