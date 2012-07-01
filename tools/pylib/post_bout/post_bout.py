@@ -158,13 +158,23 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
                                   user_peak = all_modes)   
 
         if transform:
+            print all_modes
             modes_db_r,ave_r = basic_info(data_r[active],meta,
                                       user_peak = all_modes) #for now data_r must maintain same shape as data
         
         # if debug:
         #     return modes_db_r,modes_db
-        
+        #print modes_db_r.__class__,len(modes_db_r)
+        # if transform:
+        #     for j,x in enumerate(modes_db_r):
+        #         x['amp_r'] = modes_db_r[j]['amp']
+        #         x['phase_r'] = modes_db_r[j]['phase']
+        #         x['k_r']= modes_db_r[j]['k']
+        #         x['freq_r']= modes_db_r[j]['freq']
+        #         x['gamma_r'] =modes_db_r[j]['gamma']
+        #     allmodes_db.append(modes_db_r)
         for j,x in enumerate(modes_db):
+            print 'j: ',j
             x['field'] = active
             x['dz']=meta['dz']
             x['IC']=meta['IC']
@@ -181,12 +191,14 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
             #for now if there was rotation just loop a few keys
             x['transform'] = transform
             if transform:
-                x['amp_r'] = modes_db_r[j]['amp']
-                x['phase_r'] = modes_db_r[j]['phase']
-                x['k_r']= modes_db_r[j]['k']
-                x['freq_r']= modes_db_r[j]['freq']
-                x['gamma_r'] =modes_db_r[j]['gamma']
-                
+                try:
+                    x['amp_r'] = modes_db_r[j]['amp']
+                    x['phase_r'] = modes_db_r[j]['phase']
+                    x['k_r']= modes_db_r[j]['k']
+                    x['freq_r']= modes_db_r[j]['freq']
+                    x['gamma_r'] =modes_db_r[j]['gamma']
+                except:
+                    print "FAIL TO ADD TRANSFORMED VALUES"
                 
             ntt = x['nt'] #actual number of steps
             nt = meta['NOUT']['v'] #requested number of steps
