@@ -31,15 +31,15 @@ class LinResPresent(LinResDraw):
    def __init__(self,alldb):
       LinResDraw.__init__(self,alldb)
 
-   def show(self,filter =True,quick=False,pdfname='output2.pdf'):
+   def show(self,filter =True,quick=False,pdfname='output2.pdf',debug=False):
        colors = ['b','g','r','c','m','y','k','b','g','r','c','m','y','k']
        pp = PdfPages('output.pdf')
        
       #start by removing modes above the maxN threshold
        modelist =[]
        [modelist.append(list(self.modeid[p])) for p in range(self.nmodes) if self.mn[p][1] <= self.maxN[p] ]
-       
-       print modelist
+       # [modelist.append(list(self.modeid[p])) for p in range(self.nmodes) if self.mn[p][1] <= self.maxN[p] ]
+       #print modelist
        s = subset(self.db,'modeid',modelist)
       #print s.mn
       
@@ -81,23 +81,31 @@ class LinResPresent(LinResDraw):
   
             
        
-       s.plotmodes(pp,yscale='linear',comp='phase',linestyle='.',field='rho')
- 
-       s.plotmodes(pp,yscale='linear')
-       s.plotmodes(pp,yscale='linear',field='rho')
+       s.plotmodes(pp,yscale='symlog',comp='phase',linestyle='.',field='rho',summary=False)
+       s.plotmodes(pp,yscale='linear',field='rho',summary=False)
 
-
-       s.plotmodes(pp,yscale='log',debug=True)
+       s.plotmodes(pp,yscale='linear',summary=False)
        
        modelist = []
        [modelist.append([1,p+1]) for p in range(7)]
         
        ss = subset(s.db,'mn',modelist)
-       ss.plotmodes(pp,yscale='log',debug=True)
-       ss.plotmodes(pp,yscale='linear',comp='phase')
+       ss.plotmodes(pp,yscale='log',debug=True,summary=False)
+       ss.plotmodes(pp,yscale='symlog',comp='phase',summary=False)
+       ss.plotmodes(pp,yscale='symlog',comp='phase',field='rho',summary=False)
+       
+       if debug: #just a few problematic slides
+          fig1 = plt.figure()
+          pp_bug = PdfPages('debug.pdf')
+          #ss.plotmodes(pp_bug,yscale='symlog',comp='phase',summary=False)
+          
+          fig1.savefig(pp_bug, format='pdf')   
+          pp_bug.close()
       #ss.plotmodes(pp,yscale='log',comp='phase',clip=True)
-       ss.plotmodes(pp,comp='phase',clip=True)
-
+       
+       #ss.plotfreq2(pp,xscale='log',yscale='linear',overplot=False)
+       ss.plotfreq2(pp,xscale='log',yscale='linear',overplot=True,trans=True)
+       ss.plotfreq2(pp,xscale='log',yscale='symlog',field='rho',overplot=True)
 
        if quick==True:
            pp.close()
@@ -107,25 +115,23 @@ class LinResPresent(LinResDraw):
       
        all_fields = list(set(s.field).union())
 
-
-       s.plotomega(pp,xscale='log',yscale='linear',overplot=True)
-       s.plotgamma(pp,xscale='log',yscale='linear',overplot=True,trans=False)
+       s.plotgamma(pp,xscale='log',yscale='linear',overplot=True,trans=True)
   
        s.plotgamma(pp,yscale='log',xscale='log',overplot=True)
-       s.plotgamma(pp,yscale='log',xscale='log',field='rho')
+       s.plotgamma(pp,yscale='log',xscale='log',field='rho',overplot=True)
       
        try:
           s.plotfreq2(pp,xscale='log',yscale='linear',overplot=True)
-          s.plotfreq2(pp,xscale='log',yscale='symlog',overplot=True)
-          s.plotfreq2(pp,xscale='log',yscale='linear',field='rho')
+          s.plotfreq2(pp,xscale='log',yscale='symlog',overplot=False)
+          s.plotfreq2(pp,xscale='log',yscale='symlog',field='rho',overplot=True)
        
-          s.plotfreq2(pp,xscale='log',yscale='symlog')
+          s.plotfreq2(pp,xscale='log',yscale='linear')
        except:
           print 'something terrible'
 
-       s.plotradeigen(pp,yscale='linear')
-       s.plotradeigen(pp,field ='Vi',yscale='linear')
-       s.plotradeigen(pp,field='rho',yscale='log')
+       # s.plotradeigen(pp,yscale='linear')
+       # s.plotradeigen(pp,field ='Vi',yscale='linear')
+       # s.plotradeigen(pp,field='rho',yscale='log')
   
        pp.close()
        s.printmeta(pp,filename=pdfname) #append a metadata header

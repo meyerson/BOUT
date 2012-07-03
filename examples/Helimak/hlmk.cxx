@@ -362,7 +362,7 @@ int physics_run(BoutReal t)
     // Set jpar,Ve,Ajpar neglecting the electron inertia term
     //jpar = ((Te0*Gradpar(Ni, CELL_YLOW)) - (Ni0*Grad_par(phi, CELL_YLOW)))/(fmei*0.51*nu);
     jpar = ((Tet*Grad_par_LtoC(Ni)) - (Nit*Grad_par_LtoC(phi)))/(fmei*0.51*nu);
-    jpar = lowPass(jpar,8);
+    jpar = lowPass(jpar,5);
 
     // Set boundary conditions on jpar (in BOUT.inp)
     jpar.applyBoundary();
@@ -397,10 +397,11 @@ int physics_run(BoutReal t)
     */
     
     //ddt(Ni) += .001*(1.0/(mesh->ngz)) *Laplacian(Ni);
-    if(minusDC) 
-      ddt(Ni) -= ddt(Ni).DC(); // REMOVE TOROIDAL AVERAGE DENSITY
- 
-    ddt(Ni) = lowPass(ddt(Ni),3);
+    //if(minusDC) 
+     // REMOVE TOROIDAL AVERAGE DENSITY
+    
+    ddt(Ni) = lowPass(ddt(Ni),5);
+    ddt(Ni) -= ddt(Ni).DC();
     //ddt(Ni) = lowPass_Y(ddt(Ni),1);
     //ddt(Ni) = smooth_y(ddt(Ni));
   }
@@ -416,10 +417,10 @@ int physics_run(BoutReal t)
    
     */
     //ddt(Vi) += .001*(1.0/(mesh->ngz)) *Laplacian(Vi);
-    if(minusDC) 
-      ddt(Vi) -= ddt(Vi).DC();
+    //if(minusDC) 
+    ddt(Vi) -= ddt(Vi).DC();
 
-    ddt(Vi) = lowPass(ddt(Vi),8);
+    ddt(Vi) = lowPass(ddt(Vi),5);
     //ddt(Vi) = lowPass_Y(ddt(Vi),1);
   }
 
@@ -451,7 +452,7 @@ int physics_run(BoutReal t)
   
   if(evolve_rho) {
       
-    ddt(rho) -= vE_Grad(rho0, phi);// + vE_Grad(rho, phi0);//+ vE_Grad(rho, phi);
+    /// ddt(rho) -= vE_Grad(rho0, phi);// + vE_Grad(rho, phi0);//+ vE_Grad(rho, phi);
     //ddt(rho) += mesh->Bxy*mesh->Bxy*Div_par(jpar, CELL_CENTRE);
     ddt(rho) += mesh->Bxy*mesh->Bxy*Grad_par_CtoL(jpar); 
     // ddt(rho) += 2.0*mesh->Bxy*V_dot_Grad(b0xcv, pei);
@@ -474,11 +475,13 @@ int physics_run(BoutReal t)
     //output.write("mesh->dz)^2: %e \n",(mesh->dz)^2);
     //ddt(rho) += 10*(1.0/(mesh->ngz)) * (1.0/(mesh->ngz))*Laplacian(rho);
     //ddt(rho) += Laplacian(rho);
-     if(minusDC) 
-       ddt(rho) -= ddt(rho).DC();
-     
-     //ddt(rho) += 1e-4 * mu_i * Laplacian(rho);
-     ddt(rho) = lowPass(ddt(rho),3);
+    //ddt(rho) += 1.0/100000000.0 *mu_i*Delp2(rho,-1.0); //no smoothing, check the value of mu_i
+    //ddt(rho) += 1.0/100000000.0 *Delp2(rho); 
+    //if(minusDC) 
+    ddt(rho) -= ddt(rho).DC();
+    
+    //ddt(rho) += 1e-4 * mu_i * Laplacian(rho);
+    ddt(rho) = lowPass(ddt(rho),5);
      //ddt(rho) = smooth_y(ddt(rho));
      //ddt(rho) = lowPass_Y(ddt(rho),1);
 

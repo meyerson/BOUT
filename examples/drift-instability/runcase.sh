@@ -58,7 +58,7 @@ llist=(1e-2 1e-3 1e-4 1e-5)
 i=0
 for lval in ${llist[@]}
 do
-    current_dir=$data_dir/data_bz_11_${lval}
+    current_dir=$data_dir/data_bz_${lval}
     echo $current_dir
     
     rm -r $current_dir

@@ -62,7 +62,7 @@ from corral import corral
 from rotate_mp import rotate
 
 def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
-         savemovie=False,IConly=0,transform=True,fast = False,
+         savemovie=False,IConly=0,transform=False,fast = False,
          debug = False): 
     #lets collect the data
     print 'path :', path
@@ -294,7 +294,7 @@ def read(path='.',filename='post_bout.pkl',trysave=True,
             x['MN'] = list([1,2])
             x['MN'][0] = x['mn'][0]
             x['MN'][1] = x['mn'][1]/x['dz']
-            x['modeid'] = [x['dz'],x['modeid']]
+            x['modeid'] = [x['dz'],x['modeid'],x['mn'][1]]
            # print x['mn']
             
             #x['MN'] = x['mn']

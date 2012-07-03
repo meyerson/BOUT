@@ -272,15 +272,15 @@ def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=Fal
         #         gamma_est2[-5:,:],weights=np.ones(gamma_est2[-5:,:].shape))  
         
         
-        # k = [[p['y_i'],p['z_i']],
-        #      [2*math.pi*rho_s*float(p['y_i'])/L_y,2*math.pi*rho_s*p['z_i']/L_z]]
+        k = [[p['y_i'],p['z_i']],
+             [2*math.pi*rho_s*float(p['y_i'])/L_y,2*math.pi*p['z_i']/L_z]]
         #L_y is normalized
         
         #simple k def, works in drift-instability fine
         # k = [[p['y_i'],p['z_i']],
         #      [(B/Bp)**-1*2*math.pi*float(p['y_i'])/(L_y),(B/Bp)*2*math.pi*p['z_i']/L_z]]
 
-        k = [[p['y_i'],p['z_i']],
+        k_r = [[p['y_i'],p['z_i']],
              [(Bp/B)*2*math.pi*float(p['y_i'])/(L_y),
               (B/Bp)*2*math.pi*p['z_i']/L_z]]
       
@@ -302,7 +302,7 @@ def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=Fal
 
         dom_mode_db.append({'modeid':i,'k':k[1],'gamma':gamma,'freq': freq,
                             'amp': amp,'amp_n':amp_n,'phase':phase,'mn':k[0],
-                            'nt':nt})
+                            'nt':nt,'k_r':k_r[1]})
 
     
     return dom_mode_db

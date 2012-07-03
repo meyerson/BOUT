@@ -143,6 +143,8 @@ class LinRes(object):
       self.field = np.array(ListDictKey(alldb,'field'))
       
       self.k = np.array(ListDictKey(alldb,'k'))
+      self.k_r = np.array(ListDictKey(alldb,'k_r'))
+
       self.mn = np.array(ListDictKey(alldb,'mn'))
 
       #return ListDictKey(alldb,'phase')
@@ -185,9 +187,9 @@ class LinRes(object):
           self.gamma_r = np.array(ListDictKey(alldb,'gamma_r'))
           self.amp_r = ListDictKey(alldb,'amp_r')
           self.freq_r = np.array(ListDictKey(alldb,'freq_r'))
-          self.k_r = np.array(ListDictKey(alldb,'k_r'))
+          
 
-      self.M = self.model(self.k,self.L)
+      self.M = self.model(self.k,self.L,haswak=True)
    
    def _amp(self,tind,xind):
       #first select modes that actually have valid (tind,xind)
@@ -200,11 +202,11 @@ class LinRes(object):
                
  
    
-   def model(self,field='Ni',plot=False):
+   def model(self,field='Ni',plot=False,haswak=False):
       
       #enrich the object
-      allk = self.k[:,1,self.nx/2] #one location for now
-      allkpar = self.k[:,0,self.nx/2] #one location for now
+      allk = self.k_r[:,1,self.nx/2] #one location for now
+      allkpar = self.k_r[:,0,self.nx/2] #one location for now
       
       self.M = []
       self.eigsys = []
@@ -226,6 +228,13 @@ class LinRes(object):
          M[0,1] = k/(self.L[i,self.nx/2,self.ny/2])
          M[1,0] = (2*np.pi/self.meta['lpar'][self.nx/2])**2 * self.meta['sig_par'][0]*complex(0,k**-2)
          M[1,1]= -(2*np.pi/self.meta['lpar'][self.nx/2])**2 * self.meta['sig_par'][0]*complex(0,k**-2)
+
+         if haswak:
+             M[0,0] = M[0,0] #- M[1,0]
+             M[0,1] = M[0,1] #- M[1,1]
+             
+         #if rho_conv:
+             
          
          #M[1,0] = (allkpar[i])**2 * self.meta['sig_par'][0]*complex(0,k**-2)
          #M[1,1]= -(allkpar[i])**2 * self.meta['sig_par'][0]*complex(0,k**-2)

@@ -64,7 +64,8 @@ class LinResDraw(LinRes):
         canvas.plot(allk[ki],y,'-',
                     label=label)
              
-        canvas.annotate('theory',(allk[ki[0]],y[0]),fontsize = 8)
+        canvas.annotate('theory',(allk[ki[0]],1.1*y[0]),fontsize = 8)
+        canvas.annotate('theory',(1.1*allk[ki[-1]],1.1*y[-1]),fontsize = 8)
 
         if ownpage: #set scales if this is its own plot
             fig1.savefig(pp, format='pdf')
@@ -72,7 +73,8 @@ class LinResDraw(LinRes):
 
     def plotomega(self,pp,canvas=None,field='Ni',yscale='linear',clip=0,
                   xaxis='t',xscale='linear',xrange=1,comp='gamma',
-                  pltlegend='both',overplot=False,gridON=True,trans=True):
+                  pltlegend='both',overplot=False,gridON=True,trans=False):
+        
         colors = ['b.','r.','k.','c.','g.','y.','m.','b.','r.','k.','c.','g.','y.','m.']
         colordash = ['b','r','k','c','g','y','m','b','r','k','c','g','y','m']
 
@@ -90,8 +92,7 @@ class LinResDraw(LinRes):
             fig1.subplots_adjust(left=0.17)
             canvas = fig1.add_subplot(1,1,1) 
             clonex = canvas.twinx()
-            if np.any(self.trans) and trans:
-                cloney = canvas.twiny()
+          
 
        
         dzhandles = []
@@ -115,8 +116,10 @@ class LinResDraw(LinRes):
         y = np.array(ListDictKey(s.db,comp))
 
          #y = s.gamma #nmodes x 2 x nx ndarray
-        k = s.k ##nmodes x 2 x nx ndarray
-
+        k = s.k ##nmodes x 2 x nx ndarray k_zeta
+        
+        kfactor = np.mean(s.k_r[:,0,s.nx/2]/s.k[:,0,s.nx/2]) #good enough for now
+        
          # plt.errorbar(k[:,1,s.nx/2],
          #              y[:,0,s.nx/2],
          #              yerr=y[:,2,s.nx/2],
@@ -220,9 +223,9 @@ class LinResDraw(LinRes):
             canvas.set_xscale(xscale)
             
             if yscale =='symlog':
-                canvas.set_yscale(yscale,linthreshy=1e-9)
+                canvas.set_yscale(yscale,linthreshy=1e-13)
             if xscale =='symlog':
-                canvas.set_xscale(xscale,linthreshy=1e-9)
+                canvas.set_xscale(xscale,linthreshy=1e-13)
             
             if gridON:
                 canvas.grid()
@@ -232,46 +235,74 @@ class LinResDraw(LinRes):
             except:
                 print 'scaling failed completely'
    
-        [xmin, xmax, ymin, ymax] = canvas.axis()    
-
-        try:
-            #canvas.set_yscale(yscale)
-            #canvas.grid(axis='x')
-            #canvas.grid(axis='y')
         
-            #clonex.plot([xmin,xmax],[20*ymin_data,20*ymax_data],alpha=0.001)
-            #clonex.set_ylim(2*ymin,2*ymax)
-            #print '[xmin, xmax, ymin, ymax] ',[xmin, xmax, ymin, ymax]
-            #cloney.set_yscale(yscale)
-           
-            clonex.set_yscale(yscale) #must be called before limits are set 
-              
-            if np.any(s.trans) and trans:
-                cloney.set_yscale(yscale)
+        #print '[xmin, xmax, ymin, ymax]: ',[xmin, xmax, ymin, ymax]
+       
+            
+        clonex.set_yscale(yscale) #must be called before limits are set 
+        
+        try:
+            if yscale == 'linear':
+                formatter = ticker.ScalarFormatter()
+                formatter.set_powerlimits((-2, 2))  #force scientific notation
+                canvas.yaxis.set_major_formatter(formatter)
+                clonex.yaxis.set_major_formatter(formatter)
+                #canvas.useOffset=False
+        except:
+            print 'fail 1'
+        [xmin, xmax, ymin, ymax] = canvas.axis()    
+        
+      
+        if yscale =='symlog':
+            clonex.set_yscale(yscale,linthreshy=1e-9)
+        if xscale =='symlog':  
+            clonex.set_xscale(xscale,linthreshy=1e-9)
+            #if np.any(s.trans) and trans:
+        [xmin1, xmax1, ymin1, ymax1] = canvas.axis()   
+        if trans:
+            try:
+                cloney = canvas.twiny()
+                #cloney.set_yscale(yscale)
                 cloney.set_xscale(xscale)
+                [xmin1, xmax1, ymin2, ymax2] = canvas.axis()
+
+                if  xscale =='symlog':
+                    cloney.set_xscale(xscale,linthreshy=1e-9)
+                if  yscale =='symlog':
+                     cloney.set_yscale(yscale,linthreshy=1e-9)
+                if yscale =='linear':
+                    cloney.yaxis.set_major_formatter(formatter)
+            except:
+                print 'fail trans'
+                #     cloney.useOffset=False
+      
+        
+            # if xscale =='symlog' and trans:
+            #     cloney.set_yscale(yscale,linthreshy=1e-9)
+            #     cloney.set_xscale(xscale,linthreshy=1e-9)
             
-            if yscale =='symlog':
-                clonex.set_yscale(yscale,linthreshy=1e-9)
-                  
-                
-            if xscale =='symlog' and np.any(s.trans) and trans:
-                cloney.set_yscale(yscale,linthreshy=1e-9)
-                cloney.set_xscale(xscale,linthreshy=1e-9)
-            
-            Ln_drive_scale = s.meta['w_Ln'][0]**-1
+        Ln_drive_scale = s.meta['w_Ln'][0]**-1
             #Ln_drive_scale = 2.1e3
-            clonex.set_ylim(Ln_drive_scale*ymin, Ln_drive_scale*ymax)
-            if np.any(s.trans) and trans:
-                cloney.set_xlim(xmin, xmax)
+        clonex.set_ylim(Ln_drive_scale*ymin, Ln_drive_scale*ymax)
+        
+        try:
+            if trans:
+                #k_factor = #scales from k_zeta to k_perp
+                cloney.set_xlim(kfactor*xmin, kfactor*xmax)
+                #kfactor =1.0
+                #cloney.set_xlim(xmin,xmax)
                 cloney.set_ylim(ymin,ymax) #because cloney shares the yaxis with canvas it may overide them, this fixes that
                 cloney.set_xlabel(r'$k_{\perp} \rho_{ci}$',fontsize=18)
-            #clonex.set_xscale(xscale)
         except:
-            #canvas.set_xscale('symlog', linthreshx=0.1)  
-            print 'extra axis FAIL'
+            print 'moar fail'
+            #clonex.set_xscale(xscale)
+                
+        # except:
+        #     #canvas.set_xscale('symlog', linthreshx=0.1)  
+        #     print 'extra axis FAIL'
 
-
-        canvas.set_ylabel(r'$\frac{\gamma}{\omega_{ci}}$',fontsize=18,rotation='horizontal')
+      
+       
         #if yscale == 'linear':
         #canvas.yaxis.set_major_locator(ticker.LinearLocator(numticks=8))
     
@@ -289,7 +320,13 @@ class LinResDraw(LinRes):
         
         #ion_acoust_str = r"$\frac{c_s}{L_{\partial_r n}}}$"
         
-        clonex.set_ylabel(r'$\frac{\gamma}{\frac{c_s}{L_n}}$', color='k',fontsize=18,rotation='horizontal')
+        if comp=='gamma':
+            canvas.set_ylabel(r'$\frac{\gamma}{\omega_{ci}}$',fontsize=18,rotation='horizontal')
+            clonex.set_ylabel(r'$\frac{\gamma}{\frac{c_s}{L_n}}$', color='k',fontsize=18,rotation='horizontal')
+        if comp=='freq':
+            canvas.set_ylabel(r'$\frac{\omega}{\omega_{ci}}$',fontsize=18,rotation='horizontal')
+            clonex.set_ylabel(r'$\frac{\omega}{\frac{c_s}{L_n}}$', color='k',fontsize=18,rotation='horizontal')  
+
         canvas.set_xlabel(r'$k_{\zeta} \rho_{ci}$',fontsize=18)
         
         # for tl in clone.get_yticklabels():
@@ -303,21 +340,19 @@ class LinResDraw(LinRes):
       #def totex(input):
          #return str(input)
         
-        #cloney = canvas.twiny()
         
 
         
       
-        if yscale == 'linear':
-            formatter = ticker.ScalarFormatter()
-            formatter.set_powerlimits((0, 0))  #force scientific notation
-            canvas.yaxis.set_major_formatter(formatter)
-            clonex.yaxis.set_major_formatter(formatter)
+        
         
         # if self.trans and overplot:
         #     self.plotomega(pp,canvas=canvas,overplot=False,comp='gamma_r')
         
-        title = comp+ ' computed from '+field
+        # try:
+        #     title = comp+ ' computed from '+field+str([ymax-ymin,ymax1-ymin1,ymax2-ymin2])
+        # except:
+        title = comp+ ' computed from ' +field
         #canvas.set_title(title,fontsize=14)
         fig1.suptitle(title,fontsize=14)
         
@@ -394,11 +429,12 @@ class LinResDraw(LinRes):
     def plotmodes(self,pp,field='Ni',comp='amp',math='1',ylim=1,
                   yscale='symlog',clip=False,xaxis='t',xscale='linear',
                   xrange=1,debug=False,yaxis=r'$\frac{Ni}{Ni_0}$',
-                  linestyle='-'):
+                  linestyle='-',summary=True):
       
         Nplots = self.nrun
 
         colors = ['b','g','r','c','m','y','k','b','g','r','c','m','y','k']
+        
         fig1 = plt.figure()
         
         fig2 = plt.figure()
@@ -410,6 +446,7 @@ class LinResDraw(LinRes):
         adj = fig2.subplots_adjust(hspace=0.4,wspace=0.4)
         fig2.suptitle('Dominant mode '+ comp+' for  '+ field)
         props = dict( alpha=0.8, edgecolors='none' )
+        
         
         allcurves = fig1.add_subplot(1,1,1)
         fig1.suptitle('Dominant mode behavior for  '+ field)
@@ -423,7 +460,7 @@ class LinResDraw(LinRes):
             xr = range(s.nx/2-xrange/2,s.nx/2+xrange/2+1)
             data = np.array(ListDictKey(s.db,comp)) #pick component should be ok for a fixed dz key
          
-            data = data + 1e-32
+            data = data + 1e-32 #hacky way to deal with buggy scaling 
             ax =fig2.add_subplot(round(Nplots/3.0 + 1.0),3,k+1)  
             ax.grid(True,linestyle='-',color='.75')
             handles=[]
@@ -449,11 +486,13 @@ class LinResDraw(LinRes):
                     
                 if xaxis=='t':
                #print 'out.size', out.size, out.shape
-                    x = range(out.size)
+                    x = np.array(range(out.size))+1.0e-32 #again really hacky
                #plt.plot(x,out.flatten(),c=colors[k])
-                    handles.append(ax.plot(x,out.flatten(),
-                                     c=cm.jet(1.*k))) 
-       
+                    label = str(s.mn[i])
+                    #handles.append(ax.plot(x,out.flatten(),
+                    #                 c=cm.jet(1.*k),label = label)) 
+                    ax.plot(x,out.flatten(),
+                            c=cm.jet(.2*i),label = label,linestyle='-') 
                 else:
                     x = np.array(ListDictKey(s.db,xaxis))[i,:,xr] 
                #x #an N? by nx array
@@ -463,26 +502,35 @@ class LinResDraw(LinRes):
                
             #detect error (bar data
                     print 'error bars:',x,out
-   
+           
+           
+            #ax.legend(handles,labels,loc='best',prop={'size':6}) 
+            
             formatter = ticker.ScalarFormatter()
             formatter.set_powerlimits((0, 0)) 
             ax.xaxis.set_major_formatter(formatter)        
          #ax.axis('tight')
             if yscale=='linear':
                 ax.yaxis.set_major_formatter(formatter)
+            if yscale=='symlog':
+                ax.set_yscale('symlog',linthreshy=1e-13) 
             else:
                 try:
                     ax.set_yscale(yscale)  
                 except:
                     print 'may get weird axis'
                     ax.set_yscale('symlog')
+            if comp=='phase' or yscale=='linear':
+                    ax.set_xscale('symlog',linthreshx=1.0)
 
             artist.setp(ax.axes.get_xticklabels(), fontsize=6)
             artist.setp(ax.axes.get_yticklabels(), fontsize=8)
          #artist.setp(ax.axes.get_yscale(), fontsize=8)     
             ax.set_title(str(dz),fontsize=10)
             ax.set_xlabel(xaxis)
-   
+            handles, labels = ax.get_legend_handles_labels()
+            leg = ax.legend(handles,labels,ncol=2,loc='best',prop={'size':4},fancybox=True) 
+            leg.get_frame().set_alpha(0.3)
          #x = s.Rxy[imax,:,s.ny/2]
          
             t0=2
@@ -547,9 +595,10 @@ class LinResDraw(LinRes):
       
       
       #plt.legend(modenames,loc='best')
+        if summary:        
+            fig1.savefig(pp, format='pdf')  
+            plt.close(fig1)
 
-        fig1.savefig(pp, format='pdf')  
-        plt.close(fig1)
         plt.close(fig2)
     
       #except:
@@ -626,7 +675,7 @@ class LinResDraw(LinRes):
             x = s.Rxynorm[imax,:,s.ny/2]
             y = data[imax,s.nt[0]-1,:]
          #allcurves.plot(x,y,c= colors[k])
-            allcurves.plot(x,y,c=cm.jet(1.*k/len(x)))
+            allcurves.plot(x,y,c=cm.jet(.1*k/len(x)))
             k= k+1
          
         fig2.savefig(pp, format='pdf')  

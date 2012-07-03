@@ -32,6 +32,8 @@
 ;3.0e15,te0=15.,Bz0 = .10,bphi0 = 0,Zmax=6.0,ni_profile_type = 0,ti0 =
 ; 1.0, te_profile_type = 'CLM'
 
+;set_mesh_cyl,/export,Nr = 20, Nz = 16,rMin = 0.001, rMax = .03,ni0 =3.0e15,te0=15.,Bz0 = .10,bphi0 = 0,Zmax=6.0,ni_profile_type = 0,ti0 = 1.0, te_profile_type = 1
+
 pro CLM_grid,filename=filename
   set_mesh_cyl,/export,Nr = 36, Nz = 32,rMin = 0.001, rMax = .03,ni0 = $
                3.0e15,te0=15.,Bz0 = .10,bphi0 = 0,Zmax=6.0,$
@@ -39,7 +41,7 @@ pro CLM_grid,filename=filename
                phi0V =5./10000., phi_profile_type = 0
 
   if not keyword_set(filename) then filename = "CLM.nc"
-  read_uedata3, /s, d, /noref, /NOPLOTS,filename = filename
+  read_uedata3, /s, d, /noref, /NOPLOTS,filename = filename,/nopdb
   spawn,"rm *.pdb"
   
 end
