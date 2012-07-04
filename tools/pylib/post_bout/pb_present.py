@@ -82,9 +82,9 @@ class LinResPresent(LinResDraw):
             
        
        s.plotmodes(pp,yscale='symlog',comp='phase',linestyle='.',field='rho',summary=False)
-       s.plotmodes(pp,yscale='linear',field='rho',summary=False)
+       s.plotmodes(pp,yscale='symlog',field='rho',summary=False)
 
-       s.plotmodes(pp,yscale='linear',summary=False)
+       s.plotmodes(pp,yscale='symlog',summary=False)
        
        modelist = []
        [modelist.append([1,p+1]) for p in range(7)]

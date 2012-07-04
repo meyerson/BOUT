@@ -273,7 +273,7 @@ def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=Fal
         
         
         k = [[p['y_i'],p['z_i']],
-             [2*math.pi*rho_s*float(p['y_i'])/L_y,2*math.pi*p['z_i']/L_z]]
+             [2*math.pi*float(p['y_i'])/L_y,2*math.pi*p['z_i']/L_z]]
         #L_y is normalized
         
         #simple k def, works in drift-instability fine

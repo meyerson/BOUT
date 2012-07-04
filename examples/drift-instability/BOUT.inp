@@ -31,12 +31,12 @@ restart = false
 
 #grid="/home/cryosphere/BOUT/examples/drift-instability/uedge.grd_std.cdl"
 #grid = "/home/cryosphere/BOUT/tools/cyl_and_helimak_grids/Helimak_11_1x32_140_lam_n.nc"
-grid = "/home/cryosphere/BOUT/tools/cyl_and_helimak_grids/Helimak_Bz_1x32_140_lam_n.nc"
-#grid = "/home/cryosphere/BOUT/tools/cyl_and_helimak_grids/Helimak_1_10_1x32_140_lam_n.nc"
+#grid = "/home/cryosphere/BOUT/tools/cyl_and_helimak_grids/Helimak_Bz_1x32_140_lam_n.nc"
+grid = "/home/cryosphere/BOUT/tools/cyl_and_helimak_grids/Helimak_1_10_1x32_140_lam_n.nc"
 
 dump_format = "nc" # Output format. nc = NetCDF
 
-#StaggerGrids = true
+StaggerGrids = true
 
 ##################################################
 # derivative methods
@@ -49,8 +49,8 @@ upwind = W3
 
 [ddy]
 
-first = C2
-second = C2
+first = C4
+second = C4
 upwind = C4
 
 [ddz]

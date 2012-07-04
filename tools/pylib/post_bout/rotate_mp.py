@@ -67,7 +67,7 @@ except:
 from read_inp import parse_inp, read_inp, read_log,metadata
 from read_grid import read_grid
 from basic_info import basic_info, fft_info
-from corral import corral
+
 
 
 def rotate(data,meta,rt=False,spectrum=False,view=False,save=False):
