@@ -1,11 +1,13 @@
 import post_bout as pb
 meta
 
+from post_bout import pb_corral
+
 import post_bout as pb
 from pb_present import LinResPresent
 a = pb.corral(refresh=False,IConly=0,debug=False)
 y = LinResPresent(a.db)
-y.show()
+y.show(debug=True)
 
 
 import post_bout as pb
@@ -21,6 +23,15 @@ pb.save(path='./',transform=True)
 
 import post_bout as pb
 pb.save(path='./')
+
+import post_bout as pb
+meta = pb.metadata(path='./')
+ni = pb.boutdata.collect('Ni')
+from boututils import showdata
+showdata(ni[:,2,:,:])
+z = np.array(np.gradient(ni))[0]
+showdata(z[:,2,:,:])
+
 
 import post_bout as pb
 meta = pb.metadata(path='./')
@@ -127,3 +138,81 @@ fig.savefig(pp, format='pdf')
 plt.close(fig)
 fig.savefig(pp, format='pdf') 
 pp.close()
+
+
+import sys
+import pickle
+import os
+import json
+    
+
+boutpath = os.environ['BOUT_TOP']
+pylibpath = boutpath+'/tools/pylib'
+pbpath = pylibpath+'/post_bout'
+boutdatapath = pylibpath+'/boutdata'
+boututilpath = pylibpath+'/boututils'
+    
+allpath = [boutpath,pylibpath,pbpath,boutdatapath,boututilpath]
+    # sys.path.append('/home/cryosphere/BOUT/tools/pylib')
+    # sys.path.append('/home/cryosphere/BOUT/tools/pylib/boutdata')
+    # sys.path.append('/home/cryosphere/BOUT/tools/pylib/boututils')
+    # sys.path.append('/home/cryosphere/BOUT/tools/pylib/post_bout')
+    #sys.path.append(allpath)
+[sys.path.append(elem) for elem in allpath]
+print sys.path
+
+
+#to debug some plotomega stuff
+from pb_draw import LinResDraw,subset
+from pb_corral import LinRes
+import numpy as np
+import matplotlib.pyplot as plt
+
+import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.backends.backend_pdf import PdfPages
+import matplotlib.artist as artist 
+import matplotlib.ticker as ticker
+#from matplotlib.ticker import FuncFormatter
+#from matplotlib.ticker import ScalarFormatter 
+
+from reportlab.platypus import *
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.rl_config import defaultPageSize
+from reportlab.lib.units import inch
+from reportlab.graphics.charts.linecharts import HorizontalLineChart
+from reportlab.graphics.shapes import Drawing
+from reportlab.graphics.charts.lineplots import LinePlot
+from reportlab.graphics.widgets.markers import makeMarker
+from reportlab.lib import colors
+
+from replab_x_vs_y import RL_Plot
+
+pp = PdfPages('debug.pdf')
+fig1 = plt.figure()
+s.plotfreq2(pp_bug,xscale='log',yscale='symlog',overplot=True)
+ss.plotgamma(pp_bug,xscale='log',yscale='symlog',overplot=True)
+ss.plottheory(pp_bug)
+ss.plottheory(pp_bug,comp='freq')
+fig1.savefig(pp_bug, format='pdf')   
+pp_bug.close()
+pp.close()
+
+from post_bout import subset
+self = a
+field='Ni'
+s = subset(self.db,'field',[field])
+modelist = []
+m=1
+[modelist.append([m,n+1]) for n in range(7)]
+s = subset(s.db,'mn',modelist)
+allk = s.k[:,1,s.nx/2]
+ki = np.argsort(allk)
+y1 = np.array(a.models[1].omegamax).flatten()
+y0 = np.array(a.models[0].omegamax).flatten()
+
+
+pp = PdfPages('debug.pdf')
+fig1 = plt.figure()
+canvas = fig1.add_subplot(1,1,1) 

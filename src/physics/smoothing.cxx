@@ -239,7 +239,7 @@ const Field3D lowPass_Y(const Field3D &var, int ymax)
   //static double *g = NULL;
   //static BoutReal *g;  //an 1d array given x and z coords, need to allocate the correct size
   Field2D g; // nx x ny data container
-  BoutReal **d; //an array of doubl, again nx x ny
+  BoutReal **d; //an array of double, again nx x ny
   
   
 #ifdef CHECK

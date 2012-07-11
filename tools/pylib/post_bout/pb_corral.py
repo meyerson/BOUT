@@ -188,8 +188,19 @@ class LinRes(object):
           self.amp_r = ListDictKey(alldb,'amp_r')
           self.freq_r = np.array(ListDictKey(alldb,'freq_r'))
           
+      try:
+          self.model(haswak=False) #
+      except:
+          self.M = 0
 
-      self.M = self.model(self.k,self.L,haswak=True)
+      #try:
+      self.models=[]
+      self.models.append(_model(self)) #create a list to contain models
+      self.models.append(_model(self,haswak=True,name='haswak')) #another model
+      self.models.append(_model(self,haswak2=True,name='haswak2')) 
+      
+      # except:
+      #     print 'FAIL'
    
    def _amp(self,tind,xind):
       #first select modes that actually have valid (tind,xind)
@@ -198,9 +209,6 @@ class LinRes(object):
       return np.array([self.amp[i][tind,xind] 
                        for i in range(self.nmodes)])
    
-
-               
- 
    
    def model(self,field='Ni',plot=False,haswak=False):
       
@@ -208,6 +216,7 @@ class LinRes(object):
       allk = self.k_r[:,1,self.nx/2] #one location for now
       allkpar = self.k_r[:,0,self.nx/2] #one location for now
       
+   
       self.M = []
       self.eigsys = []
       self.gammaA = []
@@ -221,7 +230,7 @@ class LinRes(object):
 
       
       for i,k in enumerate(allk):
-         print i
+         #print i
          #M =np.matrix(np.random.rand(3,3),dtype=complex)
          M = np.zeros([3,3],dtype=complex)
          M[0,0] = 0
@@ -230,8 +239,8 @@ class LinRes(object):
          M[1,1]= -(2*np.pi/self.meta['lpar'][self.nx/2])**2 * self.meta['sig_par'][0]*complex(0,k**-2)
 
          if haswak:
-             M[0,0] = M[0,0] #- M[1,0]
-             M[0,1] = M[0,1] #- M[1,1]
+             M[0,0] = M[0,0] + M[1,1]*complex(0,k**2)
+             M[0,1] = M[0,1] + M[1,0]*complex(0,k**2)
              
          #if rho_conv:
              
@@ -248,11 +257,15 @@ class LinRes(object):
          self.eigsys.append(eigsys)
          self.gammaA.append(gamma)
          self.gammamax.append(max(gamma))
-         where = gamma == gamma.max()
-         self.omegamax.append(omega[where])
+         where = ((gamma == gamma.max()) & (omega != 0))
+         self.omegamax.append(omega[where[0]])
          self.eigvec.append(eigvec)
          self.omegaA.append(omega)
 
+   class __model__(object):
+       def __init__(self):
+           self.M = 0
+       
 class subset(LinRes):
    def __init__(self,alldb,key,valuelist,model=False):
       selection = ListDictFilt(alldb,key,valuelist)
@@ -266,5 +279,55 @@ class subset(LinRes):
          if model==True:
             self.model()
 
-         
+class _model(object):  #NOT a derived class,but one that takes a class as input
+    def __init__(self,input_obj,name='drift',haswak=False,
+                 rho_conv=False,haswak2=False):
+        allk = input_obj.k_r[:,1,input_obj.nx/2] #one location for now
+        allkpar = input_obj.k_r[:,0,input_obj.nx/2] #one location for now
+        self.name = name
 
+        self.M = []
+        self.eigsys = []
+        self.gammaA = []
+        self.omegaA = []
+        self.eigvec = [] 
+        self.gammamax = []
+        self.omegamax = []
+
+        for i,k in enumerate(allk):
+            #print i
+         #M =np.matrix(np.random.rand(3,3),dtype=complex)
+            M = np.zeros([3,3],dtype=complex)
+            M[0,0] = 0
+            M[0,1] = k/(input_obj.L[i,input_obj.nx/2,input_obj.ny/2])
+            M[1,0] = (2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,k**-2)
+            M[1,1]= -(2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,k**-2)
+
+            if haswak2:
+                f = 1.0100
+                M[0,0] =  -f*(2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1)
+                M[0,1] = M[0,1] + f*(2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1)
+                M[1,1] =- M[1,1] 
+                M[1,0] = -M[1,0]
+            if haswak:
+                M[0,0] = -(2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1)
+                M[0,1] = M[0,1] + (2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1)
+                  
+            if rho_conv: #not used
+                M[1,0] = (allkpar[i])**2 * input_obj.meta['sig_par'][0]*complex(0,k**-2)
+                M[1,1]= -(allkpar[i])**2 * input_obj.meta['sig_par'][0]*complex(0,k**-2)
+         
+            eigsys= np.linalg.eig(M)  
+            gamma = (eigsys)[0].imag
+            omega =(eigsys)[0].real
+            eigvec = eigsys[1]
+        
+            self.M.append(M)
+            self.eigsys.append(eigsys)
+            self.gammaA.append(gamma)
+            self.gammamax.append(max(gamma))
+            where = ((gamma == gamma.max()) & (omega != 0))
+            self.omegamax.append(omega[where])
+            self.eigvec.append(eigvec)
+            self.omegaA.append(omega)
+        

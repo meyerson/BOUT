@@ -8,6 +8,7 @@ from matplotlib import cm
 import matplotlib.artist as artist 
 import matplotlib.ticker as ticker
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.backends.backend_pdf import PdfPages
@@ -32,6 +33,9 @@ class LinResDraw(LinRes):
        
         
     def plottheory(self,pp,m=1,canvas=None,comp='gamma',field='Ni'):
+        if self.M == 0:
+            return 0;
+
         if self.M is None:
             self.model()
       
@@ -56,24 +60,46 @@ class LinResDraw(LinRes):
          
         label ='gamma analytic'
 
-        if comp=='gamma':
-            y = np.array(s.gammamax)[ki]
-        else:
-            y = np.array(s.omegamax)[ki]
-            
-        canvas.plot(allk[ki],y,'-',
-                    label=label)
-             
-        canvas.annotate('theory',(allk[ki[0]],1.1*y[0]),fontsize = 8)
-        canvas.annotate('theory',(1.1*allk[ki[-1]],1.1*y[-1]),fontsize = 8)
+        #if comp=='gamma':
+        #     y = np.array(s.gammamax)[ki]
+        # else:
+        #     y = np.array(s.omegamax)[ki]
+        
+        for m in s.models:
+            print m.name
+
+        for i,m in enumerate(s.models):   
+            print m.name
+            if comp=='gamma':
+                y = (np.array(m.gammamax)[ki]).flatten()
+            else:
+                y = (np.array(m.omegamax)[ki]).flatten()
+                
+            #print m.name, ':' ,y.astype('float')
+            try:
+                y = y.astype('float')
+                #print m.name, ':' ,y
+                canvas.plot((allk[ki]).flatten(),y,'-',
+                            label=label,c=cm.jet(.1*i))
+            except:
+                print 'fail to add theory curve'
+
+            canvas.annotate(m.name,(allk[ki[0]],1.1*y[0]),fontsize = 8)
+            canvas.annotate(m.name,(1.1*allk[ki[-1]],1.1*y[-1]),fontsize = 8)
+
 
         if ownpage: #set scales if this is its own plot
+            # canvas.set_yscale('symlog',linthreshy=1e-13)
+            # canvas.set_xscale('log')
+            
+            canvas.axis('tight')
             fig1.savefig(pp, format='pdf')
             plt.close(fig1)
 
     def plotomega(self,pp,canvas=None,field='Ni',yscale='linear',clip=0,
                   xaxis='t',xscale='linear',xrange=1,comp='gamma',
-                  pltlegend='both',overplot=False,gridON=True,trans=False):
+                  pltlegend='both',overplot=False,gridON=True,trans=False,
+                  infobox=True):
         
         colors = ['b.','r.','k.','c.','g.','y.','m.','b.','r.','k.','c.','g.','y.','m.']
         colordash = ['b','r','k','c','g','y','m','b','r','k','c','g','y','m']
@@ -214,9 +240,25 @@ class LinResDraw(LinRes):
       # else:
       #    legend(dzhandles,dzlabels,loc=3,prop={'size':6})
         if overplot==True:
-            self.plottheory(pp,canvas=canvas,comp=comp)
-        
-                
+            try:
+                self.plottheory(pp,canvas=canvas,comp=comp)
+            except:
+                print 'no theory plot'
+        if infobox:
+            textstr = '$\L_{\parallel}=%.2f$\n$\L_{\partial_r n}=%.2f$\n$B=%.2f$'%(s.meta['lpar'][s.nx/2],
+                                                                                   s.meta['L'][s.nx/2,s.ny/2],
+                                                                                   s.meta['Bpxy']['v'][s.nx/2,s.ny/2])
+            props = dict(boxstyle='square', facecolor='white', alpha=0.3)
+            textbox = canvas.text(0.85, 0.95, textstr, transform=canvas.transAxes, fontsize=10,
+                                   verticalalignment='top', bbox=props)
+            # leg = canvas.legend(handles,labels,ncol=2,loc='best',prop={'size':4},fancybox=True) 
+            #textbox.get_frame().set_alpha(0.3)
+            #matplotlib.patches.Rectangle
+            # p = patches.Rectangle((0, 0), 1, 1, fc="r")
+            # p = str('L_par')
+            # leg = canvas.legend([p], ["Red Rectangle"],loc='best',prop={'size':4})
+            # leg.get_frame().set_alpha(0.3)
+
         #cloney.set_xlim(xmin,xmax)
         try:
             canvas.set_yscale(yscale)
@@ -329,35 +371,16 @@ class LinResDraw(LinRes):
 
         canvas.set_xlabel(r'$k_{\zeta} \rho_{ci}$',fontsize=18)
         
-        # for tl in clone.get_yticklabels():
-        #     tl.set_color('r')
 
-      #title = r'$\'+comp+'$ '+ 'computed from '+field'
-      #title = 'r\$\'
-      #title = r'$\frac{Ni}{Ni_0}$'
-      #title = '\\$'+comp
-      #title = title+'$ '+ ' computed from '+field
-      #def totex(input):
-         #return str(input)
-        
-        
-
-        
-      
-        
-        
-        # if self.trans and overplot:
-        #     self.plotomega(pp,canvas=canvas,overplot=False,comp='gamma_r')
-        
-        # try:
-        #     title = comp+ ' computed from '+field+str([ymax-ymin,ymax1-ymin1,ymax2-ymin2])
-        # except:
         title = comp+ ' computed from ' +field
         #canvas.set_title(title,fontsize=14)
         fig1.suptitle(title,fontsize=14)
         
-        if ownpage:    
-            fig1.savefig(pp, format='pdf')
+        if ownpage:
+            try:
+                fig1.savefig(pp, format='pdf')
+            except:
+                print 'pyplt doesnt like you'
             plt.close(fig1)
 
     def plotfreq(self,pp,field='Ni',clip=0,
@@ -460,8 +483,9 @@ class LinResDraw(LinRes):
             xr = range(s.nx/2-xrange/2,s.nx/2+xrange/2+1)
             data = np.array(ListDictKey(s.db,comp)) #pick component should be ok for a fixed dz key
          
-            data = data + 1e-32 #hacky way to deal with buggy scaling 
-            ax =fig2.add_subplot(round(Nplots/3.0 + 1.0),3,k+1)  
+            data = data #+ 1e-32 #hacky way to deal with buggy scaling 
+            ax =fig2.add_subplot(round(Nplots/3.0 + 1.0),3,k+1)
+            
             ax.grid(True,linestyle='-',color='.75')
             handles=[]
          #modenames.append(str(j))
@@ -486,13 +510,14 @@ class LinResDraw(LinRes):
                     
                 if xaxis=='t':
                #print 'out.size', out.size, out.shape
-                    x = np.array(range(out.size))+1.0e-32 #again really hacky
+                    x = np.array(range(out.size))
                #plt.plot(x,out.flatten(),c=colors[k])
                     label = str(s.mn[i])
                     #handles.append(ax.plot(x,out.flatten(),
                     #                 c=cm.jet(1.*k),label = label)) 
                     ax.plot(x,out.flatten(),
                             c=cm.jet(.2*i),label = label,linestyle='-') 
+                    
                 else:
                     x = np.array(ListDictKey(s.db,xaxis))[i,:,xr] 
                #x #an N? by nx array
@@ -522,7 +547,7 @@ class LinResDraw(LinRes):
                     ax.set_yscale('symlog')
             if comp=='phase' or yscale=='linear':
                     ax.set_xscale('symlog',linthreshx=1.0)
-
+            ax.axis('tight')
             artist.setp(ax.axes.get_xticklabels(), fontsize=6)
             artist.setp(ax.axes.get_yticklabels(), fontsize=8)
          #artist.setp(ax.axes.get_yscale(), fontsize=8)     

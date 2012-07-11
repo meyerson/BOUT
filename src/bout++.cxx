@@ -96,6 +96,7 @@ int iteration;
 
 const char *data_dir;
 
+
 const string time_to_hms(BoutReal t);   // Converts to h:mm:ss.s format
 char get_spin();                    // Produces a spinning bar
 
@@ -105,7 +106,7 @@ int bout_monitor(BoutReal t, int iter, int NOUT); // Function called by the solv
 int bout_init(int argc, char **argv)
 {
   int i, NOUT;
-  BoutReal TIMESTEP;
+  //BoutReal TIMESTEP;
   string grid_name;
   bool dump_float; // Output dump files as floats
 

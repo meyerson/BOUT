@@ -2817,6 +2817,7 @@ bool finite(const Field3D &f)
 
 const Field3D yfilter(const Field3D &var, int N0)
 {
+  //return 0;
 #ifdef CHECK
   msg_stack.push("y_filter( Field3D )");
 #endif
@@ -2824,6 +2825,7 @@ const Field3D yfilter(const Field3D &var, int N0)
   Field2D g;
   g=0.0;
   BoutReal **d = g.getData();
+
   rvec v;
   static dcomplex *fy = NULL;
   
@@ -2854,6 +2856,7 @@ const Field3D yfilter(const Field3D &var, int N0)
 	if(jy != N0) {
 	  fy[jy] = 0.0;
 	}
+	//fy[jy] = 0.0;
       }
 
       irfft(fy, ncy, d[0]);
@@ -2862,9 +2865,10 @@ const Field3D yfilter(const Field3D &var, int N0)
 	result[jx][jy][jz] = d[0][jy];
 
     }
-  
-  result.location = var.location;
 
+  mesh->communicate(result);
+  result.location = var.location;
+  //result = 0.0;
   return result;
 }
 

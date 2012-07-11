@@ -371,6 +371,7 @@ int physics_run(BoutReal t)
     mesh->communicate(jpar);
 
     Ve = Vi - jpar/Ni0;
+    //Ve = jpar/Ni0;
     Ajpar = Ve;
   }else {
     
@@ -388,7 +389,7 @@ int physics_run(BoutReal t)
 
     
     //ddt(Ni) -= Ni0*Div_par(Ve) + Ni*Div_par(Ve0);// + Ni*Div_par(Vi);
-    
+    // ddt(Ni) -= Ni0*Div_par(Ve) + Ni*Div_par(Ve0);
     ddt(Ni) += Grad_par_CtoL(jpar);
     
     //ddt(Ni) += (2.0)*V_dot_Grad(b0xcv, pe);
@@ -506,11 +507,16 @@ int physics_run(BoutReal t)
       }
     }
     */
-
-    ddt(Ajpar) += (1./fmei)*Grad_par(phi, CELL_YLOW);
-    ddt(Ajpar) -= (1./fmei)*(Te0/Ni0)*Grad_par(Ni, CELL_YLOW);
     //ddt(Ajpar) -= (1./fmei)*1.71*Grad_par(Te);
+
+    // ddt(Ajpar) += (1./fmei)*Grad_par(phi, CELL_YLOW);
+    // ddt(Ajpar) -= (1./fmei)*(Te0/Ni0)*Grad_par(Ni, CELL_YLOW);
+    // ddt(Ajpar) += 0.51*interp_to(nu, CELL_YLOW)*jpar/Ni0;
+
+    ddt(Ajpar) += (1./fmei)*Grad_par_LtoC(phi);
+    ddt(Ajpar) -= (1./fmei)*(Te0/Ni0)*Grad_par_LtoC(Ni);
     ddt(Ajpar) += 0.51*interp_to(nu, CELL_YLOW)*jpar/Ni0;
+    
   }
 
   return(0);

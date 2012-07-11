@@ -42,23 +42,35 @@ llist=(1e-1 5e-1 5e-2 1e-2 1e-3 1e-4 1e-5 1e-6 1e-7)
 #tstep=(1e2 1e2 1e3)
 #tstep=(1e3 2e3)
 
-NOUTS=(100 100 200 300 200 200 200 100)
-tstep=(2e2 2e2 1e2 1e2 1e2 1e2 1e2 1e2) #large b_phi case
+NOUTS=(100 200 500 500 200 200 200 100)
+tstep=(1e2 1e2 1e2 2e2 1e2 1e2 1e2 1e2) #large b_phi case
 
+NOUTS=(100 100 100 100 200 200 200 100)
+tstep=(1e2 1e2 2e1 2e1 1e2 1e2 1e2 1e2) #small b_phi case
+#NOUTS=(10 10 20 20 200 200 200 100)
+#tstep=(2e1 2e1 1e1 1e1 1e2 1e2 1e2 1e2) #lar
 #llist=(5e-5 4e-4 2e-4 2e-5 8e-3 1e-3 5e-3)
 
 llist=(1e-2 1e-3 1e-4 1e-5)
 
-# NOUTS=(100)
-#tstep=(2e1 2e1)
+#NOUTS=(500 500)
+#tstep=(3e2 3e2 1e2 1e2 1e2 1e2) #large b_phi case
+
+#NOUTS=(10 10 20 20 200 200 200 100)
+#tstep=(2e1 2e1 1e1 1e1 1e2 1e2 1e2 1e2) #lar
+#llist=(5e-5 4e-4 2e-4 2e-5 8e-3 1e-3 5e-3)
+
 #llist=(1e-4 1e-5)
+# NOUTS=(300)
+# tstep=(1e2)
+# llist=(1e-4)
 # 4e-4 2e-4 2e-5 8e-3 1e-3 5e-3)
 rm status.log
 #rm run.log
 i=0
 for lval in ${llist[@]}
 do
-    current_dir=$data_dir/data_bz_1_10_${lval}
+    current_dir=$data_dir/data_bz_${lval}
     echo $current_dir
     
     rm -r $current_dir

@@ -42,6 +42,7 @@ BoutReal Te_x, Ti_x, Ni_x, Vi_x, bmag, rho_s, fmei, AA, ZZ;
 BoutReal lambda_ei, lambda_ii;
 BoutReal nu_hat, mui_hat, wci, nueix, nuiix;
 BoutReal beta_p;
+BoutReal DT;
 
 // settings
 bool estatic, ZeroElMass; // Switch for electrostatic operation (true = no Apar)
@@ -98,13 +99,15 @@ int physics_init(bool restarting)
   Ni_x *= 1.0e14;
   bmag *= 1.0e4;
 
-  /*************** READ OPTIONS *************************/
+  /*************** READ OPTIOS *************************/
 
   // Read some parameters
   Options *globalOptions = Options::getRoot();
   Options *options = globalOptions->getSection("2fluid");
   OPTION(options, AA, 2.0);
   OPTION(options, ZZ, 1.0);
+
+  
 
   OPTION(options, estatic,     false);
   OPTION(options, ZeroElMass,  false);
@@ -121,7 +124,8 @@ int physics_init(bool restarting)
   (globalOptions->getSection("te"))->get("evolve", evolve_te,   true);
   (globalOptions->getSection("ti"))->get("evolve", evolve_ti,   true);
   (globalOptions->getSection("Ajpar"))->get("evolve", evolve_ajpar, true);
-  
+  globalOptions->get("TIMESTEP", DT, 1);
+
   if(ZeroElMass)
     evolve_ajpar = false; // Don't need ajpar - calculated from ohm's law
 
@@ -306,9 +310,12 @@ int physics_init(bool restarting)
 int physics_run(BoutReal t)
 {
   // Solve EM fields
-
   solve_phi_tridag(rho, phi, phi_flags);
-
+  // if (float(t/DT) > 5.0) {
+  //   rho = yfilter(rho,1);
+  //   Ni = yfilter(Ni,1);
+  //   //jpar =  yfilter(jpar,1);
+  // }
   if(estatic || ZeroElMass) {
     // Electrostatic operation
     Apar = 0.0;
@@ -340,6 +347,10 @@ int physics_run(BoutReal t)
     // Set jpar,Ve,Ajpar neglecting the electron inertia term
     //jpar = ((Te0*Grad_par(Ni, CELL_YLOW)) - (Ni0*Grad_par_LtoC(phi, CELL_YLOW)))/(fmei*0.51*nu);
     jpar = ((Te0*Grad_par_LtoC(Ni)) - (Ni0*Grad_par_LtoC(phi)))/(fmei*0.51*nu);
+    
+    
+    //nonlinear
+    jpar -= (Ni*Grad_par_LtoC(phi))/(fmei*0.51*nu);
     jpar = lowPass(jpar,8);
     //jpar = yfilter(jpar,1);
     //jpar = nl_filter_y(jpar,4);
@@ -375,21 +386,31 @@ int physics_run(BoutReal t)
 
   ddt(Ni) = 0.0;
   if(evolve_ni) {
-    ddt(Ni) -= vE_Grad(Ni0, phi);
+    //ddt(Ni) -= vE_Grad(Ni0, phi);
+     
+    ddt(Ni) -= vE_Grad(Ni0, phi) + vE_Grad(Ni, phi);
     
-    
-    //ddt(Ni) -= vE_Grad(Ni, phi0) + vE_Grad(Ni0, phi) + vE_Grad(Ni, phi);
+     //ddt(Ni) -= vE_Grad(Ni, phi0) + vE_Grad(Ni0, phi) + vE_Grad(Ni, phi);
       /*
-      ddt(Ni) -= Vpar_Grad_par(Vi, Ni0) + Vpar_Grad_par(Vi0, Ni) + Vpar_Grad_par(Vi, Ni);
+      ddt(Ni) -= Vpar_Grad_par(Vimake, Ni0) + Vpar_Grad_par(Vi0, Ni) + Vpar_Grad_par(Vi, Ni);
       ddt(Ni) -= Ni0*Div_par(Vi) + Ni*Div_par(Vi0) + Ni*Div_par(Vi);
       ddt(Ni) += Div_par(jpar);
       ddt(Ni) += 2.0*V_dot_Grad(b0xcv, pe);
       ddt(Ni) -= 2.0*(Ni0*V_dot_Grad(b0xcv, phi) + Ni*V_dot_Grad(b0xcv, phi0) + Ni*V_dot_Grad(b0xcv, phi));
     */
     ddt(Ni) = lowPass(ddt(Ni),8);
-    //Ni = yfilter(Ni,1);
-    //ddt(Ni) = smooth_y(ddt(Ni));
+    //ddt(Ni) = yfilter(ddt(Ni),1);  //no parallelizatio in y, break up in x for now
+    //output.write("time: %f\n",t/DT);
+    //int remain = (int)(int(t) % 10);
+    //utput.write("remain: %d\n",remain);
+    // if (float(t/DT) > 5.0) {
+    //   Ni = yfilter(Ni,1);
+      //ddt(Ni) = yfilter(ddt(Ni),1);
+       //output.write("yfilter!\n");
+      //output.write("time: %f\n",t/DT);
+     
     //Ni = lowPass_Y(Ni,1);
+    
     //Ni = yfilter(Ni,0);
     //Ni = smooth_y(Ni);
   }
@@ -447,7 +468,7 @@ int physics_run(BoutReal t)
       }
     }
     */
-
+   
     //ddt(rho) += 1e-2 * mu_i * Laplacian(rho);
   }
   
