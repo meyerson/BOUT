@@ -7,7 +7,7 @@ import post_bout as pb
 from pb_present import LinResPresent
 a = pb.corral(refresh=False,IConly=0,debug=False)
 y = LinResPresent(a.db)
-y.show(debug=True)
+y.show(debug=False)
 
 
 import post_bout as pb
@@ -89,11 +89,12 @@ z = rotate(ni,meta,debug=True)
 from boutdata import collect
 import post_bout as pb
 from read_inp import metadata
-path = '/tmp/2fluid/data_bz_1_10_1e-2'
+path = './'
 ni = collect('Ni',path=path)
 meta = pb.metadata(path=path)
-from rotate import rotate
-z = rotate(ni,meta,debug=False,cached=True)
+from rotate_mp import rotate_mp
+from rotate2 import rotate
+z = rotate(ni,meta,debug=False,cached=False)
 
 
 

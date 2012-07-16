@@ -28,10 +28,11 @@ MYG = 2
 #NYPE = 1
 
 restart = false
+nonlinear = false
 
 #grid="/home/cryosphere/BOUT/examples/drift-instability/uedge.grd_std.cdl"
-#grid = "/home/cryosphere/BOUT/tools/cyl_and_helimak_grids/Helimak_11_1x32_140_lam_n.nc"
-grid = "/home/cryosphere/BOUT/tools/cyl_and_helimak_grids/Helimak_Bz_1x32_140_lam_n.nc"
+grid = "/home/cryosphere/BOUT/tools/cyl_and_helimak_grids/Helimak_11_1x32_140_lam_n.nc"
+#grid = "/home/cryosphere/BOUT/tools/cyl_and_helimak_grids/Helimak_Bz_1x32_140_lam_n.nc"
 #grid = "/home/cryosphere/BOUT/tools/cyl_and_helimak_grids/Helimak_1_10_1x32_140_lam_n.nc"
 
 dump_format = "nc" # Output format. nc = NetCDF
@@ -83,6 +84,7 @@ ZZ = 1.0
  
 estatic = true    # if true, electrostatic (Apar = 0)
 ZeroElMass = true  # Use Ohms law without electron inertia
+nonlinear = false
 #Zeff = 128.0        # Z effective
 Zeff = 4
 nu_perp = 1.0e-20
@@ -134,12 +136,11 @@ bndry_all = neumann # Zero-gradient on all boundaries
 
 [Ni]
 scale = 1.0e-8 # only perturbing = 
-zs_phase = .5
-
+#zs_phase = .5
 
 [rho]
 evolve = true
-
+scale = -3.0e-7
 [Vi]
 evolve = false
 

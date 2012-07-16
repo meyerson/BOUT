@@ -360,7 +360,7 @@ int physics_run(BoutReal t)
   
   if(ZeroElMass) {
     // Set jpar,Ve,Ajpar neglecting the electron inertia term
-    //jpar = ((Te0*Gradpar(Ni, CELL_YLOW)) - (Ni0*Grad_par(phi, CELL_YLOW)))/(fmei*0.51*nu);
+    //jpar = ((Te0*Grad_par(Ni, CELL_YLOW)) - (Ni0*Grad_par(phi, CELL_YLOW)))/(fmei*0.51*nu);
     jpar = ((Tet*Grad_par_LtoC(Ni)) - (Nit*Grad_par_LtoC(phi)))/(fmei*0.51*nu);
     jpar = lowPass(jpar,5);
 
@@ -370,8 +370,8 @@ int physics_run(BoutReal t)
     // Need to communicate jpar
     mesh->communicate(jpar);
 
-    Ve = Vi - jpar/Ni0;
-    //Ve = jpar/Ni0;
+    //Ve = Vi - jpar/Ni0;
+    Ve = jpar/Ni0;
     Ajpar = Ve;
   }else {
     
@@ -388,10 +388,10 @@ int physics_run(BoutReal t)
     //ddt(Ni) -= Vpar_Grad_par(Ve, Ni0) + Vpar_Grad_par(Ve0, Ni);// + Vpar_Grad_par(Ve, Ni);
 
     
-    //ddt(Ni) -= Ni0*Div_par(Ve) + Ni*Div_par(Ve0);// + Ni*Div_par(Vi);
+    //ddt(Ni) += Ni0*Div_par_CtoL(Ve);// + Ni*Div_par_CtoL(Ve0);// + Ni*Div_par(Vi);
     // ddt(Ni) -= Ni0*Div_par(Ve) + Ni*Div_par(Ve0);
     ddt(Ni) += Grad_par_CtoL(jpar);
-    
+    //ddt(Ni) += Grad_par(jpar);
     //ddt(Ni) += (2.0)*V_dot_Grad(b0xcv, pe);
     /*
     ddt(Ni) -= (2.0)*(Ni0*V_dot_Grad(b0xcv, phi) + Ni*V_dot_Grad(b0xcv, phi0));
@@ -453,9 +453,12 @@ int physics_run(BoutReal t)
   
   if(evolve_rho) {
       
-    /// ddt(rho) -= vE_Grad(rho0, phi);// + vE_Grad(rho, phi0);//+ vE_Grad(rho, phi);
+    // ddt(rho) -= vE_Grad(rho0, phi);// + vE_Grad(rho, phi0);//+ vE_Grad(rho, phi);
+    //ddt(rho) -= vE_Grad(Ni0, phi);
     //ddt(rho) += mesh->Bxy*mesh->Bxy*Div_par(jpar, CELL_CENTRE);
+    
     ddt(rho) += mesh->Bxy*mesh->Bxy*Grad_par_CtoL(jpar); 
+    //ddt(rho) += Grad_par_CtoL(jpar);  #for 2D the above line equivalent
     // ddt(rho) += 2.0*mesh->Bxy*V_dot_Grad(b0xcv, pei);
     
     //ddt(rho) -= Vpar_Grad_par(Vi, rho0) + Vpar_Grad_par(Vi0, rho);// + Vpar_Grad_par(Vi, rho);

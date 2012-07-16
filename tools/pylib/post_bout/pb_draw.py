@@ -144,7 +144,8 @@ class LinResDraw(LinRes):
          #y = s.gamma #nmodes x 2 x nx ndarray
         k = s.k ##nmodes x 2 x nx ndarray k_zeta
         
-        kfactor = np.mean(s.k_r[:,0,s.nx/2]/s.k[:,0,s.nx/2]) #good enough for now
+        kfactor = np.mean(s.k_r[:,1,s.nx/2]/s.k[:,1,s.nx/2]) #good enough for now
+  
         
          # plt.errorbar(k[:,1,s.nx/2],
          #              y[:,0,s.nx/2],
@@ -545,8 +546,11 @@ class LinResDraw(LinRes):
                 except:
                     print 'may get weird axis'
                     ax.set_yscale('symlog')
-            if comp=='phase' or yscale=='linear':
-                    ax.set_xscale('symlog',linthreshx=1.0)
+            # if comp=='phase' or yscale=='linear':
+            #         ax.set_xscale('symlog',linthreshx=1.0)
+            
+            ax.set_xscale(xscale)
+
             ax.axis('tight')
             artist.setp(ax.axes.get_xticklabels(), fontsize=6)
             artist.setp(ax.axes.get_yticklabels(), fontsize=8)

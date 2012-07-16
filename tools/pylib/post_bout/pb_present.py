@@ -82,10 +82,11 @@ class LinResPresent(LinResDraw):
       plt.close() 
   
 
-      s.plotmodes(pp,yscale='symlog',comp='phase',linestyle='.',field='rho',summary=False)
-      s.plotmodes(pp,yscale='symlog',field='rho',summary=False)
+      for elem in self.meta['evolved']['v']:
+         s.plotmodes(pp,yscale='symlog',comp='phase',linestyle='.',field=elem,summary=False)
+         s.plotmodes(pp,yscale='symlog',field=elem,summary=False)
 
-      s.plotmodes(pp,yscale='symlog',summary=False)
+      #s.plotmodes(pp,yscale='symlog',summary=False)
       
       modelist = []
       [modelist.append([1,p+1]) for p in range(7)]
@@ -113,10 +114,12 @@ class LinResPresent(LinResDraw):
       #ss.plotmodes(pp,yscale='log',comp='phase',clip=True)
        
        #ss.plotfreq2(pp,xscale='log',yscale='linear',overplot=False)
-      ss.plotfreq2(pp,xscale='log',yscale='linear',overplot=True,trans=True)
-      ss.plotfreq2(pp,xscale='log',yscale='linear',overplot=True,trans=True,field='rho')
+      for elem in self.meta['evolved']['v']:
+         ss.plotfreq2(pp,xscale='log',yscale='symlog',field=elem,
+                      overplot=True,trans=True)
+      
 
-      ss.plotfreq2(pp,xscale='log',yscale='symlog',field='rho',overplot=True)
+      #ss.plotfreq2(pp,xscale='log',yscale='symlog',field='rho',overplot=True)
       
       if quick==True:
           pp.close()

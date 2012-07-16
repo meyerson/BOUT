@@ -45,10 +45,12 @@ def basic_info(data,meta,rescale=True,rotate=False,user_peak=0):
     #print peaks[0]['gamma']
     return peaks_db,ave
 
-def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=False,meta=0):
+def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=False,meta=0,edgefix = False):
     import numpy as np
     import math
- 
+    
+    
+        
     print 'in fft_inf0'
 
     dims = data.shape
@@ -59,7 +61,18 @@ def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=Fal
         print data.shape
     else:
         print "something with dimesions"
-        
+       
+    # data2 = data    
+    # if edgefix:
+    #     data2 = np.zeros((nt,nx,ny+1,nz+1))
+      
+    #     for t in range(nt):
+    #         for x in range(nx):
+    #             temp = np.append(data[t,x,:,:],[data[t,x,0,:]],0)
+    #             data2[t,x,:,:] = np.append(temp,
+    #                                        np.transpose([temp[:,0]]),1)
+                   
+   
     #dt, k labels for the revelant dimensions 
     
 

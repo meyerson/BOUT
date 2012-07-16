@@ -45,7 +45,7 @@ BoutReal beta_p;
 BoutReal DT;
 
 // settings
-bool estatic, ZeroElMass; // Switch for electrostatic operation (true = no Apar)
+bool estatic, ZeroElMass, nonlinear; // Switch for electrostatic operation (true = no Apar)
 BoutReal zeff, nu_perp;
 bool evolve_rho, evolve_te, evolve_ni, evolve_ajpar, evolve_vi, evolve_ti;
 BoutReal ShearFactor;
@@ -106,7 +106,8 @@ int physics_init(bool restarting)
   Options *options = globalOptions->getSection("2fluid");
   OPTION(options, AA, 2.0);
   OPTION(options, ZZ, 1.0);
-
+  OPTION(options, nonlinear, false);
+  
   
 
   OPTION(options, estatic,     false);
@@ -349,8 +350,9 @@ int physics_run(BoutReal t)
     jpar = ((Te0*Grad_par_LtoC(Ni)) - (Ni0*Grad_par_LtoC(phi)))/(fmei*0.51*nu);
     
     
-    //nonlinear
-    jpar -= (Ni*Grad_par_LtoC(phi))/(fmei*0.51*nu);
+    if (nonlinear)
+      jpar -= (Ni*Grad_par_LtoC(phi))/(fmei*0.51*nu);
+    
     jpar = lowPass(jpar,8);
     //jpar = yfilter(jpar,1);
     //jpar = nl_filter_y(jpar,4);
@@ -388,7 +390,11 @@ int physics_run(BoutReal t)
   if(evolve_ni) {
     //ddt(Ni) -= vE_Grad(Ni0, phi);
      
-    ddt(Ni) -= vE_Grad(Ni0, phi) + vE_Grad(Ni, phi);
+    ddt(Ni) -= vE_Grad(Ni0, phi);
+    
+    if (nonlinear)
+      ddt(Ni) -= vE_Grad(Ni, phi);
+      
     
      //ddt(Ni) -= vE_Grad(Ni, phi0) + vE_Grad(Ni0, phi) + vE_Grad(Ni, phi);
       /*
@@ -412,7 +418,7 @@ int physics_run(BoutReal t)
     //Ni = lowPass_Y(Ni,1);
     
     //Ni = yfilter(Ni,0);
-    //Ni = smooth_y(Ni);
+    ddt(Ni) = smooth_y(ddt(Ni));
   }
 
   // ION VELOCITY

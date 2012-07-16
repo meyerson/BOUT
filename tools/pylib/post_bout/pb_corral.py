@@ -304,11 +304,13 @@ class _model(object):  #NOT a derived class,but one that takes a class as input
             M[1,1]= -(2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,k**-2)
 
             if haswak2:
-                f = 1.0100
-                M[0,0] =  -f*(2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1)
-                M[0,1] = M[0,1] + f*(2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1)
-                M[1,1] =- M[1,1] 
-                M[1,0] = -M[1,0]
+                b = .001000
+                a = 1 # up down gamma, down up freq
+                f = 1  #in the 
+                M[0,0] =  -f*1.0*(2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1)
+                M[0,1] = a*M[0,1] + f*1.0*(2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1)
+                M[1,1] = (0.0)*M[1,1] -M[0,1]*k**-2
+                M[1,0] =(0.0) * M[1,0]
             if haswak:
                 M[0,0] = -(2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1)
                 M[0,1] = M[0,1] + (2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1)
