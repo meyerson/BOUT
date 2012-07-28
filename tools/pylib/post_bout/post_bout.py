@@ -59,7 +59,8 @@ from read_inp import parse_inp, read_inp, read_log,metadata
 from read_grid import read_grid
 from basic_info import basic_info, fft_info
 from corral import corral
-from rotate_mp import rotate
+#from rotate_mp import rotate
+from rotate2 import rotate
 
 def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
          savemovie=False,IConly=0,transform=False,fast = False,
@@ -203,6 +204,7 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
             ntt = x['nt'] #actual number of steps
             nt = meta['NOUT']['v'] #requested number of steps
             print j,' out of ',len(modes_db)
+            print nt,ntt
     #for incomplete runs    
             if nt > ntt: #if the run did not finish then rescale to keep data dims the same
                 

@@ -32,12 +32,16 @@ class LinResDraw(LinRes):
         LinRes.__init__(self,alldb)
        
         
-    def plottheory(self,pp,m=1,canvas=None,comp='gamma',field='Ni'):
-        if self.M == 0:
-            return 0;
+    def plottheory(self,pp,m=1,canvas=None,comp='gamma',
+                   field='Ni',allroots=False):
+        if len(self.models) == 0:
+            try:
+                 self.models=[]
+                 self.models.append(_model(self)) #create a list to contain models
+                 self.models.append(_model(self,haswak=True,name='haswak')) #another model
+            except:
+                return 0
 
-        if self.M is None:
-            self.model()
       
         s = subset(self.db,'field',[field])
         
@@ -64,28 +68,42 @@ class LinResDraw(LinRes):
         #     y = np.array(s.gammamax)[ki]
         # else:
         #     y = np.array(s.omegamax)[ki]
-        
+      
         for m in s.models:
             print m.name
 
         for i,m in enumerate(s.models):   
-            print m.name
-            if comp=='gamma':
-                y = (np.array(m.gammamax)[ki]).flatten()
-            else:
-                y = (np.array(m.omegamax)[ki]).flatten()
+            print m.name,comp,m.soln[comp].shape
+            
+            if allroots:
+                for elem in m.soln[comp]:
+                #y = []
+                #elem has 2 or more elements
+                    y = (np.array(elem)[ki]).flatten() #n values
+                #y = y.astype('float')
+                    print y.shape
+                    canvas.plot((allk[ki]).flatten(),y,',',
+                                label=label,c=cm.jet(.2*i))
+            try:   
+                ymax =  (np.array(m.soln[comp+'max'])[ki]).flatten() 
+                ymax = ymax.astype('float')
+                canvas.plot((allk[ki]).flatten(),ymax,'-',
+                            label=label,c=cm.jet(.2*i))
+                # if comp=='gamma':
+                #     y = (np.array(m.gammamax)[ki]).flatten()
+                    
+                # else:
+                #     y = (np.array(m.omegamax)[ki]).flatten()
                 
             #print m.name, ':' ,y.astype('float')
-            try:
-                y = y.astype('float')
-                #print m.name, ':' ,y
-                canvas.plot((allk[ki]).flatten(),y,'-',
-                            label=label,c=cm.jet(.1*i))
+            
+                
+                
             except:
                 print 'fail to add theory curve'
 
-            canvas.annotate(m.name,(allk[ki[0]],1.1*y[0]),fontsize = 8)
-            canvas.annotate(m.name,(1.1*allk[ki[-1]],1.1*y[-1]),fontsize = 8)
+            canvas.annotate(m.name,(allk[ki[0]],1.1*ymax[0]),fontsize = 8)
+            canvas.annotate(m.name,(1.1*allk[ki[-1]],1.1*ymax[-1]),fontsize = 8)
 
 
         if ownpage: #set scales if this is its own plot
@@ -93,6 +111,8 @@ class LinResDraw(LinRes):
             # canvas.set_xscale('log')
             
             canvas.axis('tight')
+            canvas.set_xscale('log')
+            canvas.set_yscale('symlog')
             fig1.savefig(pp, format='pdf')
             plt.close(fig1)
 
@@ -118,6 +138,8 @@ class LinResDraw(LinRes):
             fig1.subplots_adjust(left=0.17)
             canvas = fig1.add_subplot(1,1,1) 
             clonex = canvas.twinx()
+            # if trans:
+            #     cloney = canvas.twiny()
           
 
        
@@ -180,19 +202,18 @@ class LinResDraw(LinRes):
                                             y[s_i,0,sub_s.nx/2],color=colordash[jj],alpha=.5))
                #clonex.plot(k[s_i,1,sub_s.nx/2],
                            #y_alt[s_i,0,sub_s.nx/2],color=colordash[jj],alpha=.5)
+               # if np.any(sub_s.trans) and trans:
+               #     comp_r = comp+'_r'
+               #     k_r =  sub_s.k_r
+               #     y2 = np.array(ListDictKey(sub_s.db,comp_r))
+               #     cloney.plot(k[s_i,1,sub_s.nx/2],
+               #                 y2[s_i,0,sub_s.nx/2],'k.',ms = 3)
+
                ymin_data = np.min([np.min(y[s_i,0,sub_s.nx/2]),ymin_data])
                ymax_data = np.max([np.max(y[s_i,0,sub_s.nx/2]),ymax_data])
                
 
-               if np.any(sub_s.trans) and trans:
-                   comp_r = comp+'_r'
-                   y2 = np.array(ListDictKey(sub_s.db,comp_r))
-                   #canvas.plot(k[s_i,1,sub_s.nx/2],
-                    #           y2[s_i,0,sub_s.nx/2],'k.',ms = 3)
-                   
-                   cloney.plot(k[s_i,1,sub_s.nx/2],
-                               y2[s_i,0,sub_s.nx/2],'k.',ms = 3)
-                   print 'np.sum(np.abs(y-y2)): ',np.sum(np.abs(y-y2)),comp_r
+               
 
                print 'dzhandle color', jj
                #dzlabels.append("DZ: "+ str(2*j)+r'$\pi$')
@@ -243,6 +264,7 @@ class LinResDraw(LinRes):
         if overplot==True:
             try:
                 self.plottheory(pp,canvas=canvas,comp=comp)
+                #self.plottheory(pp,comp=comp)
             except:
                 print 'no theory plot'
         if infobox:
@@ -332,6 +354,15 @@ class LinResDraw(LinRes):
             if trans:
                 #k_factor = #scales from k_zeta to k_perp
                 cloney.set_xlim(kfactor*xmin, kfactor*xmax)
+                # if np.any(sub_s.trans) and trans:
+                #     comp_r = comp+'_r'
+                #     y2 = np.array(ListDictKey(sub_s.db,comp_r))
+                #    #canvas.plot(k[s_i,1,sub_s.nx/2],
+                #    #           y2[s_i,0,sub_s.nx/2],'k.',ms = 3)
+                    
+                #     cloney.plot(k_r[s_i,1,sub_s.nx/2],
+                #                y2[s_i,0,sub_s.nx/2],'k.',ms = 3)
+                #     print 'np.sum(np.abs(y-y2)): ',np.sum(np.abs(y-y2)),comp_r
                 #kfactor =1.0
                 #cloney.set_xlim(xmin,xmax)
                 cloney.set_ylim(ymin,ymax) #because cloney shares the yaxis with canvas it may overide them, this fixes that

@@ -132,8 +132,8 @@ class LinResPresent(LinResDraw):
       
       s.plotgamma(pp,xscale='log',yscale='linear',overplot=True,trans=True)
       
-      s.plotgamma(pp,yscale='log',xscale='log',overplot=True)
-      s.plotgamma(pp,yscale='log',xscale='log',field='rho',overplot=True)
+      s.plotgamma(pp,yscale='symlog',xscale='log',overplot=True)
+      s.plotgamma(pp,yscale='symlog',xscale='log',field='rho',overplot=True)
       
       try:
          s.plotfreq2(pp,xscale='log',yscale='linear',overplot=True)

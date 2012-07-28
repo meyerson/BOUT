@@ -42,6 +42,9 @@ const Field3D smoothXY(const Field3D &f);
 /// Average over Y
 const Field2D average_y(const Field2D &f);
 
+///Sum over Y
+//const Field2D average_y(const Field2D &f);
+
 /// Non-linear filter to remove grid-scale oscillations
 const Field3D nl_filter_x(const Field3D &f, BoutReal w=1.0);
 const Field3D nl_filter_y(const Field3D &f, BoutReal w=1.0);

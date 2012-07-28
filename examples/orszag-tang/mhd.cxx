@@ -5,7 +5,13 @@
 
 #include <bout.hxx>
 #include <boutmain.hxx>
+#include <initialprofiles.hxx>
+#include <derivs.hxx>
+#include <interpolation.hxx>
 
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 // 3D evolving variables
 Field3D rho, p; // density, pressure
 Vector3D v, B;  // velocity, magnetic field
@@ -13,7 +19,7 @@ Vector3D v, B;  // velocity, magnetic field
 Field3D divB; // Divergence of B (for monitoring)
 
 // parameters
-BoutReal gamma;
+BoutReal Gamma;
 bool include_viscos;
 BoutReal viscos;
 
@@ -26,7 +32,7 @@ int physics_init(bool restarting)
   // read options
   Options *globalOptions = Options::getRoot();
   Options *options = globalOptions->getSection("mhd");
-  OPTION(options, gamma,          5.0/3.0);
+  OPTION(options, gamma,5.0/3.0);
   OPTION(options, include_viscos, false);
   OPTION(options, viscos,         0.1);
   

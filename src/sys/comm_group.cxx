@@ -54,7 +54,7 @@ namespace comm_group {
 			 int root, MPI_Comm comm,
 			 Comm_handle_t *handle)
   {
-#ifdef CHECK
+#ifdef CHECK    
     msg_stack.push("Comm_gather_start(%d -> %d)", nlocal, root);
 #endif
    

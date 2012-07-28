@@ -35,7 +35,8 @@ import pickle
 import subprocess  
 
 
-def corral(cached=True,refresh=False,debug=False,IConly=1,logname='status.log'):
+def corral(cached=True,refresh=False,debug=False,IConly=1,
+           logname='status.log',skew=False):
 
    print 'in corral'
    log  = read_log(logname=logname) 
@@ -52,7 +53,7 @@ def corral(cached=True,refresh=False,debug=False,IConly=1,logname='status.log'):
       
       for i,path in enumerate(runs):
          print i,path
-         a = post_bout.save(path=path,IConly=IConly) #re post-process a run
+         a = post_bout.save(path=path,IConly=IConly,transform=skew) #re post-process a run
          
          
       
@@ -188,16 +189,20 @@ class LinRes(object):
           self.amp_r = ListDictKey(alldb,'amp_r')
           self.freq_r = np.array(ListDictKey(alldb,'freq_r'))
           
-      try:
-          self.model(haswak=False) #
-      except:
-          self.M = 0
+      # try:
+      #     self.model(haswak=False) #
+      # except:
+      #     self.M = 0
 
       #try:
-      self.models=[]
-      self.models.append(_model(self)) #create a list to contain models
-      self.models.append(_model(self,haswak=True,name='haswak')) #another model
-      self.models.append(_model(self,haswak2=True,name='haswak2')) 
+      try:
+          self.models=[]
+          self.models.append(_model(self)) #create a list to contain models
+          self.models.append(_model(self,haswak=True,name='haswak')) #another model
+          self.models.append(_model(self,haswak2=True,name='haswak2'))
+      except:
+          self.M = 0
+     # self.models.append(_model(self,haswak2=True,name='haswak2')) 
       
       # except:
       #     print 'FAIL'
@@ -210,57 +215,57 @@ class LinRes(object):
                        for i in range(self.nmodes)])
    
    
-   def model(self,field='Ni',plot=False,haswak=False):
+   # def model(self,field='Ni',plot=False,haswak=False):
       
-      #enrich the object
-      allk = self.k_r[:,1,self.nx/2] #one location for now
-      allkpar = self.k_r[:,0,self.nx/2] #one location for now
+   #    #enrich the object
+   #    allk = self.k_r[:,1,self.nx/2] #one location for now
+   #    allkpar = self.k_r[:,0,self.nx/2] #one location for now
       
    
-      self.M = []
-      self.eigsys = []
-      self.gammaA = []
-      self.omegaA = []
-      self.eigvec = [] 
-      self.gammamax = []
-      self.omegamax = []
+   #    self.M = []
+   #    self.eigsys = []
+   #    self.gammaA = []
+   #    self.omegaA = []
+   #    self.eigvec = [] 
+   #    self.gammamax = []
+   #    self.omegamax = []
 
-      #allk = np.arange(0.1,100.0,.1)
-      #allk=  np.sort(list(set(allk).union()))
+   #    #allk = np.arange(0.1,100.0,.1)
+   #    #allk=  np.sort(list(set(allk).union()))
 
       
-      for i,k in enumerate(allk):
-         #print i
-         #M =np.matrix(np.random.rand(3,3),dtype=complex)
-         M = np.zeros([3,3],dtype=complex)
-         M[0,0] = 0
-         M[0,1] = k/(self.L[i,self.nx/2,self.ny/2])
-         M[1,0] = (2*np.pi/self.meta['lpar'][self.nx/2])**2 * self.meta['sig_par'][0]*complex(0,k**-2)
-         M[1,1]= -(2*np.pi/self.meta['lpar'][self.nx/2])**2 * self.meta['sig_par'][0]*complex(0,k**-2)
+   #    for i,k in enumerate(allk):
+   #       #print i
+   #       #M =np.matrix(np.random.rand(3,3),dtype=complex)
+   #       M = np.zeros([3,3],dtype=complex)
+   #       M[0,0] = 0
+   #       M[0,1] = k/(self.L[i,self.nx/2,self.ny/2])
+   #       M[1,0] = (2*np.pi/self.meta['lpar'][self.nx/2])**2 * self.meta['sig_par'][0]*complex(0,k**-2)
+   #       M[1,1]= -(2*np.pi/self.meta['lpar'][self.nx/2])**2 * self.meta['sig_par'][0]*complex(0,k**-2)
 
-         if haswak:
-             M[0,0] = M[0,0] + M[1,1]*complex(0,k**2)
-             M[0,1] = M[0,1] + M[1,0]*complex(0,k**2)
+   #       if haswak:
+   #           M[0,0] = M[0,0] + M[1,1]*complex(0,k**2)
+   #           M[0,1] = M[0,1] + M[1,0]*complex(0,k**2)
              
-         #if rho_conv:
+   #       #if rho_conv:
              
          
-         #M[1,0] = (allkpar[i])**2 * self.meta['sig_par'][0]*complex(0,k**-2)
-         #M[1,1]= -(allkpar[i])**2 * self.meta['sig_par'][0]*complex(0,k**-2)
+   #       #M[1,0] = (allkpar[i])**2 * self.meta['sig_par'][0]*complex(0,k**-2)
+   #       #M[1,1]= -(allkpar[i])**2 * self.meta['sig_par'][0]*complex(0,k**-2)
          
-         eigsys= np.linalg.eig(M)  
-         gamma = (eigsys)[0].imag
-         omega =(eigsys)[0].real
-         eigvec = eigsys[1]
+   #       eigsys= np.linalg.eig(M)  
+   #       gamma = (eigsys)[0].imag
+   #       omega =(eigsys)[0].real
+   #       eigvec = eigsys[1]
          
-         self.M.append(M)
-         self.eigsys.append(eigsys)
-         self.gammaA.append(gamma)
-         self.gammamax.append(max(gamma))
-         where = ((gamma == gamma.max()) & (omega != 0))
-         self.omegamax.append(omega[where[0]])
-         self.eigvec.append(eigvec)
-         self.omegaA.append(omega)
+   #       self.M.append(M)
+   #       self.eigsys.append(eigsys)
+   #       self.gammaA.append(gamma)
+   #       self.gammamax.append(max(gamma))
+   #       where = ((gamma == gamma.max()) & (omega != 0))
+   #       self.omegamax.append(omega[where[0]])
+   #       self.eigvec.append(eigvec)
+   #       self.omegaA.append(omega)
 
    class __model__(object):
        def __init__(self):
@@ -293,11 +298,19 @@ class _model(object):  #NOT a derived class,but one that takes a class as input
         self.eigvec = [] 
         self.gammamax = []
         self.omegamax = []
+    
+       
+        self.soln = {}
+        self.soln['freq'] = []
+        self.soln['gamma'] = []
+        self.soln['gammamax'] = []
+        self.soln['freqmax'] = []
+        
 
         for i,k in enumerate(allk):
             #print i
          #M =np.matrix(np.random.rand(3,3),dtype=complex)
-            M = np.zeros([3,3],dtype=complex)
+            M = np.zeros([2,2],dtype=complex)
             M[0,0] = 0
             M[0,1] = k/(input_obj.L[i,input_obj.nx/2,input_obj.ny/2])
             M[1,0] = (2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,k**-2)
@@ -305,12 +318,12 @@ class _model(object):  #NOT a derived class,but one that takes a class as input
 
             if haswak2:
                 b = .001000
-                a = 1 # up down gamma, down up freq
-                f = 1  #in the 
+                a = 0.001 # up down gamma, down up freq
+                f = 1.0  #in the 
                 M[0,0] =  -f*1.0*(2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1)
                 M[0,1] = a*M[0,1] + f*1.0*(2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1)
-                M[1,1] = (0.0)*M[1,1] -M[0,1]*k**-2
-                M[1,0] =(0.0) * M[1,0]
+                M[1,1] = f*M[1,1]
+                M[1,0] =f * M[1,0]
             if haswak:
                 M[0,0] = -(2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1)
                 M[0,1] = M[0,1] + (2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1)
@@ -326,10 +339,25 @@ class _model(object):  #NOT a derived class,but one that takes a class as input
         
             self.M.append(M)
             self.eigsys.append(eigsys)
+
             self.gammaA.append(gamma)
+            self.soln['gamma'].append(gamma)
+
             self.gammamax.append(max(gamma))
+            self.soln['gammamax'].append(max(gamma))
+
             where = ((gamma == gamma.max()) & (omega != 0))
             self.omegamax.append(omega[where])
+            self.soln['freqmax'].append(omega[where])
+
             self.eigvec.append(eigvec)
             self.omegaA.append(omega)
+            self.soln['freq'].append(omega)
+        self.dim = M.shape[0]
+        self.soln['freq'] = np.transpose(np.array(self.soln['freq']))
+        self.soln['gamma'] = np.transpose(np.array(self.soln['gamma']))
+        # self.soln = {}
+        # self.soln['freq'] = self.omegaA
+        # self.soln['gamma'] = self.gammaA
+            
         

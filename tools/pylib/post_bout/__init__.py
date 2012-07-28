@@ -86,6 +86,7 @@ except:
     print "No ListDict"
 
 try:
-    from rotate_mp import rotate
+    #from rotate_mp import rotate
+    from rotate2 import rotate
 except:
     print "No rotate"

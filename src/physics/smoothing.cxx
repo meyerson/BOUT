@@ -34,6 +34,8 @@
 #include <bout_types.hxx>
 #include <fft.hxx>
 #include <dcomplex.hxx>
+#include <utils.hxx>
+//#include <boutmesh.hxx>
 
 // Smooth using simple 1-2-1 filter
 const Field3D smooth_x(const Field3D &f, bool BoutRealspace) {
@@ -100,7 +102,25 @@ const Field3D smooth_y(const Field3D &f) {
 
 const Field2D averageY(const Field2D &f) {
   return mesh->averageY(f);
+  //return 0;
 }
+
+
+
+
+// dcomplex* sumY(dcomplex *f) {
+//   //return mesh->sumY(f);
+//   return 0;
+// }
+// dcomplex* sumY(dcomplex*&f) {
+//   //return mesh->sumY(f);
+//   return 0;
+// }
+
+// BoutReal* filterY(BoutReal*&f) { //const doesnt work for now
+//   return mesh->filterY(f);
+//   //return 0;
+// }
 
 const Field3D smoothXY(const Field3D &f) {
   Field3D result;
@@ -234,14 +254,15 @@ const Field3D nl_filter(const Field3D &f, BoutReal w)
 const Field3D lowPass_Y(const Field3D &var, int ymax)
 {
   Field3D result;
-  static dcomplex *f = NULL;
+  //static dcomplex *f = NULL; //will hold the somethign
+  //dcomplex *fft_exp = NULL; // used to compute the fft
   int jx, jy, jz;
-  //static double *g = NULL;
-  //static BoutReal *g;  //an 1d array given x and z coords, need to allocate the correct size
-  Field2D g; // nx x ny data container
-  BoutReal **d; //an array of double, again nx x ny
-  
-  
+ 
+  //dcomplex **fft_exp = NULL;
+  BoutReal *buffer_y=NULL;
+  BoutReal *filter_y=NULL;
+
+
 #ifdef CHECK
   msg_stack.push("lowPass_Y(Field3D, %d)", ymax);
 #endif
@@ -249,56 +270,37 @@ const Field3D lowPass_Y(const Field3D &var, int ymax)
  
   if(!var.isAllocated())
     return var;
-  
-  if(f == NULL)
-    f = new dcomplex[ncy/2 + 1];
- 
+
+  if(buffer_y == NULL)
+    buffer_y = new BoutReal[ncy];
+
+  if(filter_y == NULL)
+    filter_y = new BoutReal[ncy];
+
   if((ymax >= ncy/2) || (ymax < 0)) {
     // Removing nothing
     return var;
   }
   
   result.allocate();
-  
-  g = 0.0;
-  d = g.getData();
  
+  //once this works rewrite with getYArray(, int z, rvec &yv) const;
+
   for(int jx=0;jx<mesh->ngx;jx++)
     for(int jz=0;jz<mesh->ngz-1;jz++){
-      for(jy=0;jy<mesh->ngy;jy++){
-	//output.write("(%d,%d,%d) \n ",jz,mesh->ngy,jy);
-	BoutReal ycoord = mesh->GlobalY(jy);
-	BoutReal xcoord = mesh->GlobalX(jx);
-	
-	//output.write("(%e,%e) \n ",xcoord,ycoord);
-	d[0][jy] = var[jx][jy][jz];  
-      }
-      //x and z fixed at this point
-      rfft(d[0], ncy, f);
-      //for(jy=ymax+1;jy<=ncy/2;jy++)
-      for(jy=ymax+1;jy<=ncy/2;jy++)
-	f[jy] = 0.0;
-	//f[jy] = f[jy];///1000.0;
-      //f[1] = 1.0;
-      int size = sizeof(f) / sizeof(f[0] );
-      //output.write("%d, %d, %d \n ",size,sizeof(f),sizeof(d[0]));
-      //f[0] = 1.0;
-
-      irfft(f, ncy, d[0]);
-      
       for(jy=0;jy<mesh->ngy;jy++)
-	result[jx][jy][jz] = d[0][jy];
-      //result[jx][ncy][jz] = result[jx][jy][0];
+	buffer_y[jy] =  var[jx][jy][jz]; //x and z fixed now
+      
+      filter_y = mesh->filterY(buffer_y);
+      
+      for(jy=0;jy<mesh->ngy;jy++) 
+	result[jx][jy][jz] = filter_y[jy];
     }
-  
 
   
   mesh->communicate(result);
   
   return result;
 
-  //copy the data in an array g[x][z][y]
 
-  //fft,filter, ifft g
-  
 }

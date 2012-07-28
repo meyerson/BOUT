@@ -41,6 +41,8 @@
 #include <options.hxx>
 #include <boutexception.hxx>
 
+#include <typeinfo>
+
 #define PVEC_REAL_MPI_TYPE MPI_DOUBLE
 
 BoutMesh::~BoutMesh() {
@@ -2028,7 +2030,7 @@ int BoutMesh::readgrid_3dvar(GridDataSource *s, const char *name,
   vector<int> size = s->getSize(name);
   
   if(size.size() != 3) {
-    output.write("\tWARNING: Number of dimensions of %s incorrect\n", name);
+    output.write("\tWARNING: Number of dimensions of %s ncorrect\n", name);
     return 1;
   }
   
@@ -2182,6 +2184,24 @@ bool BoutMesh::surfaceClosed(int jx, BoutReal &ts)
   }
   return false;
 }
+//Define MPI operation to FFT 2D field over y
+void yfft_op(void *invec, void *inoutvec, int *len, MPI_Datatype *datatype)
+{
+  BoutReal *rin = (BoutReal*) invec;
+  BoutReal *rinout = (BoutReal*) inoutvec;
+  for(int x=0;x<mesh->ngx;x++) {
+    BoutReal val = 0.;
+    // Sum values
+    for(int y=mesh->ystart;y<=mesh->yend;y++) {
+      val += rin[x*mesh->ngy + y] + rinout[x*mesh->ngy + y];
+    }
+    // Put into output (spread over y)
+    val /= mesh->yend - mesh->ystart + 1;
+    for(int y=0;y<mesh->ngy;y++)
+      rinout[x*mesh->ngy + y] = val;
+  }
+}
+
 
 // Define MPI operation to sum 2D fields over y.
 // NB: Don't sum in y boundary regions
@@ -2202,6 +2222,38 @@ void ysum_op(void *invec, void *inoutvec, int *len, MPI_Datatype *datatype)
     }
 }
 
+void ysum_op2(void *invec, void *inoutvec, int *len, MPI_Datatype *datatype)
+{
+  // dcomplex *rin = (dcomplex*) invec;
+  // dcomplex *rinout = (dcomplex*) inoutvec;
+  BoutReal *rin = (BoutReal*) invec;
+  BoutReal *rinout = (BoutReal*) inoutvec;
+  double* rd = new double[mesh->ngy];
+
+  for(int x=mesh->ystart;x<=mesh->yend;x++) {
+    BoutReal val = 0.;
+    //   //Sum values
+    for(int y=mesh->ystart;y<=mesh->yend;y++) {
+      val += rin[x*mesh->ngy + y];// + rinout[x*mesh->ngy + y];
+   //  // 	  //cout << rin[0]<<endl;
+      
+    }
+    rinout[x] = val;
+    
+    rd[x] = val; 
+    //double* rd = new double[mesh->ngy];
+     // double rd []= {1.0,2.0,5.0,3.123,7.001};
+    
+    output<<"rinout["<<x<<"] "<<rinout[x]<<endl;
+  }
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  output<<"On CPU: "<<rank<<endl;
+  int size=sizeof(rd)/sizeof(*rd);
+  output<<"size: "<<size<<endl;
+}
+
+
 const Field2D BoutMesh::averageY(const Field2D &f)
 {
   static MPI_Op op;
@@ -2215,7 +2267,8 @@ const Field2D BoutMesh::averageY(const Field2D &f)
     MPI_Op_create(ysum_op, 1, &op);
     opdefined = true;
   }
-
+ 
+  
   Field2D result;
   result.allocate();
   
@@ -2231,8 +2284,77 @@ const Field2D BoutMesh::averageY(const Field2D &f)
   msg_stack.pop();
 #endif
   
+  return result;//
+}
+
+//dcomplex* BoutMesh::sumY(dcomplex **&f) 
+BoutReal* BoutMesh::filterY(BoutReal *&f){
+  bool lowpass = false; //notch filter
+  bool noDC = true;
+  int M0 = 1;
+  return filterY(f, lowpass,noDC,M0);
+}
+
+//BoutReal* BoutMesh::filterY(BoutReal *&f)
+BoutReal* BoutMesh::filterY(BoutReal *&f, bool lowpass,bool noDC,int M0)
+{
+  // bool lowpass = false; //notch filter
+  // bool noDC = true;
+  // int M0 = 1;
+  
+  BoutReal* result = NULL; 
+  if(result == NULL)
+    result = new BoutReal[mesh->ngy];
+
+
+  BoutReal* rd = NULL;
+  static dcomplex *fy = NULL; 
+  
+  int rank, size;
+  MPI_Comm_size(MPI_COMM_WORLD, &size);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  int ncy = size*MYSUB;
+
+  if ( rank == 0) {     
+    rd = new BoutReal[ncy];
+    if(fy == NULL)
+      fy = new dcomplex[ncy/2+1]; //(32+1)
+  }
+  
+  MPI_Gather(&f[ystart],MYSUB, MPI_DOUBLE, rd, MYSUB, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+  //output<<"MYSUB: "<<MYSUB<<endl;
+  if ( rank == 0) { 
+    rfft(rd, ncy, fy);
+    // Take FFT in the Y direction
+    // int ymax = 1;
+    // for(int jy=ymax+1;jy<=ncy/2;jy++)
+    //   fy[jy] = 0.0;
+
+    
+   
+    for(int jy=M0+1;jy<=ncy/2;jy++){
+      if (lowpass) //lowpass filter
+	   fy[jy] = 0.0;
+      else //notch filter
+	if(jy != M0) 
+	  fy[jy] = 0.0;
+    }
+    
+    if (noDC) //remove DC comp,just in case better to use filtering in z, if interest in just removing DC
+      fy[0] = 0; 
+	
+    
+    irfft(fy, ncy, rd);
+    
+  }
+ 
+  //rd to result
+  MPI_Scatter(rd,MYSUB, MPI_DOUBLE, &result[ystart], MYSUB, MPI_DOUBLE,0,MPI_COMM_WORLD); 
+
   return result;
 }
+
 
 /*
 BoutSurfaceIter::BoutSurfaceIter(BoutMesh* mi)

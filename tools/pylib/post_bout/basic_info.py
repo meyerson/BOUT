@@ -176,17 +176,20 @@ def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=Fal
         from scipy.interpolate import interp2d,interp1d
         from scipy import interp
         for phase_r in np.transpose(phase):
-            jumps = np.where(abs(phase) > np.pi/32)
+            jumps = np.where(abs(phase_r) > np.pi/32)
             print jumps
             if len(jumps[0]) != 0:
                         
                 all_pts = np.array(range(0,nt))
                 good_pts = (np.where(abs(phase_r) < np.pi/3))[0] 
-            #print good_pts[0],good_pts
+                #print good_pts,good_pts
                 #f = interp1d(good_pts,phase_r[good_pts],fill_value=.001)
                 #print max(all_pts), max(good_pts)
                 #phasenew.append(f(all_pts))
-                phase_r = (interp(all_pts,good_pts,phase_r[good_pts]))
+                try:
+                    phase_r = (interp(all_pts,good_pts,phase_r[good_pts]))
+                except:
+                    'no phase smoothing'
             phasenew.append(phase_r)
 
         phase = np.transpose(phasenew)/dt    
@@ -242,10 +245,10 @@ def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=Fal
         #amp_n = dom_mode[i]['amp_n'] #nt x nx
    
         #let just look over the nx range
-        lnamp = np.log(amp)
+        lnamp = np.log(amp[nt/2:,2:-2])
 
         t = dt*np.array(range(nt)) #dt matters obviouslyww
-        r = np.polyfit(t[nt/2:],lnamp[nt/2:,2:-2],1,full=True)
+        r = np.polyfit(t[nt/2:],lnamp,1,full=True)
 
         gamma_est = r[0][0] #nx
         f0 = np.exp(r[0][1]) #nx

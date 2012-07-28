@@ -5,7 +5,7 @@ from post_bout import pb_corral
 
 import post_bout as pb
 from pb_present import LinResPresent
-a = pb.corral(refresh=False,IConly=0,debug=False)
+a = pb.corral(refresh=False,skew=True,IConly=0,debug=False)
 y = LinResPresent(a.db)
 y.show(debug=False)
 
@@ -94,7 +94,7 @@ ni = collect('Ni',path=path)
 meta = pb.metadata(path=path)
 from rotate_mp import rotate_mp
 from rotate2 import rotate
-z = rotate(ni,meta,debug=False,cached=False)
+z = rotate(ni,meta,debug=False,cached=Falses,view=True)
 
 
 

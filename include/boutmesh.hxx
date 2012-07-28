@@ -6,6 +6,7 @@
 
 #include "mesh.hxx"
 #include "field3d.hxx"
+#include <utils.hxx>
 
 #include <list>
 #include <vector>
@@ -52,6 +53,9 @@ class BoutMesh : public Mesh {
   SurfaceIter* iterateSurfaces();
   friend class BoutSurfaceIter;
   const Field2D averageY(const Field2D&);
+  //dcomplex* sumY(dcomplex**&);
+  BoutReal* filterY(BoutReal*& f);
+  BoutReal* filterY(BoutReal*& f,bool lowpass ,bool noDC, int M0);
   bool surfaceClosed(int jx);
   bool surfaceClosed(int jx, BoutReal &ts);
 

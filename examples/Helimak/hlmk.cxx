@@ -47,7 +47,7 @@ BoutReal beta_p;
 bool estatic, ZeroElMass; // Switch for electrostatic operation (true = no Apar)
 
 bool minusDC,plusDC;
-bool nonlinear;
+bool nonlinear, haswak,par_damp;
 
 
 BoutReal zeff, nu_perp;
@@ -120,6 +120,8 @@ int physics_init(bool restarting)
   OPTION(options, minusDC, false);
   OPTION(options, plusDC, false);
   OPTION(options,nonlinear,false);
+  OPTION(options,haswak,false);
+  OPTION(options,par_damp,false);
   
   OPTION(options, phi_flags,   0);
   OPTION(options, apar_flags,  0);
@@ -387,10 +389,13 @@ int physics_run(BoutReal t)
     ddt(Ni) -= vE_Grad(Ni0, phi);// + vE_Grad(Ni, phi0);// + vE_Grad(Ni, phi);
     //ddt(Ni) -= Vpar_Grad_par(Ve, Ni0) + Vpar_Grad_par(Ve0, Ni);// + Vpar_Grad_par(Ve, Ni);
 
+    if (nonlinear)
+       ddt(Ni) -= vE_Grad(Ni, phi);
     
     //ddt(Ni) += Ni0*Div_par_CtoL(Ve);// + Ni*Div_par_CtoL(Ve0);// + Ni*Div_par(Vi);
     // ddt(Ni) -= Ni0*Div_par(Ve) + Ni*Div_par(Ve0);
-    ddt(Ni) += Grad_par_CtoL(jpar);
+    if (haswak)
+      ddt(Ni) += Grad_par_CtoL(jpar);
     //ddt(Ni) += Grad_par(jpar);
     //ddt(Ni) += (2.0)*V_dot_Grad(b0xcv, pe);
     /*
@@ -403,6 +408,9 @@ int physics_run(BoutReal t)
     
     ddt(Ni) = lowPass(ddt(Ni),5);
     ddt(Ni) -= ddt(Ni).DC();
+    
+    if (par_damp)
+      ddt(Ni) += (1/(2*PI*1000000.0))* Div_par_CtoL(Grad_par_LtoC(ddt(Ni)));
     //ddt(Ni) = lowPass_Y(ddt(Ni),1);
     //ddt(Ni) = smooth_y(ddt(Ni));
   }
@@ -458,13 +466,14 @@ int physics_run(BoutReal t)
     //ddt(rho) += mesh->Bxy*mesh->Bxy*Div_par(jpar, CELL_CENTRE);
     
     ddt(rho) += mesh->Bxy*mesh->Bxy*Grad_par_CtoL(jpar); 
-    //ddt(rho) += Grad_par_CtoL(jpar);  #for 2D the above line equivalent
+    //ddt(rho) += Grad_par_CtoL(jpar); //for 2D the above line equivalent
     // ddt(rho) += 2.0*mesh->Bxy*V_dot_Grad(b0xcv, pei);
     
     //ddt(rho) -= Vpar_Grad_par(Vi, rho0) + Vpar_Grad_par(Vi0, rho);// + Vpar_Grad_par(Vi, rho);
     
     
-      
+    if (nonlinear)
+       ddt(Ni) -= vE_Grad(rho, phi);  
     
     
     /*

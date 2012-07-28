@@ -13,6 +13,8 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <solver.hxx>
+
 
 // 2D initial profiles
 Field2D Ni0, Ti0, Te0, Vi0, phi0, Ve0, rho0, Ajpar0;
@@ -317,6 +319,9 @@ int physics_run(BoutReal t)
   //   Ni = yfilter(Ni,1);
   //   //jpar =  yfilter(jpar,1);
   // }
+
+  int ncalls = solver->rhs_ncalls;
+
   if(estatic || ZeroElMass) {
     // Electrostatic operation
     Apar = 0.0;
@@ -407,18 +412,28 @@ int physics_run(BoutReal t)
     ddt(Ni) = lowPass(ddt(Ni),8);
     //ddt(Ni) = yfilter(ddt(Ni),1);  //no parallelizatio in y, break up in x for now
     //output.write("time: %f\n",t/DT);
-    //int remain = (int)(int(t) % 10);
-    //utput.write("remain: %d\n",remain);
-    // if (float(t/DT) > 5.0) {
+    int remain = (int)(int(t/DT) % 3);
+    int remainn = (int)(int(int(t) % int(DT)));
+    // output.write("remain: %d\n",remain);
+    // output.write("remainn: %d\n",remainn);			
+    // output.write("t: %f\n",t);
+    // 
     //   Ni = yfilter(Ni,1);
       //ddt(Ni) = yfilter(ddt(Ni),1);
        //output.write("yfilter!\n");
-      //output.write("time: %f\n",t/DT);
-     
-    //Ni = lowPass_Y(Ni,1);
+    //output.write("time: %f\n",t/DT);
+    //if (float(t/DT) > 5.0)  
+    //   ddt(Ni) = lowPass_Y(ddt(Ni),1);
     
+    //if (ncalls == 2) //2nd call
+
+    if (ncalls > 5)
+      ddt(Ni) = lowPass_Y(ddt(Ni),1);
+
+    //Ni = lowPass_Y(Ni,1);
+    //output.write("ncalls: %d\n",ncalls);
     //Ni = yfilter(Ni,0);
-    ddt(Ni) = smooth_y(ddt(Ni));
+    //ddt(Ni) = smooth_y(ddt(Ni));
   }
 
   // ION VELOCITY
@@ -474,7 +489,8 @@ int physics_run(BoutReal t)
       }
     }
     */
-   
+    if (ncalls > 5)
+      ddt(rho) = lowPass_Y(ddt(rho),1);
     //ddt(rho) += 1e-2 * mu_i * Laplacian(rho);
   }
   
@@ -506,142 +522,7 @@ int physics_run(BoutReal t)
   return(0);
 }
 
-// int py_try(int argc, char *argv[])
-// {
 
-//   int rank, size,i;
-
-//   PyObject *pName, *pModule, *pDict, *pFunc,*pDir;
-//   PyObject *pArgs, *pValue;
-
-//   PyObject *sys_path; 
-//   PyObject *path,*path1, *path2, *path3; 
-
-  
-//   rank = MPI::COMM_WORLD.Get_rank();
-//   size = MPI::COMM_WORLD.Get_size();
-   
-//   // we can run serial code on the master node . . .
-//   if (rank == 0)
-//     {  
-
-//       printf("Running on processor %d \n",rank);
-//       Py_Initialize();
-      
-//       PyRun_SimpleString("from time import time,ctime\n"
-// 			 "print 'Today is',ctime(time())\n");
-
-//       FILE *fp = fopen("/home/cryosphere/BOUT/tools/pylib/py_try4.py","r+");
-      
-//       sys_path = PySys_GetObject("path"); 
-//       if (sys_path == NULL) 
-// 	return NULL; 
-//       path = PyString_FromString("/home/cryosphere/BOUT/tools/pylib/post_bout");
-//       if (path == NULL) 
-// 	return NULL; 
-//       if (PyList_Append(sys_path, path) < 0) 
-// 	return NULL; 
-//       Py_DECREF(path);
-      
-    
-     
-//       PyRun_SimpleString("from time import time,ctime\n"
-// 			 "print 'Today is',ctime(time())\n");
-     
-
-//       pName = PyString_FromString(argv[0]); //module name
-      
-//       output.write("pName: %s \n", argv[0]);
-//       output.write("pFunc: %s \n", argv[1]);
-//       output.write("Args: %s \n", argv[2]);
- 
-//       pModule = PyImport_ImportModule(argv[0]);
-//       PyObject *m_pDict = PyModule_GetDict(pModule); 
-   
-//       Py_DECREF(pName);
-      		  
-//       if (pModule != NULL) {
-	
-// 	pDir = PyObject_Dir(m_pDict);
-	
-// 	output.write(" PyList_Size(pDir): %i \n", PyList_Size(pDir));    
-	
-// 	pFunc = PyObject_GetAttrString(pModule,argv[1]); //single out a function from  a given module
-// 	/* pFunc is a new reference */
-// 	output.write("PyCallable_Check(pFunc): %i \n",PyCallable_Check(pFunc));
- 
-
-
-// 	if (pFunc && PyCallable_Check(pFunc)) {
-// 	  //parse the argument to pass to the python function
-// 	  if (argc == 3){
-// 	    if (argv[2] == NULL)
-// 	      pArgs = NULL;
-// 	  }
-// 	  else if(argc ==2)
-// 	    pArgs = NULL;
-
-// 	  pValue = PyString_FromString(argv[2]);
-// 	  int ret = PyObject_Print(pValue, stdout, 0);
-// 	  pArgs = PyTuple_New(1);
-// 	  PyTuple_SetItem(pArgs, 0, pValue);
-
-// 	  // else {
-// 	  //   pArgs = PyTuple_New(argc - 2);
-// 	  //   for (i = 0; i < argc - 2; ++i) {
-	     
-	    
-// 	  //     if (!pValue) {
-// 	  // 	Py_DECREF(pArgs);
-// 	  // 	Py_DECREF(pModule);
-// 	  // 	fprintf(stderr, "Cannot convert argument\n");
-// 	  // 	 return 1;
-// 	  //     }
-// 	  //     PyTuple_SetItem(pArgs, i, pValue);
-// 	  //   }
-// 	  // }
-	  
-
-// 	  output.write("Calling the Python function \n");
-	 
-	  
-	 
-// 	  pValue = PyObject_CallObject(pFunc,pArgs);
-	  
-// 	  if (pValue != NULL) {
-// 	    printf("Result of call: %ld\n", PyInt_AsLong(pValue));
-// 	    Py_XDECREF(pValue);
-// 	  }
-	  
-// 	  else {
-// 	    Py_XDECREF(pFunc);
-// 	    Py_XDECREF(pModule);
-// 	    PyErr_Print();
-// 	    fprintf(stderr,"Call failed\n");
-// 	    return 1;
-// 	  }
-// 	  Py_XDECREF(pFunc);
-// 	  Py_XDECREF(pModule); 
-	  
-// 	}//close if function ok
-// 	else {
-// 	  if (PyErr_Occurred())
-// 	    PyErr_Print();
-// 	  fprintf(stderr, "Cannot find function \"%s\"\n",argv[1]);
-//         } //close if function not ok
-//       } //close if module ok
-//       else {
-//         PyErr_Print();
-//         fprintf(stderr, "Failed to load \"%s\"\n",argv[0]);
-//         return 1; 
-//       } //close if module not ok
-//       Py_Finalize();
-//     }// if cpu = 0
-  
-
-  
-//   return 0;
-// }
 /*******************************************************************************
  *                       FAST LINEAR FIELD SOLVERS
  *******************************************************************************/
