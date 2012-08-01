@@ -159,7 +159,7 @@ class Mesh {
   virtual const Field2D averageY(const Field2D &f) = 0;
   //virtual dcomplex* sumY(dcomplex**&) = 0;
   virtual BoutReal* filterY(BoutReal*& f) = 0;
-  //virtual BoutReal* filterY(BoutReal*& f,bool lowpass,bool noDC ,iqnt M0) = 0;
+  virtual BoutReal* filterY(BoutReal*& f,bool lowpass,bool noDC ,int M0) = 0;
   virtual bool surfaceClosed(int jx) = 0; ///< Test if a surface is closed (periodic in Y)
   virtual bool surfaceClosed(int jx, BoutReal &ts) = 0; ///< Test if a surface is closed, and if so get the twist-shift angle
   

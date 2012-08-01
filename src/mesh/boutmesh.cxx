@@ -2325,13 +2325,7 @@ BoutReal* BoutMesh::filterY(BoutReal *&f, bool lowpass,bool noDC,int M0)
 
   //output<<"MYSUB: "<<MYSUB<<endl;
   if ( rank == 0) { 
-    rfft(rd, ncy, fy);
-    // Take FFT in the Y direction
-    // int ymax = 1;
-    // for(int jy=ymax+1;jy<=ncy/2;jy++)
-    //   fy[jy] = 0.0;
-
-    
+    rfft(rd, ncy, fy); 
    
     for(int jy=M0+1;jy<=ncy/2;jy++){
       if (lowpass) //lowpass filter

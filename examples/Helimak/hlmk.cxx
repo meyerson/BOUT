@@ -320,6 +320,7 @@ int physics_init(bool restarting)
 int physics_run(BoutReal t)
 {
   // Solve EM fields
+  int ncalls = solver->rhs_ncalls;
 
   solve_phi_tridag(rho, phi, phi_flags);
 
@@ -409,9 +410,12 @@ int physics_run(BoutReal t)
     ddt(Ni) = lowPass(ddt(Ni),5);
     ddt(Ni) -= ddt(Ni).DC();
     
-    if (par_damp)
-      ddt(Ni) += (1/(2*PI*1000000.0))* Div_par_CtoL(Grad_par_LtoC(ddt(Ni)));
-    //ddt(Ni) = lowPass_Y(ddt(Ni),1);
+    if (par_damp and ncalls>5){
+      output<<"y filter!"<<endl;
+      ddt(Ni) = lowPass_Y(ddt(Ni),1);
+    }
+
+
     //ddt(Ni) = smooth_y(ddt(Ni));
   }
 
@@ -496,7 +500,8 @@ int physics_run(BoutReal t)
     //ddt(rho) += 1e-4 * mu_i * Laplacian(rho);
     ddt(rho) = lowPass(ddt(rho),5);
      //ddt(rho) = smooth_y(ddt(rho));
-     //ddt(rho) = lowPass_Y(ddt(rho),1);
+    if ((ncalls > 5) and par_damp)
+      ddt(rho) = lowPass_Y(ddt(rho),1);
 
 
   }
