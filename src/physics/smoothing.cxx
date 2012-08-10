@@ -268,14 +268,15 @@ const Field3D lowPass_Y(const Field3D &var, int ymax)
 #endif
   int ncy = mesh->ngy;
  
+  int stat= 0;
   if(!var.isAllocated())
     return var;
 
   if(buffer_y == NULL)
-    buffer_y = new BoutReal[ncy];
+    buffer_y = new (nothrow) BoutReal[ncy];
 
   if(filter_y == NULL)
-    filter_y = new BoutReal[ncy];
+    filter_y = new (nothrow) BoutReal[ncy];
 
   if((ymax >= ncy/2) || (ymax < 0)) {
     // Removing nothing
@@ -291,15 +292,23 @@ const Field3D lowPass_Y(const Field3D &var, int ymax)
       for(jy=0;jy<mesh->ngy;jy++)
 	buffer_y[jy] =  var[jx][jy][jz]; //x and z fixed now
       
-      filter_y = mesh->filterY(buffer_y);
-      
+      //filter_y = mesh->filterY(buffer_y);
+      stat = mesh->filterY(buffer_y);
+
       for(jy=0;jy<mesh->ngy;jy++) 
-	result[jx][jy][jz] = filter_y[jy];
+	result[jx][jy][jz] = buffer_y[jy];
+	//result[jx][jy][jz] = filter_y[jy];
+      // 	result[jx][jy][jz] = 1
+	//result[jx][jy][jz] = filter_y[jy];
     }
 
   
+  
   mesh->communicate(result);
   
+  delete [] filter_y;
+  delete [] buffer_y;
+
   return result;
 
 

@@ -2288,7 +2288,7 @@ const Field2D BoutMesh::averageY(const Field2D &f)
 }
 
 //dcomplex* BoutMesh::sumY(dcomplex **&f) 
-BoutReal* BoutMesh::filterY(BoutReal *&f){
+int BoutMesh::filterY(BoutReal *&f){
   bool lowpass = false; //notch filter
   bool noDC = true;
   int M0 = 1;
@@ -2296,19 +2296,20 @@ BoutReal* BoutMesh::filterY(BoutReal *&f){
 }
 
 //BoutReal* BoutMesh::filterY(BoutReal *&f)
-BoutReal* BoutMesh::filterY(BoutReal *&f, bool lowpass,bool noDC,int M0)
+//BoutReal* BoutMesh::filterY(BoutReal *&f, bool lowpass,bool noDC,int M0)
+int BoutMesh::filterY(BoutReal *&f, bool lowpass,bool noDC,int M0)
+
 {
-  // bool lowpass = false; //notch filter
-  // bool noDC = true;
-  // int M0 = 1;
   
-  BoutReal* result = NULL; 
+  BoutReal* result = NULL;
+
+  
   if(result == NULL)
-    result = new BoutReal[mesh->ngy];
+    result = new (nothrow) BoutReal[mesh->ngy];
 
 
   BoutReal* rd = NULL;
-  static dcomplex *fy = NULL; 
+  dcomplex *fy = NULL; 
   
   int rank, size;
   MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -2316,10 +2317,12 @@ BoutReal* BoutMesh::filterY(BoutReal *&f, bool lowpass,bool noDC,int M0)
   int ncy = size*MYSUB;
 
   if ( rank == 0) {     
-    rd = new BoutReal[ncy];
+    rd = new (nothrow) BoutReal[ncy];
     if(fy == NULL)
-      fy = new dcomplex[ncy/2+1]; //(32+1)
+      fy = new (nothrow) dcomplex[ncy/2+1]; //(32+1)
   }
+  
+  
   
   MPI_Gather(&f[ystart],MYSUB, MPI_DOUBLE, rd, MYSUB, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
@@ -2343,10 +2346,13 @@ BoutReal* BoutMesh::filterY(BoutReal *&f, bool lowpass,bool noDC,int M0)
     
   }
  
-  //rd to result
-  MPI_Scatter(rd,MYSUB, MPI_DOUBLE, &result[ystart], MYSUB, MPI_DOUBLE,0,MPI_COMM_WORLD); 
-
-  return result;
+ 
+  MPI_Scatter(rd,MYSUB, MPI_DOUBLE, &f[ystart], MYSUB, MPI_DOUBLE,0,MPI_COMM_WORLD); 
+  
+  delete [] fy;
+  delete [] rd;
+ 
+  return 0;
 }
 
 

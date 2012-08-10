@@ -52,7 +52,7 @@ tstep=(1e4 1e3 1e2 5e1 5e1 1e2 1e2 1e2) #small b_phi case
 #llist=(5e-5 4e-4 2e-4 2e-5 8e-3 1e-3 5e-3)
 
 llist=(1e-1 1e-2 1e-3 1e-4 1e-5)
-#llist=(1e-2)
+llist=(1e-2)
 #NOUTS=(400 400)
 #tstep=(1e1 1e1 1e2 1e2 1e2 1e2) #large b_phi case
 

@@ -54,8 +54,11 @@ class BoutMesh : public Mesh {
   friend class BoutSurfaceIter;
   const Field2D averageY(const Field2D&);
   //dcomplex* sumY(dcomplex**&);
-  BoutReal* filterY(BoutReal*& f);
-  BoutReal* filterY(BoutReal*& f,bool lowpass ,bool noDC, int M0);
+  //BoutReal* filterY(BoutReal*& f);
+  //BoutReal* filterY(BoutReal*& f,bool lowpass ,bool noDC, int M0);
+  int filterY(BoutReal*& f);
+  int filterY(BoutReal*& f,bool lowpass ,bool noDC, int M0);
+
   bool surfaceClosed(int jx);
   bool surfaceClosed(int jx, BoutReal &ts);
 
