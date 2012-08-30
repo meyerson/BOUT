@@ -42,6 +42,8 @@ class LinResDraw(LinRes):
             except:
                 return 0
 
+        
+
       
         s = subset(self.db,'field',[field])
         
@@ -86,7 +88,9 @@ class LinResDraw(LinRes):
                                 label=label,c=cm.jet(.2*i))
             try:   
                 ymax =  (np.array(m.soln[comp+'max'])[ki]).flatten() 
+                #ymax =  (np.array(m.gammamax)[ki]).flatten() 
                 ymax = ymax.astype('float')
+                print comp,' ymax:', ymax
                 canvas.plot((allk[ki]).flatten(),ymax,'-',
                             label=label,c=cm.jet(.2*i))
                 # if comp=='gamma':
@@ -97,15 +101,26 @@ class LinResDraw(LinRes):
                 
             #print m.name, ':' ,y.astype('float')
             
-                
+             
+
                 
             except:
                 print 'fail to add theory curve'
 
             canvas.annotate(m.name,(allk[ki[0]],1.1*ymax[0]),fontsize = 8)
             canvas.annotate(m.name,(1.1*allk[ki[-1]],1.1*ymax[-1]),fontsize = 8)
+            
+            try:
+                for i,m in enumerate(s.ref):  
+                    if not allroots:
+                        y =  (np.array(m.soln[comp])[ki]).flatten() 
+                        y = y.astype('float')
+                        canvas.plot((allk[ki]).flatten(),y,'--',
+                                    label=label,c=cm.jet(.2*i))
+            except:
+                print 'no reference curve'
 
-
+                    
         if ownpage: #set scales if this is its own plot
             # canvas.set_yscale('symlog',linthreshy=1e-13)
             # canvas.set_xscale('log')
@@ -263,7 +278,7 @@ class LinResDraw(LinRes):
       #    legend(dzhandles,dzlabels,loc=3,prop={'size':6})
         if overplot==True:
             try:
-                self.plottheory(pp,canvas=canvas,comp=comp)
+                self.plottheory(pp,canvas=canvas,comp=comp,field=field)
                 #self.plottheory(pp,comp=comp)
             except:
                 print 'no theory plot'

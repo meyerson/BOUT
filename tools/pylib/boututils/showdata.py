@@ -28,12 +28,14 @@ try:
 
     import numpy as np
     import matplotlib.pyplot as plt
+    import subprocess 
+    import os
 
 except ImportError:
     print "ERROR: Showdata needs numpy, matplotlib and gobject modules"
     raise
 
-def showdata(data, scale=True, loop=False):
+def showdata(data, scale=True, loop=False,movie=False):
     """Animate a dataset, with time as first dimension
     
     2D - Show a line plot
@@ -43,6 +45,9 @@ def showdata(data, scale=True, loop=False):
     loop  = False Loop the dataset
     """
 
+    if movie:
+        return savemovie(data)
+
     size = data.shape
     ndims = len(size)
     
@@ -51,7 +56,7 @@ def showdata(data, scale=True, loop=False):
     #ax.set_autoscale(true)
                         
     # w,h = fig.figaspect(1);
-    
+   
     if ndims == 2:
         # Animate a line plot
         
@@ -130,6 +135,67 @@ def showdata(data, scale=True, loop=False):
       print "Sorry can't handle this number of dimensions"
         
 
+def savemovie(data,moviename='output.avi'):
+    size = data.shape
+    ndims = len(size)
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    files = []
+    if ndims == 2:
+    
+        line, = ax.plot(data[0,:])
+        if scale:
+            # Get data range
+            ax.set_ylim([np.min(data), np.max(data)])
+          # while True:
+            
+            for i in np.arange(size[0]):
+                print i
+                line.set_ydata(data[i,:])
+                if not scale:
+                    ax.set_ylim([np.min(data[i,:]), np.max(data[i,:])])
+                fig.canvas.draw()
+                filename = str('%03d' % i) + '.png'
+                plt.savefig(filename, dpi=100)
+                files.append(filename)
+          
+    
+    elif ndims == 3:
+        cmap = None
+        m = plt.imshow(data[0,:,:], interpolation='bilinear', cmap=cmap, animated=True)
+        for i in np.arange(size[0]):
+            m.set_data(data[i,:,:])
+            fig.canvas.draw()         
+            filename = str('%03d' % i) + '.png'
+            plt.savefig(filename, dpi=100)
+            files.append(filename)
+        
+        #plt.show()
+    else:
+      print "Sorry can't handle this number of dimensions"  
+    
+    print 'Making movie animation.mpg - this make take a while'
+    command = ('mencoder',
+               'mf://*.png',
+               '-mf',
+               'type=png:w=800:h=600:fps=10',
+               '-ovc',
+               'lavc',
+               '-lavcopts',
+               'vcodec=mpeg4',
+               '-oac',
+               'copy',
+               '-o',
+               moviename)
+    
+    subprocess.check_call(command)
+    
+    print files
+    #cleanup = ('rm',files)
+    os.system("rm *png")
+    #return 0
 
 def test():
     x = np.arange(0, 2*np.pi, 0.01)

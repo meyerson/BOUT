@@ -34,6 +34,7 @@ nonlinear = false
 #grid = "/home/cryosphere/BOUT/tools/cyl_and_helimak_grids/Helimak_11_1x32_140_lam_n.nc"
 grid = "/home/cryosphere/BOUT/tools/cyl_and_helimak_grids/Helimak_Bz_1x32_140_lam_n.nc"
 #grid = "/home/cryosphere/BOUT/tools/cyl_and_helimak_grids/Helimak_1_10_1x32_140_lam_n.nc"
+#grid = "../../tools/cyl_and_helimak_grids/Helimak_Bz_COLD+DENSE_1x32_0.0060_lam_n.nc"
 
 dump_format = "nc" # Output format. nc = NetCDF
 
@@ -79,14 +80,16 @@ mxstep = 10000
 
 [2fluid]
 
-AA = 2.0
+#AA = 2.0
+AA = 36.0
+#AA = 16.0
 ZZ = 1.0
  
 estatic = true    # if true, electrostatic (Apar = 0)
 ZeroElMass = true  # Use Ohms law without electron inertia
 nonlinear = false
 #Zeff = 128.0        # Z effective
-Zeff = 4
+Zeff = 1
 nu_perp = 1.0e-20
 
 ShearFactor = 0.0

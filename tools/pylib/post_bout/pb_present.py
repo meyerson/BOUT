@@ -106,10 +106,11 @@ class LinResPresent(LinResDraw):
          pp.close()
          return 0
 
+      dir(ss)
       ss.plotmodes(pp,yscale='log',debug=True,summary=False)
       ss.plotmodes(pp,yscale='symlog',comp='phase',summary=False)
       ss.plotmodes(pp,yscale='symlog',comp='phase',field='rho',summary=False)
-       
+      print dir(ss)
       
       #ss.plotmodes(pp,yscale='log',comp='phase',clip=True)
        
@@ -144,9 +145,9 @@ class LinResPresent(LinResDraw):
       except:
          print 'something terrible'
 
-       # s.plotradeigen(pp,yscale='linear')
-       # s.plotradeigen(pp,field ='Vi',yscale='linear')
-       # s.plotradeigen(pp,field='rho',yscale='log')
+      s.plotradeigen(pp,yscale='linear')
+         #s.plotradeigen(pp,field ='Vi',yscale='linear')
+      s.plotradeigen(pp,field='rho',yscale='log')
   
       pp.close()
       s.printmeta(pp,filename=pdfname) #append a metadata header

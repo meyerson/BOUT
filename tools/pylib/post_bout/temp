@@ -2,7 +2,6 @@ import post_bout as pb
 meta
 
 from post_bout import pb_corral
-
 import post_bout as pb
 from pb_present import LinResPresent
 a = pb.corral(refresh=False,skew=True,IConly=0,debug=False)
@@ -26,9 +25,9 @@ pb.save(path='./')
 
 import post_bout as pb
 meta = pb.metadata(path='./')
-ni = pb.boutdata.collect('Ni')
+ni = pb.boutdata.collect('g')
 from boututils import showdata
-showdata(ni[:,2,:,:])
+showdata(ni[1:,2,:,:])
 z = np.array(np.gradient(ni))[0]
 showdata(z[:,2,:,:])
 
@@ -217,3 +216,6 @@ y0 = np.array(a.models[0].omegamax).flatten()
 pp = PdfPages('debug.pdf')
 fig1 = plt.figure()
 canvas = fig1.add_subplot(1,1,1) 
+
+
+#make a movie

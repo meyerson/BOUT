@@ -17,8 +17,19 @@
 ;hlmk_grids,/simple,/narrow,/local_r,Bz0=.1,bphi0=0.0,gridname
 ;='Helimak_Bz',grid_size = 6 
 
-;hlmk_grids,/simple,/narrow,/local_r,Bz0=.1,bphi0=1.0,gridname='Helimak_bz_1_10',grid_size = 6 
+;hlmk_grids,/simple,/narrow,/local_r,Bz0=.1,bphi0=1.0,gridname='Helimak_bz_1_10',grid_size=
+;6 
 
+;hlmk_grids,/simple,/narrow,/local_r,Bz0=.1,bphi0=1.0,gridname='Helimak_bz',grid_size=5
+
+
+
+
+;create a cold dense plasma
+;hlmk_grids,/simple,/narrow,/local_r,Bz0=.1,bphi0=0.0,Te=2,Ni0 = 1e18,grid_size = 5,gridname ='Helimak_Bz_COLD+DENSE'
+
+;create a cold plasma
+;hlmk_grids,/simple,/narrow,/local_r,Bz0=.1,bphi0=0.0,Te=2,Ni0 = 1e16,grid_size = 5,gridname ='Helimak_Bz_COLD'
 
 pro hlmk_grids,full=full,Lc = Lc, $
                Ln = Ln, Lphi = Lphi,Lte = Lte,$
@@ -26,7 +37,7 @@ pro hlmk_grids,full=full,Lc = Lc, $
                narrow= narrow,simple = simple,$
                small_y_res=small_y_res,$
                name= name,local_r = local_r,gridname=gridname,$
-               bphi0 = bphi0, Bz0 = Bz0
+               bphi0 = bphi0, Bz0 = Bz0,Ni0 = Ni0
   
   ;to avoid making this thing too general I will myself to 
   ;assuming that this script will simply allow the user to tweak
@@ -124,15 +135,19 @@ pro hlmk_grids,full=full,Lc = Lc, $
   if not keyword_set(slope_ti) then slope_ti_amp = 1 /(rMax - rMin)
   
   
-  ni0 = 5e16 ;units? set_mesh_cyl will want m^-3
+  ;ni0 = 5e16 ;units? set_mesh_cyl will want m^-3
+  
+  if not keyword_set(Te0) then Te0 = 10.0 
+  if not keyword_set(Ni0) then Ni0 = 5e16
   
   ;we we create 10 grid with different Te gradient
   for i=0,8 do begin
      slope_n = (i-4.)/4. * slope_n_amp 
      slope_te = 0.0
      slope_ti = 0.0
-     lam_n = (1+(i-4.)/10.)*100 
-     te0 = 10.0
+     lam_n = (10+(i-4.)/1.0)/10.0
+     te0 = Te0
+     ni0 = Ni0
      print,"lam_n: ",lam_n
      
      

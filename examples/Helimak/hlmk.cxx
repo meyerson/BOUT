@@ -46,7 +46,7 @@ BoutReal beta_p;
 // settings
 bool estatic, ZeroElMass; // Switch for electrostatic operation (true = no Apar)
 
-bool minusDC,plusDC;
+bool noDC,plusDC,zlowpass;
 bool nonlinear, haswak,par_damp;
 
 
@@ -117,11 +117,12 @@ int physics_init(bool restarting)
   OPTION(options, nu_perp,     0.0);
   OPTION(options, ShearFactor, 1.0);
   
-  OPTION(options, minusDC, false);
+  OPTION(options, noDC, false);
   OPTION(options, plusDC, false);
   OPTION(options,nonlinear,false);
   OPTION(options,haswak,false);
   OPTION(options,par_damp,false);
+  OPTION(options,zlowpass,false);
   
   OPTION(options, phi_flags,   0);
   OPTION(options, apar_flags,  0);
@@ -364,8 +365,11 @@ int physics_run(BoutReal t)
   if(ZeroElMass) {
     // Set jpar,Ve,Ajpar neglecting the electron inertia term
     //jpar = ((Te0*Grad_par(Ni, CELL_YLOW)) - (Ni0*Grad_par(phi, CELL_YLOW)))/(fmei*0.51*nu);
-    jpar = ((Tet*Grad_par_LtoC(Ni)) - (Nit*Grad_par_LtoC(phi)))/(fmei*0.51*nu);
-    jpar = lowPass(jpar,5);
+    //jpar = ((Tet*Grad_par_LtoC(Ni)) - (Nit*Grad_par_LtoC(phi)))/(fmei*0.51*nu);
+    jpar = ((Te0*Grad_par_LtoC(Ni)) - (Ni0*Grad_par_LtoC(phi)))/(fmei*0.51*nu);
+  
+    if (zlowpass)
+      jpar = lowPass(jpar,8);
 
     // Set boundary conditions on jpar (in BOUT.inp)
     jpar.applyBoundary();
@@ -377,7 +381,6 @@ int physics_run(BoutReal t)
     Ve = jpar/Ni0;
     Ajpar = Ve;
   }else {
-    
     Ve = Ajpar + Apar;
     jpar = Ni0*(Vi - Ve);
   }
@@ -396,7 +399,7 @@ int physics_run(BoutReal t)
     //ddt(Ni) += Ni0*Div_par_CtoL(Ve);// + Ni*Div_par_CtoL(Ve0);// + Ni*Div_par(Vi);
     // ddt(Ni) -= Ni0*Div_par(Ve) + Ni*Div_par(Ve0);
     if (haswak)
-      ddt(Ni) += Grad_par_CtoL(jpar);
+      ddt(Ni) +=  Grad_par_CtoL(jpar);
     //ddt(Ni) += Grad_par(jpar);
     //ddt(Ni) += (2.0)*V_dot_Grad(b0xcv, pe);
     /*
@@ -406,14 +409,16 @@ int physics_run(BoutReal t)
     //ddt(Ni) += .001*(1.0/(mesh->ngz)) *Laplacian(Ni);
     //if(minusDC) 
      // REMOVE TOROIDAL AVERAGE DENSITY
+    if (noDC)
+      Ni -= Ni.DC();
     
-    ddt(Ni) = lowPass(ddt(Ni),5);
-    ddt(Ni) -= ddt(Ni).DC();
-    
-    if (par_damp and ncalls>5){
-      output<<"y filter!"<<endl;
-      ddt(Ni) = lowPass_Y(ddt(Ni),1);
+    if (zlowpass) {
+      ddt(Ni) = lowPass(ddt(Ni),8);
+      Ni = lowPass(Ni,8);
     }
+    if (par_damp)
+      ddt(Ni) = lowPass_Y(ddt(Ni),1);
+    
 
 
     //ddt(Ni) = smooth_y(ddt(Ni));
@@ -470,7 +475,7 @@ int physics_run(BoutReal t)
     //ddt(rho) += mesh->Bxy*mesh->Bxy*Div_par(jpar, CELL_CENTRE);
     
     ddt(rho) += mesh->Bxy*mesh->Bxy*Grad_par_CtoL(jpar); 
-    //ddt(rho) += Grad_par_CtoL(jpar); //for 2D the above line equivalent
+    //ddt(rho) += Grad_par_CtoL(jpar); //for 2D the above line is equivalent
     // ddt(rho) += 2.0*mesh->Bxy*V_dot_Grad(b0xcv, pei);
     
     //ddt(rho) -= Vpar_Grad_par(Vi, rho0) + Vpar_Grad_par(Vi0, rho);// + Vpar_Grad_par(Vi, rho);
@@ -494,13 +499,16 @@ int physics_run(BoutReal t)
     //ddt(rho) += Laplacian(rho);
     //ddt(rho) += 1.0/100000000.0 *mu_i*Delp2(rho,-1.0); //no smoothing, check the value of mu_i
     //ddt(rho) += 1.0/100000000.0 *Delp2(rho); 
-    //if(minusDC) 
-    ddt(rho) -= ddt(rho).DC();
+    if(noDC) 
+      rho -= rho.DC();
     
     //ddt(rho) += 1e-4 * mu_i * Laplacian(rho);
-    ddt(rho) = lowPass(ddt(rho),5);
-     //ddt(rho) = smooth_y(ddt(rho));
-    if ((ncalls > 5) and par_damp)
+    if (zlowpass) {
+      ddt(rho) = lowPass(ddt(rho),8);
+      rho = lowPass(rho,8);
+    }
+//ddt(rho) = smooth_y(ddt(rho));
+    if (par_damp)
       ddt(rho) = lowPass_Y(ddt(rho),1);
 
 

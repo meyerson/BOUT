@@ -479,6 +479,8 @@ int physics_run(BoutReal t)
     //ddt(rho) += 2.0*Bnorm*V_dot_Grad(b0xcv, pei);
 
     ddt(rho) += mesh->Bxy*mesh->Bxy*Div_par_CtoL(jpar);
+    ddt(rho) = lowPass(ddt(rho),8);
+
     //ddt(rho) = smooth_y(ddt(rho));
     /*
     for(int jx=MXG;jx<mesh->ngx-MXG;jx++) {

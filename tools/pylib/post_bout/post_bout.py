@@ -170,7 +170,7 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
         #     for j,x in enumerate(modes_db_r):
         #         x['amp_r'] = modes_db_r[j]['amp']
         #         x['phase_r'] = modes_db_r[j]['phase']
-        #         x['k_r']= modes_db_r[j]['k']
+        #         x['kr']= modes_db_r[j]['k']
         #         x['freq_r']= modes_db_r[j]['freq']
         #         x['gamma_r'] =modes_db_r[j]['gamma']
         #     allmodes_db.append(modes_db_r)
@@ -257,7 +257,7 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
     print filename_db
     
     
-def read(path='.',filename='post_bout.pkl',trysave=True,
+def read(path='.',filename='post_bout.db',trysave=True,
          gamma_updt=False):
     print 'in post_bout.read()'
 

@@ -245,7 +245,8 @@ def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=Fal
         #amp_n = dom_mode[i]['amp_n'] #nt x nx
    
         #let just look over the nx range
-        lnamp = np.log(amp[nt/2:,2:-2])
+        #lnamp = np.log(amp[nt/2:,2:-2])
+        lnamp = np.log(amp[nt/2:,:])
 
         t = dt*np.array(range(nt)) #dt matters obviouslyww
         r = np.polyfit(t[nt/2:],lnamp,1,full=True)
@@ -254,16 +255,16 @@ def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=Fal
         f0 = np.exp(r[0][1]) #nx
         res = r[1]
         pad =[0,0]       
-        gamma_est = np.concatenate([pad,gamma_est,pad])
-        f0 = np.concatenate([pad,f0,pad])
-        res = np.concatenate([pad,res,pad])
+        #gamma_est = np.concatenate([pad,gamma_est,pad])
+        #f0 = np.concatenate([pad,f0,pad])
+        #res = np.concatenate([pad,res,pad])
         
                 #sig = res/np.sqrt((x['nt']-2))
         sig = np.sqrt(res/(nt-2))
                 #sig0 = sig*np.sqrt(1/(x['nt'])+ ) # who cares
         sig1 = sig*np.sqrt(1.0/(nt * t.var()))
         nt = np.array(nt)
-        print 'shapes ', nt.shape, nt, lnamp.shape
+        print 'shapes ', nt.shape, nt, lnamp.shape, res.shape
         res = 1 - res/(nt*lnamp.var(0)) #nx 
         res[0:2] = 0
         res[-2:] = 0

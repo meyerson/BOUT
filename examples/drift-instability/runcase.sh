@@ -43,36 +43,28 @@ llist=(1e0 5e-1 5e-2 1e-2 1e-3 1e-4 1e-5 1e-6 1e-7)
 #tstep=(1e3 2e3)
 
 NOUTS=(100 200 500 500 200 200 200 100)
-tstep=(1e1 1e2 1e2 2e2 1e2 1e2 1e2 1e2) #large b_phi case
+#tstep=(1e1 1e2 1e2 2e2 1e2 1e2 1e2 1e2) #large b_phi case
 
 NOUTS=(100 100 100 100 100 200 200 100)
-tstep=(1e4 1e3 1e2 5e1 5e1 1e2 1e2 1e2) #small b_phi case
+#tstep=(1e2 1e2 1e2 5e1 5e1 1e2 1e2 1e2) #small b_phi case
 #NOUTS=(10 10 20 20 200 200 200 100)
 #tstep=(2e1 2e1 1e1 1e1 1e2 1e2 1e2 1e2) #lar
 #llist=(5e-5 4e-4 2e-4 2e-5 8e-3 1e-3 5e-3)
 
+#tstep=(1e2 5e1 1e1 2e1 5e1)
+tstep=(5e1 5e1 1e1 1e1 5e1)
 llist=(1e-1 1e-2 1e-3 1e-4 1e-5)
-llist=(1e-2)
-#NOUTS=(400 400)
-#tstep=(1e1 1e1 1e2 1e2 1e2 1e2) #large b_phi case
 
-#NOUTS=(10 10 20 20 200 200 200 100)
-#tstep=(2e1 2e1 1e1 1e1 1e2 1e2 1e2 1e2) #lar
-#llist=(5e-5 4e-4 2e-4 2e-5 8e-3 1e-3 5e-3)
 
-#llist=(1e-4 1e-5)
-# NOUTS=(300)
-# tstep=(1e2)
-# llist=(1e-4)
-# 4e-4 2e-4 2e-5 8e-3 1e-3 5e-3)
 make
 
 rm status.log
 #rm run.log
 i=0
+key='AA36'
 for lval in ${llist[@]}
 do
-    current_dir=$data_dir/data_bz_11_${lval}
+    current_dir=$data_dir/data_${key}_${lval}
     echo $current_dir
     
     rm -r $current_dir
@@ -95,8 +87,8 @@ do
     
 
     sed "s/ZMAX = .0001/ZMAX = ${lval}/g" BOUT.inp > temp.inp
-    #sed "s/NOUT = 200/NOUT = ${NOUTS[$i]}/g" temp.inp > temp2.inp
-    sed "s/NOUT = 200/NOUT = 200/g" temp.inp > temp2.inp
+    sed "s/NOUT = 200/NOUT = ${NOUTS[$i]}/g" temp.inp > temp2.inp
+    #sed "s/NOUT = 200/NOUT = 100/g" temp.inp > temp2.inp
 
     #sed "s/TIMESTEP = 5e3/TIMESTEP =  1e2/g" temp2.inp > $current_dir/BOUT.inp
     sed "s/TIMESTEP = 5e3/TIMESTEP =  ${tstep[$i]}/g" temp2.inp > $current_dir/BOUT.inp

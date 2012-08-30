@@ -18,7 +18,18 @@ try:
 except ImportError:
     print "ERROR: Showdata needs numpy, matplotlib and gobject modules"
     raise
-
+try:
+    print "Trying to import GTK..."
+    import gobject
+    widget = "gtk"
+except:
+    print "failed\nTrying to import WX..."
+    try:
+        from wx import *
+        widget = "wx"
+    except:
+        print "failed."
+        raise
 def showdata_tacc(data, scale=True, loop=False,movie=True):
     """Animate a dataset, with time as first dimension
     

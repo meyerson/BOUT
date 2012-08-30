@@ -195,13 +195,19 @@ class LinRes(object):
       #     self.M = 0
 
       #try:
-      try:
+      try: #analytic model based on simple matrix
           self.models=[]
           self.models.append(_model(self)) #create a list to contain models
           self.models.append(_model(self,haswak=True,name='haswak')) #another model
-          self.models.append(_model(self,haswak2=True,name='haswak2'))
       except:
           self.M = 0
+
+      try: #analytic models based on user defined complex omega
+          self.ref=[]
+          self.ref.append(_ref(self)) #demand a complex omega to compare
+          #self.ref.append(_ref(self,haswas=True,name='haswak'))
+      except:
+          self.ref =0
      # self.models.append(_model(self,haswak2=True,name='haswak2')) 
       
       # except:
@@ -284,6 +290,32 @@ class subset(LinRes):
          if model==True:
             self.model()
 
+class _ref(object): #NOT a derived obj, just takes one as a var
+    def __init__(self,input_obj,name='drift',haswak=False):
+        allk = input_obj.k_r[:,1,input_obj.nx/2] #one location for now
+        allkpar = input_obj.k_r[:,0,input_obj.nx/2] #one location for now
+        self.name = name
+        
+        self.gamma = []
+        self.omega = []
+        self.soln ={}
+        self.soln['gamma'] = []
+        self.soln['freq'] = []
+ 
+        for i,k in enumerate(allk):
+            omega_star = (k)/(input_obj.L[i,input_obj.nx/2,input_obj.ny/2]) 
+            omega = omega_star/(20.0 + (k)**2)
+            
+            nu = (2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]
+            gamma = ((k**2)*omega_star**2)/(nu * (11.0+k**2)**3)
+        
+            self.gamma.append(gamma)
+            self.omega.append(omega)
+        
+        self.soln['freq'] = np.transpose(np.array(self.omega))
+        self.soln['gamma'] = np.transpose(np.array(self.gamma))
+                                          
+
 class _model(object):  #NOT a derived class,but one that takes a class as input
     def __init__(self,input_obj,name='drift',haswak=False,
                  rho_conv=False,haswak2=False):
@@ -298,6 +330,7 @@ class _model(object):  #NOT a derived class,but one that takes a class as input
         self.eigvec = [] 
         self.gammamax = []
         self.omegamax = []
+        self.k =[]
     
        
         self.soln = {}
@@ -305,16 +338,19 @@ class _model(object):  #NOT a derived class,but one that takes a class as input
         self.soln['gamma'] = []
         self.soln['gammamax'] = []
         self.soln['freqmax'] = []
-        
+
 
         for i,k in enumerate(allk):
             #print i
          #M =np.matrix(np.random.rand(3,3),dtype=complex)
             M = np.zeros([2,2],dtype=complex)
             M[0,0] = 0
+            #k = k/np.sqrt(10)
+            #L = (input_obj.L)*np.sqrt(10)
+            
             M[0,1] = k/(input_obj.L[i,input_obj.nx/2,input_obj.ny/2])
-            M[1,0] = (2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,k**-2)
-            M[1,1]= -(2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,k**-2)
+            M[1,0] = (2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,(k)**-2)
+            M[1,1]= -(2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,(k)**-2)
 
             if haswak2:
                 b = .001000
@@ -325,18 +361,19 @@ class _model(object):  #NOT a derived class,but one that takes a class as input
                 M[1,1] = f*M[1,1]
                 M[1,0] =f * M[1,0]
             if haswak:
-                M[0,0] = -(2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1)
-                M[0,1] = M[0,1] + (2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1)
+                M[0,0] = -(1.0/1.0)*(2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1)
+                M[0,1] = (1.0/1.0)*((2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1) + M[0,1])
                   
             if rho_conv: #not used
-                M[1,0] = (allkpar[i])**2 * input_obj.meta['sig_par'][0]*complex(0,k**-2)
-                M[1,1]= -(allkpar[i])**2 * input_obj.meta['sig_par'][0]*complex(0,k**-2)
+                M[1,0] = (allkpar[i])**2 * input_obj.meta['sig_par'][0]*complex(0,(k)**-2)
+                M[1,1]= -(allkpar[i])**2 * input_obj.meta['sig_par'][0]*complex(0,(k)**-2)
          
             eigsys= np.linalg.eig(M)  
             gamma = (eigsys)[0].imag
             omega =(eigsys)[0].real
             eigvec = eigsys[1]
-        
+            self.k.append(k)
+            
             self.M.append(M)
             self.eigsys.append(eigsys)
 
@@ -356,6 +393,7 @@ class _model(object):  #NOT a derived class,but one that takes a class as input
         self.dim = M.shape[0]
         self.soln['freq'] = np.transpose(np.array(self.soln['freq']))
         self.soln['gamma'] = np.transpose(np.array(self.soln['gamma']))
+        
         # self.soln = {}
         # self.soln['freq'] = self.omegaA
         # self.soln['gamma'] = self.gammaA
