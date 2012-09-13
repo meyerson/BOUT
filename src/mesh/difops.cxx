@@ -934,7 +934,7 @@ const Field3D b0xGrad_dot_Grad(const Field3D &phi, const Field3D &A, CELL_LOC ou
     rz = VDDZ(vz, A);
   }
   
-  result = (result + ry + rz) / (mesh->J*sqrt(mesh->g_22));
+  result = (result + ry + rz) / (mesh->J*sqrt(mesh->g_22)); //usually  convention
 
 #ifdef TRACK
   result.name = "b0xGrad_dot_Grad("+phi.name+","+A.name+")";

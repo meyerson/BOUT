@@ -4,9 +4,9 @@ meta
 from post_bout import pb_corral
 import post_bout as pb
 from pb_present import LinResPresent
-a = pb.corral(refresh=False,skew=True,IConly=0,debug=False)
+a = pb.corral(refresh=False,skew=True,IConly=0,debug=False,logname='status.log')
 y = LinResPresent(a.db)
-y.show(debug=False)
+y.show(debug=False,pdfname='output_haswak4a.pdf')
 
 
 import post_bout as pb
@@ -17,7 +17,7 @@ import post_bout as pb
 pb.save(path='./',transform=True,debug=True)
 
 import post_bout as pb
-pb.save(path='./',transform=True)
+pb.save(path='./',transform=True)r
 
 
 import post_bout as pb
@@ -25,9 +25,17 @@ pb.save(path='./')
 
 import post_bout as pb
 meta = pb.metadata(path='./')
-ni = pb.boutdata.collect('g')
+gradNi0 = pb.boutdata.collect('gradNi0')
+Ni0 = pb.boutdata.collect('Ni0')
+Ni_x = pb.boutdata.collect('Ni_x')
+L = meta['L']
+Rxy = meta['Rxy']
+DXRxy =  pb.boutdata.collect('DXRxy')
+print DXRxy * gradNi0**-1
+
+
 from boututils import showdata
-showdata(ni[1:,2,:,:])
+showdata(ni[:,2,:,:],movie=True)
 z = np.array(np.gradient(ni))[0]
 showdata(z[:,2,:,:])
 

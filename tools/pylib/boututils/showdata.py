@@ -105,9 +105,11 @@ def showdata(data, scale=True, loop=False,movie=False):
             def animate():
                 cmap = None
                 m = plt.imshow(data[0,:,:], interpolation='bilinear', cmap=cmap, animated=True,aspect='auto')
+                #c = plt.contour(data[0,:,:],8,colors='k')
                 while True:
                     for i in np.arange(size[0]):
                         m.set_data(data[i,:,:])
+                        #c = plt.contour(data[0,:,:],8,colors='k')
                         fig.canvas.draw()
                         yield True
                     if not loop: break
@@ -138,7 +140,7 @@ def showdata(data, scale=True, loop=False,movie=False):
 def savemovie(data,moviename='output.avi'):
     size = data.shape
     ndims = len(size)
-    
+    print 'Saving pictures -  this make take a while'
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
@@ -165,13 +167,25 @@ def savemovie(data,moviename='output.avi'):
     elif ndims == 3:
         cmap = None
         m = plt.imshow(data[0,:,:], interpolation='bilinear', cmap=cmap, animated=True)
+        c = plt.contour(data[0,:,:],8,colors='k')
         for i in np.arange(size[0]):
+            print i
             m.set_data(data[i,:,:])
+            #c = plt.contour(data[i,:,:],8,colors='k')
+            #c.set_data(data[i,:,:])
+            for coll in c.collections:
+                try:
+                    plt.gca().collections.remove(coll)
+                except:
+                    print 'not in this collection'
+
+            c = plt.contour(data[i,:,:],8,colors='k')
+   
             fig.canvas.draw()         
             filename = str('%03d' % i) + '.png'
             plt.savefig(filename, dpi=100)
             files.append(filename)
-        
+            #plt.clf()
         #plt.show()
     else:
       print "Sorry can't handle this number of dimensions"  

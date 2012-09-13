@@ -197,14 +197,24 @@ class LinRes(object):
       #try:
       try: #analytic model based on simple matrix
           self.models=[]
-          self.models.append(_model(self)) #create a list to contain models
+          #self.models.append(_model(self)) #create a list to contain models
           self.models.append(_model(self,haswak=True,name='haswak')) #another model
+          # for Ln in range(10):
+          #     Lval = 10**((.2*Ln -1)/10)
+          #     #Lval = 10**(Ln-1)
+          #     #Lval = 
+          #     print Lval
+          #     self.models.append(_model(self,varL=True,name='varL'+str(Lval),Lval=Lval,haswak=True))
+          
+
       except:
           self.M = 0
 
       try: #analytic models based on user defined complex omega
           self.ref=[]
-          self.ref.append(_ref(self)) #demand a complex omega to compare
+          self.ref.append(_ref(self))
+          #self.ref.append(_ref(self,haswak=False,name='drift'))
+ #demand a complex omega to compare
           #self.ref.append(_ref(self,haswas=True,name='haswak'))
       except:
           self.ref =0
@@ -291,7 +301,7 @@ class subset(LinRes):
             self.model()
 
 class _ref(object): #NOT a derived obj, just takes one as a var
-    def __init__(self,input_obj,name='drift',haswak=False):
+    def __init__(self,input_obj,name='haswak',haswak=True):
         allk = input_obj.k_r[:,1,input_obj.nx/2] #one location for now
         allkpar = input_obj.k_r[:,0,input_obj.nx/2] #one location for now
         self.name = name
@@ -303,12 +313,19 @@ class _ref(object): #NOT a derived obj, just takes one as a var
         self.soln['freq'] = []
  
         for i,k in enumerate(allk):
-            omega_star = (k)/(input_obj.L[i,input_obj.nx/2,input_obj.ny/2]) 
-            omega = omega_star/(20.0 + (k)**2)
+            omega_star = -(k)/(input_obj.L[i,input_obj.nx/2,input_obj.ny/2]) 
+           
             
             nu = (2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]
-            gamma = ((k**2)*omega_star**2)/(nu * (11.0+k**2)**3)
-        
+            
+            if haswak:
+                omega = -omega_star/(1 + (k)**2)
+                gamma = ((k**2)*omega_star**2)/(nu * (1+k**2)**3)
+            else:
+                # omega = -np.sqrt(nu*omega_star)/(np.sqrt(2)*k) + nu**(3/2)/(8*np.sqrt(2*omega_star)*k**3)
+                # gamma = np.sqrt(nu*omega_star)/(np.sqrt(2)*k) - nu/(2* k**2) + nu**(3/2)/(8*np.sqrt(2*omega_star)*k**3)
+                omega = -omega_star + (2*k**4*omega_star**3)/nu**2 
+                gamma = (k*omega_star)**2/nu - (5*(k**6*omega_star*4/nu**3))
             self.gamma.append(gamma)
             self.omega.append(omega)
         
@@ -318,7 +335,7 @@ class _ref(object): #NOT a derived obj, just takes one as a var
 
 class _model(object):  #NOT a derived class,but one that takes a class as input
     def __init__(self,input_obj,name='drift',haswak=False,
-                 rho_conv=False,haswak2=False):
+                 rho_conv=False,haswak2=False,varL=False,Lval=1.0):
         allk = input_obj.k_r[:,1,input_obj.nx/2] #one location for now
         allkpar = input_obj.k_r[:,0,input_obj.nx/2] #one location for now
         self.name = name
@@ -352,18 +369,13 @@ class _model(object):  #NOT a derived class,but one that takes a class as input
             M[1,0] = (2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,(k)**-2)
             M[1,1]= -(2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,(k)**-2)
 
-            if haswak2:
-                b = .001000
-                a = 0.001 # up down gamma, down up freq
-                f = 1.0  #in the 
-                M[0,0] =  -f*1.0*(2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1)
-                M[0,1] = a*M[0,1] + f*1.0*(2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1)
-                M[1,1] = f*M[1,1]
-                M[1,0] =f * M[1,0]
+            
             if haswak:
                 M[0,0] = -(1.0/1.0)*(2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1)
                 M[0,1] = (1.0/1.0)*((2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1) + M[0,1])
-                  
+            if varL:
+                M[0,1] = Lval*M[0,1]     
+            
             if rho_conv: #not used
                 M[1,0] = (allkpar[i])**2 * input_obj.meta['sig_par'][0]*complex(0,(k)**-2)
                 M[1,1]= -(allkpar[i])**2 * input_obj.meta['sig_par'][0]*complex(0,(k)**-2)

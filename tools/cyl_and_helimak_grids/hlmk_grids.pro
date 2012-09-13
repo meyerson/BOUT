@@ -20,13 +20,19 @@
 ;hlmk_grids,/simple,/narrow,/local_r,Bz0=.1,bphi0=1.0,gridname='Helimak_bz_1_10',grid_size=
 ;6 
 
-;hlmk_grids,/simple,/narrow,/local_r,Bz0=.1,bphi0=1.0,gridname='Helimak_bz',grid_size=5
+;hlmk_grids,/simple,/narrow,/local_r,Bz0=.1,bphi0=0.0,gridname='Helimak_bz',grid_size=5
 
+;messing with radial comp, local r but not narrow just to see where
+;Rxy is used in bOUT++
+;hlmk_grids,/simple,/local_r,Bz0=.1,bphi0=0.0,gridname='Helimak_bz_local_wide',grid_size=5
 
 
 
 ;create a cold dense plasma
-;hlmk_grids,/simple,/narrow,/local_r,Bz0=.1,bphi0=0.0,Te=2,Ni0 = 1e18,grid_size = 5,gridname ='Helimak_Bz_COLD+DENSE'
+;hlmk_grids,/simple,/narrow,/local_r,Bz0=.1,bphi0=0.0,Te=2,Ni0 =
+;1e18,grid_size = 5,gridname ='Helimak_Bz_COLD+DENSE'
+
+;hlmk_grids,/simple,/local_r,Bz0=.1,bphi0=0.0,Te=2,Ni0 = 1e18,grid_size = 5,gridname ='Helimak_Bz_COLD+DENSE+WIDE2'
 
 ;create a cold plasma
 ;hlmk_grids,/simple,/narrow,/local_r,Bz0=.1,bphi0=0.0,Te=2,Ni0 = 1e16,grid_size = 5,gridname ='Helimak_Bz_COLD'
@@ -58,11 +64,11 @@ pro hlmk_grids,full=full,Lc = Lc, $
   endif
   
   if keyword_set(narrow) then begin
-     rMin = 1.1
-     rMax = 1.101
+     rMin = .9975
+     rMax = 1.0025
   endif else begin
-     rMin= .4
-     rMax = 1.3
+     rMin= .90
+     rMax = 1.1
   endelse
 
 
@@ -117,7 +123,7 @@ pro hlmk_grids,full=full,Lc = Lc, $
 
   ;local r modes only
   if keyword_set(local_r) then begin
-     Nr =  1 + 4
+     Nr =  1 + 2
      Nz = 2^(N)
   endif
   temp = [gridname+"_",string(Nr-4),"x",string(Nz),"_",string(Lc),".nc"]
@@ -145,7 +151,7 @@ pro hlmk_grids,full=full,Lc = Lc, $
      slope_n = (i-4.)/4. * slope_n_amp 
      slope_te = 0.0
      slope_ti = 0.0
-     lam_n = (10+(i-4.)/1.0)/10.0
+     lam_n = (10+(i-4.)/1.0)/100
      te0 = Te0
      ni0 = Ni0
      print,"lam_n: ",lam_n

@@ -616,9 +616,7 @@ class LinResDraw(LinRes):
          
         
             print imax,xi_max
-         
-         #label = str([round(elem,3) for elem in s.MN[imax]])+ str(s.mn[imax])+' at x= '+str(xi_max)+' ,'+str(round(s.gamma[imax][2,xi_max]/s.gamma[imax][0,xi_max],3))+'%  '+str(round(s.gamma[imax][0,xi_max],4))
-
+       
             label = str([round(elem,3) for elem in s.MN[imax]])+ str(s.mn[imax])+' at x= '+str(xi_max)+' ,'+str(round(s.gamma[imax,2,xi_max]/s.gamma[imax,0,xi_max],3))+'%  '+str(round(s.gamma[imax,0,xi_max],4))
 
             short_label = str(dz)

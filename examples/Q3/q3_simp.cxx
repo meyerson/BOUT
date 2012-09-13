@@ -23,7 +23,7 @@ Vector2D b0xcv, b0,B0; // for curvature terms
 Field3D rho, Te, Ni, Ajpar, Vi, Ti;
 
 //Flux                                                                         
-Vector3D Gamma,vEB;
+Vector3D Gamma,vEB,vGradP;
 
 
 // Derived 3D variablesr

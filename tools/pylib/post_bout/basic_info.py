@@ -193,52 +193,7 @@ def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=Fal
             phasenew.append(phase_r)
 
         phase = np.transpose(phasenew)/dt    
-        # phase_f =np.roll(phase,-1,axis=0) #forward
-        # phase_b =np.roll(phase,1,axis=0) #back
-
-        #jumps = np.where(abs(phase) > np.pi/8)
-        
-#         for loc in np.transpose(np.array(jumps)):
-#             #loc is the (t,r) index of a jump
-            
-        #alli = np.where(abs(phase) == abs(phase))
-
-# #nearest points
-#         edge1 = (jumps[0]-1,jumps[1]) #t location
-#         edge2 = (jumps[0]+1,jumps[1]) # will have as many or less index pairs thatn jumps
-
-#         edge1i = np.where(edge1[0] > 0)
-#         edge1 = (edge1[0][edge1i],edge1[1][edge1i])
- 
-#         edge2i = np.where(edge2[0] < nx-1)
-#         edge2 = (edge2[0][edge2i],edge2[1][edge2i])
-        
-#         #construct pairs of vals that do not 
-
-#         edge = []
-#         #loop over the gaps
-#         for loc in np.transpose(np.array(edge1)): #will iterate over the 1st var npairs x 2
-#             if loc not in np.transpose(np.array(edge1)):
-#                 edge.append[loc]
-
-
-            
-        #edge2i = np.setdiff1d(edge2[0][edge2i],jumps[0])
-
-        
-        
-        # if len(jumps[0]) != 0:
-        #     print 'jumps', len(jumps[0])
-        #     phase[jumps] = .0001
-            #for elem in jumps2:
-             #   phase[elem[0]+1:elem[1]-1] = (phase[elem[0]]+phase[elem[1])/2.0
-
-
-          
-        #phase = phase/dt  
-        #for x in range(nx):
-            
-        #print 'jumps',jumps.shape,phase.shape
+       
        
 
         amp_n = (np.sqrt(power[:,:,p['y_i'],p['z_i']])/(kz_max*ky_max*amp)).real
@@ -264,7 +219,7 @@ def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=Fal
                 #sig0 = sig*np.sqrt(1/(x['nt'])+ ) # who cares
         sig1 = sig*np.sqrt(1.0/(nt * t.var()))
         nt = np.array(nt)
-        print 'shapes ', nt.shape, nt, lnamp.shape, res.shape
+        print 'shapes ', nt.shape, nt, lnamp.shape, res.shape, gamma_est
         res = 1 - res/(nt*lnamp.var(0)) #nx 
         res[0:2] = 0
         res[-2:] = 0

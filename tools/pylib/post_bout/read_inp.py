@@ -42,11 +42,12 @@ def parse_inp(boutlist):
    current='[main]'
 
    for i,val in enumerate(boutlist):
-      #print val
+      print i,val
       result =pattern.match(val)
       #while the current value is not a new section name add everything to the current section
       
       if result is None:
+         #print val
          key,value = val.split("=")
          value = value.replace('\"','')
          print current, key,value
@@ -221,7 +222,7 @@ def metadata(inpfile='BOUT.inp',path ='.',v=False):
     meta['lambda_ei'] = 24.-np.log(np.sqrt(d['Ni_x'])/d['Te_x']) ;
     meta['lambda_ii'] = 23.-np.log(d['ZZ']**3 * np.sqrt(2.*d['Ni_x'])/(d['Ti_x']**1.5)) #
 
-    meta['wci']       = 9.58e3*d['ZZ']*d['bmag']/d['AA'] # ion gyrofrteq
+    meta['wci']       = 1.0*9.58e3*d['ZZ']*d['bmag']/d['AA'] # ion gyrofrteq
     meta['wpi']       = 1.32e3*d['ZZ']*np.sqrt(d['Ni_x']/d['AA']) # ion plasma freq 
 
     meta['wce']       = 1.78e7*d['bmag'] #electron gyrofreq
@@ -258,7 +259,7 @@ def metadata(inpfile='BOUT.inp',path ='.',v=False):
     #meta['zPerp']=np.array(meta['lbNorm']).mean*np.array(range(d['MZ']))/(d['MZ']-1) 
   #let's calculate some profile properties
     dx = np.gradient(d['Rxy'])[0]
-    meta['L'] = 1e2*dx*(meta['Ni0'].v)/np.gradient(meta['Ni0'].v)[0]/meta['rho_s'].v
+    meta['L'] = 1.0*1e2*dx*(meta['Ni0'].v)/np.gradient(meta['Ni0'].v)[0]/meta['rho_s'].v
     
     meta['w_Ln']     =  meta['c_s']/(np.min(abs(meta['L']))*meta['wci'] *meta['rho_s'].v) #normed to wci
 

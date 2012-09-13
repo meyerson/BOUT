@@ -82,7 +82,8 @@ int invert_init()
   
   // Inversion options
   Options *lapOpts = options->getSection("laplace");
-  OPTION(lapOpts, filter, 0.2);
+  //OPTION(lapOpts, filter, 0.2);
+  lapOpts->get("filter", filter, 0.2);
   lapOpts->get("low_mem", invert_low_mem, false);
   lapOpts->get("use_pdd", invert_use_pdd, false);
   lapOpts->get("all_terms", laplace_all_terms, false);

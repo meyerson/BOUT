@@ -15,11 +15,14 @@
 #include <stdlib.h>
 
 // 2D initial profiles
-Field2D Ni0, Ti0, Te0, Vi0, phi0, Ve0, rho0, Ajpar0;
-Vector2D b0xcv; // for curvature terms
+Field2D Ni0, Ti0, Te0, Vi0, phi0, Ve0, rho0, Ajpar0,gradNi0;
+Vector2D b0xcv, b0,B0; /// for curvature terms
 
 // 3D evolving fields
 Field3D rho, Te, Ni, Ajpar, Vi, Ti;
+
+//Flux                                                                         
+Vector3D Gamma,vEB;
 
 // Derived 3D variables
 Field3D phi, Apar, Ve, jpar;
@@ -35,7 +38,7 @@ Field3D pei, pe;
 Field2D pei0, pe0;
 
 // Metric coefficients
-Field2D Rxy, Bpxy, Btxy, hthe;
+Field2D Rxy, Bpxy, Btxy, hthe,DXRxy;
 
 // parameters
 BoutReal Te_x, Ti_x, Ni_x, Vi_x, bmag, rho_s, fmei, AA, ZZ;
@@ -47,7 +50,7 @@ BoutReal beta_p;
 bool estatic, ZeroElMass; // Switch for electrostatic operation (true = no Apar)
 
 bool noDC,plusDC,zlowpass;
-bool nonlinear, haswak,par_damp;
+bool nonlinear, haswak,par_damp,transport;
 
 
 BoutReal zeff, nu_perp;
@@ -123,7 +126,8 @@ int physics_init(bool restarting)
   OPTION(options,haswak,false);
   OPTION(options,par_damp,false);
   OPTION(options,zlowpass,false);
-  
+  OPTION(options,transport,true);
+
   OPTION(options, phi_flags,   0);
   OPTION(options, apar_flags,  0);
   
@@ -151,7 +155,7 @@ int physics_init(bool restarting)
 
   lambda_ei = 24.-log(sqrt(Ni_x)/Te_x);
   lambda_ii = 23.-log(ZZ*ZZ*ZZ*sqrt(2.*Ni_x)/pow(Ti_x, 1.5));
-  wci       = 9.58e3*ZZ*bmag/AA;
+  wci       = (1.0)*9.58e3*ZZ*bmag/AA;
   nueix     = 2.91e-6*Ni_x*lambda_ei/pow(Te_x, 1.5);
   nuiix     = 4.78e-8*pow(ZZ,4.)*Ni_x*lambda_ii/pow(Ti_x, 1.5)/sqrt(AA);
   nu_hat    = zeff*nueix/wci;
@@ -195,6 +199,7 @@ int physics_init(bool restarting)
   Te0 /= Te_x;
   phi0 /= Te_x;
   Vi0 /= Vi_x;
+  
 
   // Normalise curvature term
   b0xcv.x /= (bmag/1e4);
@@ -205,13 +210,14 @@ int physics_init(bool restarting)
   Rxy /= rho_s;
   hthe /= rho_s;
   I *= rho_s*rho_s*(bmag/1e4)*ShearFactor;
+  output.write("mesh->dx = %e\n", mesh->dx[0]);
   mesh->dx /= rho_s*rho_s*(bmag/1e4);
-
+  output.write("mesh->dx = %e\n", mesh->dx[0]);
   // Normalise magnetic field
   Bpxy /= (bmag/1.e4);
   Btxy /= (bmag/1.e4);
   mesh->Bxy  /= (bmag/1.e4);
-
+  
   // calculate pressures
   pei0 = (Ti0 + Te0)*Ni0;
   pe0 = Te0*Ni0;
@@ -235,6 +241,17 @@ int physics_init(bool restarting)
   mesh->g_23 = Btxy*hthe*Rxy/Bpxy;
 
   mesh->geometry();
+ 
+  B0.y = 1.0/mesh->J;
+  B0.z = 0;
+  B0.x = 0;
+  B0.covariant = false;
+  
+  b0 = B0/abs(B0);
+
+  b0xcv = b0 ^ V_dot_Grad(b0,b0);
+  DXRxy = DDX(Rxy);
+  gradNi0 = DDX(Ni0);
   
   /**************** SET EVOLVING VARIABLES *************/
 
@@ -294,12 +311,24 @@ int physics_init(bool restarting)
   comms.add(phi);
   comms.add(Apar);
 
+  if(transport) {
+    dump.add(Gamma.x,"Gammax",1);
+    dump.add(Gamma.y,"Gammay",1);
+    dump.add(Gamma.z,"Gammaz",1);
+  }
+
   // Add any other variables to be dumped to file
   dump.add(phi,  "phi",  1);
   dump.add(Apar, "Apar", 1);
   dump.add(jpar, "jpar", 1);
+  
+  dump.add(ddt(Ni),"ddtNi",1);
+  dump.add(ddt(rho),"ddtrho",1);
 
   dump.add(Ni0, "Ni0", 0);
+  
+  dump.add(gradNi0,"gradNi0",0);
+  dump.add(DXRxy,"DXRxy",0);
   dump.add(Te0, "Te0", 0);
   dump.add(Ti0, "Ti0", 0);
 
@@ -318,12 +347,13 @@ int physics_init(bool restarting)
 #define vE_Grad(f, p) ( b0xGrad_dot_Grad(p, f) / mesh->Bxy )
 #define ParLaplac(f) (mesh->G2*DDY(f)+mesh->g22*D2DY2(f))
 
+
 int physics_run(BoutReal t)
 {
   // Solve EM fields
   int ncalls = solver->rhs_ncalls;
 
-  solve_phi_tridag(rho, phi, phi_flags);
+  solve_phi_tridag(rho, phi, phi_flags); //is this causing issues
 
   if(estatic || ZeroElMass) {
     // Electrostatic operation
@@ -384,13 +414,20 @@ int physics_run(BoutReal t)
     Ve = Ajpar + Apar;
     jpar = Ni0*(Vi - Ve);
   }
+ 
+  //Flux                                                                             
+  if(transport) {
+    vEB = (B0^Grad(phi))/(mesh->Bxy^2);
+    Gamma = vEB*Ni;
+  }
+  
 
   // DENSITY EQUATION
 
   ddt(Ni) = 0.0;
   if(evolve_ni) {
  
-    ddt(Ni) -= vE_Grad(Ni0, phi);// + vE_Grad(Ni, phi0);// + vE_Grad(Ni, phi);
+    ddt(Ni) -=  vE_Grad(Ni0, phi);// + vE_Grad(Ni, phi0);// + vE_Grad(Ni, phi);
     //ddt(Ni) -= Vpar_Grad_par(Ve, Ni0) + Vpar_Grad_par(Ve0, Ni);// + Vpar_Grad_par(Ve, Ni);
 
     if (nonlinear)
@@ -428,18 +465,30 @@ int physics_run(BoutReal t)
 
   ddt(Vi) = 0.0;
   if(evolve_vi) {
-    ddt(Vi) -= vE_Grad(Vi0, phi) + vE_Grad(Vi, phi0);//+ vE_Grad(Vi, phi);
-    ddt(Vi) -= Vpar_Grad_par(Vi0, Vi) + Vpar_Grad_par(Vi, Vi0);// + Vpar_Grad_par(Vi, Vi);
+    ddt(Vi) -= vE_Grad(Vi0, phi) + vE_Grad(Vi, phi0);
+    if (nonlinear)
+      ddt(Vi) -= vE_Grad(Vi, phi);
+    
+    ddt(Vi) -= Vpar_Grad_par(Vi0, Vi) + Vpar_Grad_par(Vi, Vi0);
+     if (nonlinear)
+      ddt(Vi) -= vE_Grad(Vi,Vi);
+     
+
     ddt(Vi) -= Grad_par(pei)/Ni0;
      /*ddt(Vi) -= Vpar_Grad_par(Ve0, Vi) + Vpar_Grad_par(Ve, Vi0);// + Vpar_Grad_par(Vi, Vi);
    
     */
     //ddt(Vi) += .001*(1.0/(mesh->ngz)) *Laplacian(Vi);
-    //if(minusDC) 
-    ddt(Vi) -= ddt(Vi).DC();
-
-    ddt(Vi) = lowPass(ddt(Vi),5);
-    //ddt(Vi) = lowPass_Y(ddt(Vi),1);
+    if(noDC) 
+      ddt(Vi) -= ddt(Vi).DC();
+ 
+    if (zlowpass) {
+      ddt(Vi) = lowPass(ddt(Vi),8);
+      Vi = lowPass(Vi,8);
+    }
+    if (par_damp)
+      ddt(Ni) = lowPass_Y(ddt(Ni),1);
+    
   }
 
   // ELECTRON TEMPERATURE
@@ -482,7 +531,7 @@ int physics_run(BoutReal t)
     
     
     if (nonlinear)
-       ddt(Ni) -= vE_Grad(rho, phi);  
+       ddt(rho) -= vE_Grad(rho, phi);  
     
     
     /*
