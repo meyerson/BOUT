@@ -51,19 +51,21 @@ NOUTS=(400 200 200 400 200 300 200 100)
 #llist=(1e-4) #drift case
 #tstep=(1e6 1e6 1e6 4e5 4e5 1e4) #add rho convection
 #llist=(1e-5 1e-6 1e-7 1e-4 1e-3 1e-2) #add rho convection
-NOUTS=(300 300 300 300 300 300 300 300)
-NOUTS=(100 100 100 100 100 100 100 100)
+#NOUTS=(300 300 300 300 300 300 300 300)
+NOUTS=(300 300 100 100 100 100 100 100)
 #tstep=(1e7 5e7 5e7 5e7 5e7 5e7 5e7 5e7)
 #tstep=(1e4 1e4 1e4 5e4 1e4 1e4 1e4 1e4) #bz only case 
 #tstep=(1e0 1e0 1e0 1e0 1e0 1e0 1e0 1e0) #only ve dot grad ne term
 #tstep=(1e1 1e1 1e1 1e1 1e1 1e1 1e1 1e1)
-tstep=(5e0 5e0 5e0 5e0 5e0 5e0 5e0 5e0)
-#tstep=(1e-1 1e-1 1e-1 1e-1 1e-1 1e-1 1e-1 1e-1)
+#tstep=(5e0 5e0 5e0 5e0 5e0 5e0 5e0 5e0)
+tstep=(5e-1 1e0 1e0 1e-1 1e-1 1e-1 1e-1 1e-1)
 
-llist=(1e-4 5e-3 1e-3 5e-2 1e-2 1e-3 1e-1)
-peaklist=(5e-3)
+llist=(1e-4 5e-3 1e-3 5e-2 1e-2 1e-3)
+llist=(1e0 5e-2 5e-5)
+peaklist=(1e0)
 #tstep=(3e1 3e1 3e1 3e1 3e1 3e1 3e1 3e1)
-tstep=(1e1 1e1 1e1 1e1 1e1 1e1 1e1 1e1)
+#tstep=(1e1 1e1 1e1 1e1 1e1 1e1 1e1 1e1)
+#tstep=(1e-1 1e-1 1e-1 1e-1 1e-1 1e-1 1e-1 1e-1)
 #tstep=(1e2 1e2 1e2 1e2 1e2 1e2 1e2 1e2)
 #tstep=(1e-1 1e-1 1e-1 1e-1 1e-1 1e-1 1e-1 1e-1)
 #tstep=(3e-2 3e-2 3e-2 3e-2 3e-2 3e-2 3e-2 3e-2)
@@ -80,10 +82,10 @@ shiftlist=(1.7e-3 5.7e-4 7e-4)
 #shiftlist=(1e-2 5e-3 1e-3 3.7e-4 5.7e-5 1e-4)
 
 
-rm status.log
+#rm status.log
 i=0
-key='haswak+V'
-for lval in ${llist[@]}
+key='haswak+lownu'
+for lval in ${peaklist[@]}
 do
   mkdir data_${lval}
   ln -s data_${lval} data
@@ -126,7 +128,7 @@ do
   $MPIEXEC $NP ./hlmk -d $current_dir 
 
   ln -s $current_dir $PWD/data_${lval}
-  echo $current_dir >> status.log
+  #echo $current_dir >> status.log
   #ibrun -n $NP -o 0  ./2fluid 
   #wait
   rm -f data

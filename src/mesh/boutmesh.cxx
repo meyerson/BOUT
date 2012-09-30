@@ -2300,12 +2300,12 @@ int BoutMesh::filterY(BoutReal *&f){
 int BoutMesh::filterY(BoutReal *&f, bool lowpass,bool noDC,int M0)
 
 {
-  
-  BoutReal* result = NULL;
+ 
+  // BoutReal* result = NULL;
 
   
-  if(result == NULL)
-    result = new (nothrow) BoutReal[mesh->ngy];
+  // if(result == NULL)
+  //   result = new (nothrow) BoutReal[mesh->ngy];
 
 
   BoutReal* rd = NULL;
@@ -2326,6 +2326,7 @@ int BoutMesh::filterY(BoutReal *&f, bool lowpass,bool noDC,int M0)
   
   MPI_Gather(&f[ystart],MYSUB, MPI_DOUBLE, rd, MYSUB, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
+  
   //output<<"MYSUB: "<<MYSUB<<endl;
   if ( rank == 0) { 
     rfft(rd, ncy, fy); 
@@ -2350,8 +2351,8 @@ int BoutMesh::filterY(BoutReal *&f, bool lowpass,bool noDC,int M0)
   MPI_Scatter(rd,MYSUB, MPI_DOUBLE, &f[ystart], MYSUB, MPI_DOUBLE,0,MPI_COMM_WORLD); 
   
   delete [] fy;
-  delete [] rd;
- 
+  delete [] rd; 
+  
   return 0;
 }
 

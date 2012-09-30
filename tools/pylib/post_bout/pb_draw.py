@@ -130,6 +130,15 @@ class LinResDraw(LinRes):
             canvas.set_yscale('symlog')
             fig1.savefig(pp, format='pdf')
             plt.close(fig1)
+        else: #if not plot its probably plotted iwth sim data, print chi somewhere
+         
+            for i,m in enumerate(s.models):   
+                textstr = r'$\chi^2$'+ '$=%.2f$'%(m.chi[comp].sum())
+                print textstr
+            #textstr = '$\L=%.2f$'%(m.chi[comp].sum())
+                props = dict(boxstyle='square', facecolor='white', alpha=0.3)
+                textbox = canvas.text(0.1, 0.1, textstr, transform=canvas.transAxes, fontsize=10,
+                                      verticalalignment='top', bbox=props)
 
     def plotomega(self,pp,canvas=None,field='Ni',yscale='linear',clip=0,
                   xaxis='t',xscale='linear',xrange=1,comp='gamma',
@@ -183,15 +192,18 @@ class LinResDraw(LinRes):
         
         kfactor = np.mean(s.k_r[:,1,s.nx/2]/s.k[:,1,s.nx/2]) #good enough for now
   
-        
-         # plt.errorbar(k[:,1,s.nx/2],
-         #              y[:,0,s.nx/2],
-         #              yerr=y[:,2,s.nx/2],
-         #              fmt=colors[q])
         parhandles.append(canvas.errorbar(k[:,1,s.nx/2],
-                                       y[:,0,s.nx/2],
-                                       yerr=y[:,1,s.nx/2],
-                                       fmt=colors[q]))
+                                          y[:,0,s.nx/2],
+                                          yerr=y[:,1,s.nx/2],
+                                          fmt=colors[q]))
+        
+        # parhandles.append(canvas.errorbar(k[:,1,s.nx/2],
+        #                                y[:,0,s.nx/2],
+        #                                yerr=y[:,1,s.nx/2],
+        #                                fmt=colors[q]))
+
+        
+
         parlabels.append("m "+str(q))
          
          #loop over dz sets and connect with dotted line  . . .
@@ -287,7 +299,7 @@ class LinResDraw(LinRes):
                                                                                    s.meta['L'][s.nx/2,s.ny/2],
                                                                                    s.meta['Bpxy']['v'][s.nx/2,s.ny/2])
             props = dict(boxstyle='square', facecolor='white', alpha=0.3)
-            textbox = canvas.text(0.85, 0.95, textstr, transform=canvas.transAxes, fontsize=10,
+            textbox = canvas.text(0.82, 0.95, textstr, transform=canvas.transAxes, fontsize=10,
                                    verticalalignment='top', bbox=props)
             # leg = canvas.legend(handles,labels,ncol=2,loc='best',prop={'size':4},fancybox=True) 
             #textbox.get_frame().set_alpha(0.3)

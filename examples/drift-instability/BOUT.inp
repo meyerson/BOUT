@@ -29,10 +29,11 @@ MYG = 2
 
 restart = false
 nonlinear = false
+par_damp = true
 
 #grid="/home/cryosphere/BOUT/examples/drift-instability/uedge.grd_std.cdl"
-#grid = "/home/cryosphere/BOUT/tools/cyl_and_helimak_grids/Helimak_11_1x32_140_lam_n.nc"
-grid = "/home/cryosphere/BOUT/tools/cyl_and_helimak_grids/Helimak_Bz_1x32_140_lam_n.nc"
+grid = "/home/cryosphere/BOUT/tools/cyl_and_helimak_grids/Helimak_11_1x32_140_lam_n.nc"
+#grid = "/home/cryosphere/BOUT/tools/cyl_and_helimak_grids/Helimak_Bz_1x32_140_lam_n.nc"
 #grid = "/home/cryosphere/BOUT/tools/cyl_and_helimak_grids/Helimak_1_10_1x32_140_lam_n.nc"
 #grid = "../../tools/cyl_and_helimak_grids/Helimak_Bz_COLD+DENSE_1x32_0.0060_lam_n.nc"
 
@@ -51,14 +52,14 @@ upwind = W3
 
 [ddy]
 
-first = C4
-second = C4
-upwind = C4
+first = C2
+second = C2
+upwind = C2
 
 [ddz]
 
-first = C4
-second = C4
+first = C2
+second = C2
 upwind = FFT
 
 ##################################################
@@ -72,7 +73,7 @@ type = cvode
 
 # mudq, mldq, mukeep, mlkeep preconditioner options
 ATOL = 1.0e-12 # absolute tolerance
-RTOL = 1.0e-8 # relative tolerance
+RTOL = 1.0e-4 # relative tolerance
 mxstep = 10000
 
 ##################################################
@@ -101,8 +102,8 @@ ShearFactor = 0.0
 #  8 -      "        AC     "      " outer    "
 # 16 - Zero all DC components of the result
 # 32 - Don't use previous solution to start iterations
-#      (iterative methods only)
-phi_flags = 0  # inversion flags for phi
+#      (iterative metods only)
+phi_flags = 65546  # inversion flags for phi, very important for lin ver
 apar_flags = 0 # flags for apar inversion
 
 ##################################################

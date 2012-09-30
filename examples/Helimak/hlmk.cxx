@@ -460,7 +460,7 @@ int physics_run(BoutReal t)
 
     //ddt(Ni) = smooth_y(ddt(Ni));
   }
-
+  
   // ION VELOCITY
 
   ddt(Vi) = 0.0;

@@ -4,9 +4,9 @@ meta
 from post_bout import pb_corral
 import post_bout as pb
 from pb_present import LinResPresent
-a = pb.corral(refresh=False,skew=True,IConly=0,debug=False,logname='status.log')
+a = pb.corral(refresh=False,skew=True,IConly=0,debug=False,logname='status_2dfast.log')
 y = LinResPresent(a.db)
-y.show(debug=False,pdfname='output_haswak4a.pdf')
+y.show(debug=False,pdfname='output_haswak+lownu.pdf')
 
 
 import post_bout as pb
@@ -17,7 +17,7 @@ import post_bout as pb
 pb.save(path='./',transform=True,debug=True)
 
 import post_bout as pb
-pb.save(path='./',transform=True)r
+pb.save(path='./', transform=True)r
 
 
 import post_bout as pb

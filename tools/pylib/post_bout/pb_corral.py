@@ -11,11 +11,7 @@ try:
     
     allpath = [boutpath,pylibpath,pbpath,boutdatapath,boututilpath]
     [sys.path.append(elem) for elem in allpath]
-# sys.path.append('/home/cryosphere/pylib')
-# sys.path.append('/home/cryosphere/BOUT/tools/pylib')
-# sys.path.append('/home/cryosphere/BOUT/tools/pylib/boutdata')
-# sys.path.append('/home/cryosphere/BOUT/tools/pylib/boututils')
-# sys.path.append('/home/cryosphere/BOUT/tools/pylib/post_bout')
+
 except:
    print 'unable to append needed .py files'
 
@@ -162,10 +158,10 @@ class LinRes(object):
       self.amp= ListDictKey(alldb,'amp')
       self.amp_n = ListDictKey(alldb,'amp_n')
       self.dc= []
-      self.freq = np.array(ListDictKey(alldb,'k'))
+      #self.freq = np.array(ListDictKey(alldb,'k'))
       self.gamma = np.array(ListDictKey(alldb,'gamma'))
      
-      self.freq  = ListDictKey(alldb,'freq')
+      self.freq  = np.array(ListDictKey(alldb,'freq'))
       
       self.IC = np.array(ListDictKey(alldb,'IC'))
       self.dz = np.array(ListDictKey(alldb,'dz'))
@@ -197,8 +193,9 @@ class LinRes(object):
       #try:
       try: #analytic model based on simple matrix
           self.models=[]
-          #self.models.append(_model(self)) #create a list to contain models
-          self.models.append(_model(self,haswak=True,name='haswak')) #another model
+          self.models.append(_model(self)) #create a list to contain models
+          #self.models.append(_model(self,haswak=True,name='haswak')) #another model
+          #self.models.append(_model(self,haswak=True,name='haswak_0',m=0))
           # for Ln in range(10):
           #     Lval = 10**((.2*Ln -1)/10)
           #     #Lval = 10**(Ln-1)
@@ -335,9 +332,14 @@ class _ref(object): #NOT a derived obj, just takes one as a var
 
 class _model(object):  #NOT a derived class,but one that takes a class as input
     def __init__(self,input_obj,name='drift',haswak=False,
-                 rho_conv=False,haswak2=False,varL=False,Lval=1.0):
+                 rho_conv=False,haswak2=False,varL=False,Lval=1.0,m=1):
         allk = input_obj.k_r[:,1,input_obj.nx/2] #one location for now
         allkpar = input_obj.k_r[:,0,input_obj.nx/2] #one location for now
+        
+        #numerical value to compare against
+
+        numgam = input_obj.gamma[:,0,input_obj.nx/2]
+        numfreq =input_obj.freq[:,0,input_obj.nx/2]
         self.name = name
 
         self.M = []
@@ -348,6 +350,8 @@ class _model(object):  #NOT a derived class,but one that takes a class as input
         self.gammamax = []
         self.omegamax = []
         self.k =[]
+        self.m = m
+        
     
        
         self.soln = {}
@@ -355,6 +359,10 @@ class _model(object):  #NOT a derived class,but one that takes a class as input
         self.soln['gamma'] = []
         self.soln['gammamax'] = []
         self.soln['freqmax'] = []
+        
+        self.chi ={}
+        self.chi['freq']= []
+        self.chi['gamma'] = []
 
 
         for i,k in enumerate(allk):
@@ -365,14 +373,20 @@ class _model(object):  #NOT a derived class,but one that takes a class as input
             #k = k/np.sqrt(10)
             #L = (input_obj.L)*np.sqrt(10)
             
-            M[0,1] = k/(input_obj.L[i,input_obj.nx/2,input_obj.ny/2])
-            M[1,0] = (2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,(k)**-2)
-            M[1,1]= -(2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,(k)**-2)
+            if k == 0:
+                k= 1e-5
 
+            print k
+            M[0,1] = k/(input_obj.L[i,input_obj.nx/2,input_obj.ny/2])
+            M[1,0] = (2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,(k)**-2)
+            M[1,1]= -(2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,(k)**-2)
+            
+            #M[1,0] = (2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]
+            #M[1,1]= -(2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]
             
             if haswak:
-                M[0,0] = -(1.0/1.0)*(2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1)
-                M[0,1] = (1.0/1.0)*((2*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1) + M[0,1])
+                M[0,0] = -(2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1)
+                M[0,1] = ((2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1) + M[0,1])
             if varL:
                 M[0,1] = Lval*M[0,1]     
             
@@ -394,17 +408,31 @@ class _model(object):  #NOT a derived class,but one that takes a class as input
 
             self.gammamax.append(max(gamma))
             self.soln['gammamax'].append(max(gamma))
-
+ 
             where = ((gamma == gamma.max()) & (omega != 0))
+            # if len(where) > 1:
+            #     where = where[0]
             self.omegamax.append(omega[where])
             self.soln['freqmax'].append(omega[where])
+            
+
+            #print k,gamma,where,M,omega
+            chigam = ((numgam - max(gamma))**2)/max(gamma)
+            chifreq =((numfreq - omega[where])**2)/omega[where]
 
             self.eigvec.append(eigvec)
             self.omegaA.append(omega)
             self.soln['freq'].append(omega)
+            
+            self.chi['freq'].append(chifreq[i])
+            
+            self.chi['gamma'].append(chigam[i])
+        
         self.dim = M.shape[0]
         self.soln['freq'] = np.transpose(np.array(self.soln['freq']))
         self.soln['gamma'] = np.transpose(np.array(self.soln['gamma']))
+        self.chi['freq']= np.transpose(np.array(self.chi['freq']))
+        self.chi['gamma']=np.transpose(np.array(self.chi['gamma']))
         
         # self.soln = {}
         # self.soln['freq'] = self.omegaA

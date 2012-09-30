@@ -143,7 +143,7 @@ def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=Fal
     
     Bp = meta['Bpxy']['v'][:,ny/2]
     B = meta['Bxy']['v'][:,ny/2]
-    
+    Bt = meta['Btxy']['v'][:,ny/2]
 
     rho_s = meta['rho_s']['v']
     
@@ -236,8 +236,8 @@ def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=Fal
         #     gamma_w[0:max([gamma_i[j],nt/3]),j] = np.average(gamma_w)*100000.0
            
 
-        freq =  weighted_avg_and_std(
-            phase[-10:,:],weights=np.ones(phase[-10:,:].shape)) 
+        freq =  np.array(weighted_avg_and_std(
+            phase[-10:,:],weights=np.ones(phase[-10:,:].shape)) )
         
        
         # gamma = weighted_avg_and_std(
@@ -252,10 +252,15 @@ def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=Fal
         # k = [[p['y_i'],p['z_i']],
         #      [(B/Bp)**-1*2*math.pi*float(p['y_i'])/(L_y),(B/Bp)*2*math.pi*p['z_i']/L_z]]
 
-        k_r = [[p['y_i'],p['z_i']],
-             [(Bp/B)*2*math.pi*float(p['y_i'])/(L_y),
-              (B/Bp)*2*math.pi*p['z_i']/L_z]]
+        # k_r = [[p['y_i'],p['z_i']],
+        #      [(Bp/B)*2*math.pi*float(p['y_i'])/(L_y),
+        #       (B/Bp)*2*math.pi*p['z_i']/L_z]]
       
+        k_r = [[p['y_i'],p['z_i']],
+             [2*math.pi*float(p['y_i'])/(L_y),
+              (B/Bp)*2*math.pi*p['z_i']/L_z 
+              + (Bt/B)*2*math.pi*float(p['y_i'])/(L_y)]]
+        
         #what I think is the most general one, works in drift-instability again 
         # seems to work for Bz only helimak, now trying Bp = Bt
         # k = [[p['y_i'],p['z_i']],
