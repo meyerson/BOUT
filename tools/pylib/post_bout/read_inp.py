@@ -196,7 +196,8 @@ def metadata(inpfile='BOUT.inp',path ='.',v=False):
 
     #if case some values are missing   
     default = {'bmag':1,'Ni_x':1,'NOUT':100,'TIMESTEP':1,
-               'MZ':32,'AA':1,'Zeff':ValUnit(1,''),'ZZ':1}
+               'MZ':32,'AA':1,'Zeff':ValUnit(1,''),'ZZ':1,
+               'zlowpass':0.0}
     diff = set(default.keys()).difference(set(d.keys()))
        
     for elem in diff:
@@ -208,6 +209,11 @@ def metadata(inpfile='BOUT.inp',path ='.',v=False):
         
     print meta['AA'].v
     
+
+    if meta['zlowpass'].v != 0:
+       meta['maxZ'] = np.floor(meta['MZ'].v*meta['zlowpass'].v)
+    else:
+       meta['maxZ'] = 5
 
     meta['nx'] = nx
     meta['ny']= ny

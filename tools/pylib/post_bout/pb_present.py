@@ -89,7 +89,8 @@ class LinResPresent(LinResDraw):
       #s.plotmodes(pp,yscale='symlog',summary=False)
       
       modelist = []
-      [modelist.append([1,p+1]) for p in range(7)]
+      maxZ = 30
+      [modelist.append([1,p+1]) for p in range(maxZ-1)]
         
       ss = subset(s.db,'mn',modelist)
 

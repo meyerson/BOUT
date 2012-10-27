@@ -4,9 +4,21 @@ meta
 from post_bout import pb_corral
 import post_bout as pb
 from pb_present import LinResPresent
-a = pb.corral(refresh=False,skew=True,IConly=0,debug=False,logname='status_2dfast.log')
+a = pb.corral(refresh=False,skew=True,IConly=0,debug=False,logname='status_haswak+lownu+bz1_10+nl.log')
 y = LinResPresent(a.db)
-y.show(debug=False,pdfname='output_haswak+lownu.pdf')
+y.show(debug=False,pdfname='output_haswak+lownu+bz1_10+nl.pdf')
+
+
+
+
+from post_bout import pb_corral
+import post_bout as pb
+from pb_present import LinResPresent
+a = pb.corral(refresh=False,skew=True,IConly=0,debug=False)
+y = LinResPresent(a.db)
+y.show(debug=False,pdfname='output_haswak_lownu_bz.pdf')
+
+
 
 
 import post_bout as pb

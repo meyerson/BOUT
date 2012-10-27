@@ -49,7 +49,7 @@ def corral(cached=True,refresh=False,debug=False,IConly=1,
       
       for i,path in enumerate(runs):
          print i,path
-         a = post_bout.save(path=path,IConly=IConly,transform=skew) #re post-process a run
+         a = post_bout.save(path=path,IConly=IConly) #re post-process a run
          
          
       
@@ -119,9 +119,11 @@ class LinRes(object):
       self.maxN =[]
 
       [self.cxx.append(read_cxx(path=elem,boutcxx='2fluid.cxx.ref')) for elem in self.path]
-      [self.maxN.append(findlowpass(elem)) for elem in self.cxx]
+      #[self.maxN.append(findlowpass(elem)) for elem in self.cxx]
       
-
+      
+      self.maxZ = np.array(ListDictKey(alldb,'maxZ'))
+      self.maxN = self.maxZ
       #self.maxN = findlowpass(self.cxx) #low pass filt from .cxx
 
       self.nx = np.array(ListDictKey(alldb,'nx'))[0]
@@ -193,8 +195,8 @@ class LinRes(object):
       #try:
       try: #analytic model based on simple matrix
           self.models=[]
-          self.models.append(_model(self)) #create a list to contain models
-          #self.models.append(_model(self,haswak=True,name='haswak')) #another model
+          #self.models.append(_model(self)) #create a list to contain models
+          self.models.append(_model(self,haswak=True,name='haswak')) #another model
           #self.models.append(_model(self,haswak=True,name='haswak_0',m=0))
           # for Ln in range(10):
           #     Lval = 10**((.2*Ln -1)/10)
@@ -376,7 +378,7 @@ class _model(object):  #NOT a derived class,but one that takes a class as input
             if k == 0:
                 k= 1e-5
 
-            print k
+            #print k
             M[0,1] = k/(input_obj.L[i,input_obj.nx/2,input_obj.ny/2])
             M[1,0] = (2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,(k)**-2)
             M[1,1]= -(2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,(k)**-2)

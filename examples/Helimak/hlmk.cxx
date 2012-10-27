@@ -25,7 +25,7 @@ Field3D rho, Te, Ni, Ajpar, Vi, Ti;
 Vector3D Gamma,vEB;
 
 // Derived 3D variables
-Field3D phi, Apar, Ve, jpar;
+Field3D phi, Apar, Ve, jpar, phi_filt;
 
 // Non-linear coefficients
 Field3D nu, mu_i, kapa_Te, kapa_Ti;
@@ -49,8 +49,11 @@ BoutReal beta_p;
 // settings
 bool estatic, ZeroElMass; // Switch for electrostatic operation (true = no Apar)
 
-bool noDC,plusDC,zlowpass;
+bool noDC,plusDC;
 bool nonlinear, haswak,par_damp,transport;
+BoutReal zlowpass;
+int nzpass;
+int MZ;
 
 
 BoutReal zeff, nu_perp;
@@ -125,7 +128,7 @@ int physics_init(bool restarting)
   OPTION(options,nonlinear,false);
   OPTION(options,haswak,false);
   OPTION(options,par_damp,false);
-  OPTION(options,zlowpass,false);
+  OPTION(options,zlowpass,0);
   OPTION(options,transport,true);
 
   OPTION(options, phi_flags,   0);
@@ -137,6 +140,11 @@ int physics_init(bool restarting)
   (globalOptions->getSection("te"))->get("evolve", evolve_te,   true);
   (globalOptions->getSection("ti"))->get("evolve", evolve_ti,   true);
   (globalOptions->getSection("Ajpar"))->get("evolve", evolve_ajpar, true);
+  
+  OPTION(options,MZ,33);
+  
+  if (zlowpass != 0)
+    nzpass = MZ*zlowpass;
   
   if(ZeroElMass)
     evolve_ajpar = false; // Don't need ajpar - calculated from ohm's law
@@ -172,7 +180,7 @@ int physics_init(bool restarting)
 
   Vi_x = wci * rho_s;
 
-  /************** PRINT Z INFORMATION ******************/
+  /************** PRINT Z INFORMTION ******************/
   
   BoutReal hthe0;
   if(mesh->get(hthe0, "hthe0") == 0) {
@@ -304,7 +312,7 @@ int physics_init(bool restarting)
   
   // Set boundary conditions
   jpar.setBoundary("jpar");
-
+  phi.setBoundary("phi");
   /************** SETUP COMMUNICATIONS **************/
 
   // add extra variables to communication
@@ -352,8 +360,20 @@ int physics_run(BoutReal t)
 {
   // Solve EM fields
   int ncalls = solver->rhs_ncalls;
-
+  rho.applyBoundary();
+  //rho and phi_flags come in, phi is set
   solve_phi_tridag(rho, phi, phi_flags); //is this causing issues
+  
+
+  //let's just grab the value from the middle
+  // phi_filt.allocate();
+  // for(int jx=1;jx<mesh->ngx-1;jx++)
+  //   for(int jy=0;jy<mesh->ngy;jy++)
+  //     for(int jz=0;jz<mesh->ngz;jz++) 
+  // 	phi_filt[jx][jy][jz] =phi[2][jy][jz];
+  
+  // phi = phi_filt;
+  phi.applyBoundary();
 
   if(estatic || ZeroElMass) {
     // Electrostatic operation
@@ -398,8 +418,8 @@ int physics_run(BoutReal t)
     //jpar = ((Tet*Grad_par_LtoC(Ni)) - (Nit*Grad_par_LtoC(phi)))/(fmei*0.51*nu);
     jpar = ((Te0*Grad_par_LtoC(Ni)) - (Ni0*Grad_par_LtoC(phi)))/(fmei*0.51*nu);
   
-    if (zlowpass)
-      jpar = lowPass(jpar,8);
+    if (zlowpass != 0)
+      jpar = lowPass(jpar,nzpass);
 
     // Set boundary conditions on jpar (in BOUT.inp)
     jpar.applyBoundary();
@@ -449,9 +469,9 @@ int physics_run(BoutReal t)
     if (noDC)
       Ni -= Ni.DC();
     
-    if (zlowpass) {
-      ddt(Ni) = lowPass(ddt(Ni),8);
-      Ni = lowPass(Ni,8);
+    if (zlowpass != 0) {
+      ddt(Ni) = lowPass(ddt(Ni),nzpass);
+      Ni = lowPass(Ni,nzpass);
     }
     if (par_damp)
       ddt(Ni) = lowPass_Y(ddt(Ni),1);
@@ -482,9 +502,9 @@ int physics_run(BoutReal t)
     if(noDC) 
       ddt(Vi) -= ddt(Vi).DC();
  
-    if (zlowpass) {
-      ddt(Vi) = lowPass(ddt(Vi),8);
-      Vi = lowPass(Vi,8);
+    if (zlowpass !=0 ) {
+      ddt(Vi) = lowPass(ddt(Vi),nzpass);
+      Vi = lowPass(Vi,nzpass);
     }
     if (par_damp)
       ddt(Ni) = lowPass_Y(ddt(Ni),1);
@@ -552,9 +572,9 @@ int physics_run(BoutReal t)
       rho -= rho.DC();
     
     //ddt(rho) += 1e-4 * mu_i * Laplacian(rho);
-    if (zlowpass) {
-      ddt(rho) = lowPass(ddt(rho),8);
-      rho = lowPass(rho,8);
+    if (zlowpass != 0) {
+      ddt(rho) = lowPass(ddt(rho),nzpass);
+      rho = lowPass(rho,nzpass);
     }
 //ddt(rho) = smooth_y(ddt(rho));
     if (par_damp)

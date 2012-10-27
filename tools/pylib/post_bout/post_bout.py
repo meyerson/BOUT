@@ -33,7 +33,7 @@ try:
     print 'in post_bout/post_bout.py'
     from ordereddict import OrderedDict
     from scipy.interpolate import interp2d,interp1d
-    
+    from read_cxx import read_cxx, findlowpass
     from boutdata import collect
 
     
@@ -92,24 +92,27 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
         data[active] = collect(active,path=path)
         if savemovie:
             movie(data,meta)
-        if transform:
-            #if you take the time to rotate the data go ahead and save it
-            cpydata = data[active]
-            data_r[active] = rotate(cpydata,meta) # keep it simple for now
+        # if transform:
+        #     #if you take the time to rotate the data go ahead and save it
+        #     cpydata = data[active]
+        #     data_r[active] = rotate(cpydata,meta) # keep it simple for now
             
-        if debug:
-            return data[active],data_r[active]
+        # if debug:
+        #     return data[active],data_r[active]
 
     minIC = np.array([np.max(data[x][0,:,:,:]) for x in meta['evolved']['v']])
     minIC = min(minIC[np.array(meta['IC']).nonzero()])  
     ICmodes =[]
+    
+    #cxx_info = read_cxx(path=path,boutcxx='2fluid.cxx.ref')
+    maxZ = meta['maxZ']
 
     if(meta['ys_opt']['v']==2 and  meta['zs_opt']['v']==2): #if BOUT.inp IC indicates a single mode
         ICmodes.append([meta['ys_mode']['v'],meta['zs_mode']['v']])
     elif (meta['ys_opt']['v']==3 and meta['zs_opt']['v']==2): 
         [ICmodes.append([p+1,meta['zs_mode']['v']]) for p in range(5)]
     elif(meta['ys_opt']['v']==2 and meta['zs_opt']['v']==3):
-        [ICmodes.append([meta['ys_mode']['v'],p+1]) for p in range(8)]
+        [ICmodes.append([meta['ys_mode']['v'],p+1]) for p in range(maxZ-1)]
     elif(meta['ys_opt']['v']==3 and meta['zs_opt']['v']==3):
         [ICmodes.append([p+1,q+1]) for p in range(7) for q in range(8)]          
     elif(meta['ys_opt']['v']==0 and meta['zs_opt']['v']==3):
@@ -158,10 +161,11 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
         modes_db,ave = basic_info(data[active],meta,
                                   user_peak = all_modes)   
 
-        if transform:
-            print all_modes
-            modes_db_r,ave_r = basic_info(data_r[active],meta,
-                                      user_peak = all_modes) #for now data_r must maintain same shape as data
+        # if transform:
+        #     print all_modes
+        #     modes_db_r,ave_r = basic_info(data_r[active],meta,
+        #                               user_peak = all_modes) #for now dat
+       #     a_r must maintain same shape as data
         
         # if debug:
         #     return modes_db_r,modes_db
@@ -189,6 +193,7 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
             x['dt'] = meta['dt']['v']
             x['Rxynorm'] = 100*x['Rxy']/meta['rho_s']['v']
             x['rho_s'] = meta['rho_s']['v']
+            x['maxZ'] = maxZ
             #for now if there was rotation just loop a few keys
             x['transform'] = transform
             if transform:

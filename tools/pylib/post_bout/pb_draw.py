@@ -48,7 +48,8 @@ class LinResDraw(LinRes):
         s = subset(self.db,'field',[field])
         
         modelist = []
-        [modelist.append([m,n+1]) for n in range(7)]
+        
+        [modelist.append([m,n+1]) for n in range(min(s.maxN)-1)]
    
         s = subset(s.db,'mn',modelist)
          
@@ -175,8 +176,9 @@ class LinResDraw(LinRes):
         m_shift = 1
         for q in np.array(range(1))+m_shift:
             s = subset(self.db,'field',[field]) #pick  field
+            maxZ = min(s.maxN)
             modelist = []
-            [modelist.append([q,p+1]) for p in range(7)]
+            [modelist.append([q,p+1]) for p in range(maxZ-1)]
         print q,'in plotgamma'
         s = subset(s.db,'mn',modelist)
          

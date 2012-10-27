@@ -228,6 +228,10 @@ int invert_laplace_ser(const FieldPerp &b, FieldPerp &x, int flags, const Field2
     ZFFT(b[ix], mesh->zShift[ix][jy], bk[ix]);
   }
   
+  
+
+
+
   if(!mesh->periodicX) {
     if(flags & INVERT_IN_SET) {
       // Setting the inner boundary from x
@@ -266,17 +270,25 @@ int invert_laplace_ser(const FieldPerp &b, FieldPerp &x, int flags, const Field2
       // solve differential equation in x
     
       BoutReal coef1=0.0, coef2=0.0, coef3=0.0, coef4=0.0, 
-        coef5=0.0, coef6=0.0, kwave, flt;
+        coef5=0.0, coef6=0.0, kwave, flt,flt_x;
       ///////// PERFORM INVERSION /////////
       
       // shift freqs according to FFT convention
       kwave=iz*2.0*PI/mesh->zlength; // wave number is 1/[rad]
       
-      if (iz>laplace_maxmode) flt=0.0; else flt=1.0;
+      //if (iz>laplace_maxmode) flt=0.0; else flt=1.0;
+      
+
+      //for a fixed iz let's kill all but the DC part
+      //if (ix > 0) flt_x = 0.0; else flt_x = 1.0;
 
       // set bk1d
-      for(int ix=0;ix<mesh->ngx;ix++)
+      for(int ix=0;ix<mesh->ngx;ix++){
+	//if (ix > 0) flt_x = 0.0; else flt_x = 1.0;
 	bk1d[ix] = bk[ix][iz]*flt;
+      }
+      
+     
 
       // Fill in interior points
 
@@ -850,6 +862,8 @@ int invert_laplace_ser(const FieldPerp &b, FieldPerp &x, int flags, const Field2
 	}
       }
       
+
+
       if((flags & INVERT_KX_ZERO) && (iz == 0)) {
         dcomplex offset(0.0);
         for(int ix=0;ix<=ncx;ix++)

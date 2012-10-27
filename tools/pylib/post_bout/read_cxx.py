@@ -6,12 +6,14 @@ import re
 
 
 def findlowpass(cxxstring):
-    p1="lowPass\(.*\)"
-    substrings = re.findall(p1, cxxstring) 
+    ##p1="lowPass\(.*\)"
+    p1="lowPass\(.*\,(.*)\)"
+    maxN = np.array(re.findall(p1, cxxstring)) 
     #print substrings
-    
-    p2=("[0-9]")
-    maxN = np.array([re.findall(p2,elem) for elem in substrings]).flatten()
+
+    #p2=("[0-9]")
+
+    #maxN = np.array([re.findall(p2,elem) for elem in substrings]).flatten()
     
     if maxN.size == 0:
         return 100
