@@ -60,7 +60,7 @@ from read_grid import read_grid
 from basic_info import basic_info, fft_info
 #from corral import corral
 #from rotate_mp import rotate
-from rotate2 import rotate
+#from rotate2 import rotate
 
 def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
          savemovie=False,IConly=0,transform=False,fast = False,
