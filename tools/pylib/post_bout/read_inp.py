@@ -211,6 +211,7 @@ def metadata(inpfile='BOUT.inp',path ='.',v=False):
     
 
     if meta['zlowpass'].v != 0:
+       print meta['MZ'].v, meta['zlowpass'].v
        meta['maxZ'] = np.floor(meta['MZ'].v*meta['zlowpass'].v)
     else:
        meta['maxZ'] = 5

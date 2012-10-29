@@ -23,8 +23,10 @@ from reportlab.graphics.widgets.markers import makeMarker
 from reportlab.lib import colors
 
 from replab_x_vs_y import RL_Plot
-
-
+#for movie making
+from multiprocessing import Queue,Pool
+import multiprocessing
+import subprocess 
 #uses  LinResDraw to make a pdf
 
 class LinResPresent(LinResDraw):
@@ -42,23 +44,51 @@ class LinResPresent(LinResDraw):
       s = subset(self.db,'modeid',modelist)
            
       try:
-         fig = Figure(figsize=(6,6))
-         
-         a_amp = np.array([s.amp[i][1,int(s.nx/2)] for i in range(s.nmodes)])
-   
-         plt.scatter(s.mn[:,1],s.mn[:,0],s = 5*s.mn.max()*
-                     s._amp(1,int(s.nx/2))/s._amp(1,int(s.nx/2)).mean())
-         plt.annotate(str(list(s.mn[0,:])),tuple(s.mn[0,:]+.2))
-         plt.title('n-m spectrum at t=0')
-         plt.xlabel('n')
-         plt.ylabel('m')
-         plt.grid(True,linestyle='-',color='.75')
-         plt.savefig(pp, format='pdf')
+         #fig = Figure(figsize=(6,6))
+         # fig = plt.figure()     
+         dz0 = list(set(s.dz).union())[0]
+         ss = subset(s.db,'dz',[dz0])
 
-         plt.close() 
+         # plt.close(fig) 
+
+         s.plotvsK(pp,yscale='log',xscale='log',overplot=False,comp='amp',trans=True)
+
+         
+         spectrum=True
+         if spectrum:
+            ss.savemovie()
+            # print 'Making movie animation.mpg - this make take a while'
+            # files = []
+            # moviename='spectrum.avi'
+            # for t in range(ss.nt[0]/5-1):
+            #    print t
+            #    filename = str('%03d' %(t+1) + '.png')
+            #    ss.plotvsK(pp,yscale='log',t=[1,t+2],xscale='log',
+            #               overplot=False,comp='amp',trans=True,file=filename)
+            #    files.append(filename)
+            # command = ('mencoder',
+            #            'mf://*.png',
+            #            '-mf',
+            #            'type=png:w=800:h=600:fps=10',
+            #            '-ovc',
+            #            'lavc',
+            #            '-lavcopts',
+            #            'vcodec=mpeg4',
+            #            '-oac',
+            #            'copy',
+            #            '-o',
+            #            moviename)
+            # subprocess.check_call(command)
+            # os.system("rm *png")
+
+         #make a movie
+            
+         #s.plotvsK(pp,yscale='log',xscale='log',overplot=False,comp='amp',trans=True,movie=True)
       except:
          print 'no scatter'
       #2D true NM spectrum with color code and boxes around spectral res regions log scale
+                     
+
       plt.figure()
       i = 0
       for j in list(set(s.dz).union()):    #looping over runs, over unique 'dz' key values
@@ -89,9 +119,9 @@ class LinResPresent(LinResDraw):
       #s.plotmodes(pp,yscale='symlog',summary=False)
       
       modelist = []
-      maxZ = 30
-      [modelist.append([1,p+1]) for p in range(maxZ-1)]
-        
+     # maxZ = 
+      #[modelist.append([1,p+1]) for p in range(maxZ-1)]
+      [modelist.append(list(self.modeid[p])) for p in range(self.nmodes) if self.mn[p][1] <= self.maxN[p] ]
       ss = subset(s.db,'mn',modelist)
 
       if debug: #just a few problematic slides

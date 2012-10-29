@@ -31,7 +31,8 @@ class LinResDraw(LinRes):
     def __init__(self,alldb):
         LinRes.__init__(self,alldb)
        
-        
+    
+ 
     def plottheory(self,pp,m=1,canvas=None,comp='gamma',
                    field='Ni',allroots=False):
         if len(self.models) == 0:
@@ -428,7 +429,11 @@ class LinResDraw(LinRes):
             clonex.set_ylabel(r'$\frac{\gamma}{\frac{c_s}{L_n}}$', color='k',fontsize=18,rotation='horizontal')
         if comp=='freq':
             canvas.set_ylabel(r'$\frac{\omega}{\omega_{ci}}$',fontsize=18,rotation='horizontal')
-            clonex.set_ylabel(r'$\frac{\omega}{\frac{c_s}{L_n}}$', color='k',fontsize=18,rotation='horizontal')  
+            clonex.set_ylabel(r'$\frac{\omega}{\frac{c_s}{L_n}}$', color='k',fontsize=18,rotation='horizontal') 
+
+        if comp=='amp':
+            canvas.set_ylabel(r'$A_k$',fontsize=18,rotation='horizontal')
+            clonex.set_ylabel(r'$\frac{A_k}{A_{max}}$', color='k',fontsize=18,rotation='horizontal') 
 
         canvas.set_xlabel(r'$k_{\zeta} \rho_{ci}$',fontsize=18)
         
@@ -509,6 +514,300 @@ class LinResDraw(LinRes):
         self.plotomega(pp,field=field,yscale=yscale,clip=clip,
                        xaxis=xaxis,xscale=xscale,xrange=xrange,comp=comp,
                        overplot=overplot,trans=trans)
+    
+  
+    def plotvsK(self,pp,rootfig=None,field='Ni',yscale='log',clip=0,
+                  xaxis='t',xscale='linear',xrange=1,comp='amp',
+                  pltlegend='both',overplot=False,gridON=True,trans=False,
+                  infobox=True,m=1,t=[0],file=None,save=True): 
+        colors = ['b.','r.','k.','c.','g.','y.','m.','b.','r.','k.','c.','g.','y.','m.']
+        colordash = ['b','r','k','c','g','y','m','b','r','k','c','g','y','m']
+        
+        if rootfig is None:
+            ownpage = True
+        else:
+            ownpage = False
+        
+        if ownpage:    
+            fig1 = plt.figure()
+            fig1.subplots_adjust(bottom=0.12)
+            fig1.subplots_adjust(top=0.80)
+            fig1.subplots_adjust(right=0.83)
+            fig1.subplots_adjust(left=0.17)
+            canvas = fig1.add_subplot(1,1,1) 
+            clonex = canvas.twinx()
+            # if trans:
+            #     cloney = canvas.twiny()
+        else:
+           canvas = rootfig.add_subplot(1,1,1)  
+
+        dzhandles = []
+        parhandles =[]
+        parlabels =[]
+        dzlabels=[]
+        
+        #pick the modes
+        m_shift = m
+        for q in np.array(range(1))+m_shift:
+            s = subset(self.db,'field',[field]) #pick  field
+            maxZ = min(s.maxN)
+            modelist = []
+            [modelist.append([q,p+1]) for p in range(maxZ-1)]
+        #print q,'in plotgamma'
+        s = subset(s.db,'mn',modelist)
+         
+        #set x-range
+        xrange = s.nx/2-2
+        xrange = [s.nx/2,s.nx/2+xrange]
+      
+ 
+        #pull up the data
+        y = np.array(ListDictKey(s.db,comp))
+        print 'y.shape', y.shape
+
+        #in case multiple timesteps are indicated
+        all_y = []
+        all_yerr = []
+        if comp=='amp':
+            for elem in t:
+                all_y.append(np.squeeze(y[:,elem,:]))
+                all_yerr.append(np.squeeze(0*y[:,elem,:]))
+            ynorm = np.max(all_y)
+            #all_y = np.array(np.squeeze(all_y))
+            #all_yerr = np.array(np.squeeze(all_yerr))
+
+        else:
+            all_y.append(np.squeeze(y[:,0,:]))
+            all_yerr.append(np.squeeze(y[:,1,:]))
+            ynorm =  s.meta['w_Ln'][0]
+    
+
+
+        k = s.k ##nmodes x 2 x nx ndarray k_zeta
+        
+        kfactor = np.mean(s.k_r[:,1,s.nx/2]/s.k[:,1,s.nx/2]) #good enough for now
+        
+        
+        for elem in range(np.size(t)):
+            #print 'printing line' , elem
+            errorline = parhandles.append(canvas.errorbar(k[:,1,s.nx/2],
+                                                          all_y[elem][:,s.nx/2],
+                                                          yerr=all_yerr[elem][:,s.nx/2],
+                                                          fmt=colors[q]))
+        
+            
+        parlabels.append("m "+str(q))
+         
+         #loop over dz sets and connect with dotted line  . . .
+        jj=0 #will reference dz color
+
+        ymin_data =np.max(np.array(ListDictKey(s.db,comp)))
+        ymax_data = 0 #for bookeeping
+
+        for p in list(set(s.path).union()):
+            sub_s = subset(s.db,'path',[p])
+            j = sub_s.dz[0]
+            #print sub_s.amp.shape
+            s_i = np.argsort(sub_s.mn[:,1]) #sort by 'local' m, global m is ok also
+            #print s_i, sub_s.mn, sub_s.nx, jj
+            y = np.array(ListDictKey(sub_s.db,comp))
+            y_alt = 2.0*np.array(ListDictKey(sub_s.db,comp))
+            all_y = []
+            all_yerr = []
+            if comp=='amp':
+                for elem in t:  
+                    all_y.append(np.squeeze(y[:,elem,:]))
+                    all_yerr.append(np.squeeze(0*y[:,elem,:]))
+            else:
+                all_y.append(np.squeeze(y[:,0,:]))
+                all_yerr.append(np.squeeze(y[:,1,:]))
+                
+
+            k = sub_s.k ##
+            
+            for elem in range(np.size(t)):
+                if q == m_shift: #fix the parallel mode
+                    dzhandles.append(canvas.plot(k[s_i,1,sub_s.nx/2],
+                                                 all_y[elem][s_i,sub_s.nx/2],color=colordash[jj],alpha=.5))
+              
+
+                    ymin_data = np.min([np.min(y[s_i,sub_s.nx/2]),ymin_data])
+                    ymax_data = np.max([np.max(y[s_i,sub_s.nx/2]),ymax_data])
+               
+
+                    dzlabels.append(j) 
+               
+                    if yscale=='log':
+                        factor = 10
+                    else:
+                        factor = 2
+               #print 'annotating'
+                    canvas.annotate(str(j),(k[s_i[0],1,sub_s.nx/2],y[elem][s_i[0],sub_s.nx/2]),fontsize = 8)
+               #p = canvas.axvspan(k[s_i[0],1,sub_s.nx/2], k[s_i[-1],1,sub_s.nx/2], 
+                #               facecolor=colordash[jj], alpha=0.01)
+                    print 'done annotating'
+                else:
+                    canvas.plot(k[s_i,1,sub_s.nx/2],
+                                y[elem][s_i,sub_s.nx/2],color=colordash[jj],alpha=.3)
+
+                jj=jj+1
+      
+        dzhandles = np.array(dzhandles).flatten()
+        dzlabels = np.array(dzlabels).flatten()
+      
+        dzlabels = list(set(dzlabels).union())
+      
+        dz_i = np.argsort(dzlabels)
+        
+        dzhandles = dzhandles[dz_i]
+        dzlabels_cp = np.array(dzlabels)[dz_i]
+      
+        #print type(dzlabels), np.size(dzlabels)
+        for i in range(np.size(dzlabels)):
+            dzlabels[i] = "DZ: "+ str(dzlabels_cp[i])#+r"$\pi$"
+     
+
+        parlabels = np.array(parlabels).flatten()
+    
+        if overplot==True:
+            try:
+                self.plottheory(pp,canvas=canvas,comp=comp,field=field)
+                #self.plottheory(pp,comp=comp)
+            except:
+                print 'no theory plot'
+        if infobox:
+            textstr = '$\L_{\parallel}=%.2f$\n$\L_{\partial_r n}=%.2f$\n$B=%.2f$'%(s.meta['lpar'][s.nx/2],
+                                                                                   s.meta['L'][s.nx/2,s.ny/2],
+                                                                                   s.meta['Bpxy']['v'][s.nx/2,s.ny/2])
+            props = dict(boxstyle='square', facecolor='white', alpha=0.3)
+            textbox = canvas.text(0.82, 0.95, textstr, transform=canvas.transAxes, fontsize=10,
+                                   verticalalignment='top', bbox=props)
+            # leg = canvas.legend(handles,labels,ncol=2,loc='best',prop={'size':4},fancybox=True) 
+      
+
+        #cloney.set_xlim(xmin,xmax)
+        try:
+            canvas.set_yscale(yscale)
+            canvas.set_xscale(xscale)
+            
+            if yscale =='symlog':
+                canvas.set_yscale(yscale,linthreshy=1e-13)
+            if xscale =='symlog':
+                canvas.set_xscale(xscale,linthreshy=1e-13)
+            
+            if gridON:
+                canvas.grid()
+        except:
+            try:
+                canvas.set_yscale('symlog')
+            except:
+                print 'scaling failed completely'
+   
+    ##################################################################
+       
+        if ownpage and rootfig is None:
+            clonex.set_yscale(yscale) #must be called before limits are set 
+            
+            try:
+                if yscale == 'linear':
+                    formatter = ticker.ScalarFormatter()
+                    formatter.set_powerlimits((-2, 2))  #force scientific notation
+                    canvas.yaxis.set_major_formatter(formatter)
+                    clonex.yaxis.set_major_formatter(formatter)
+                #canvas.useOffset=False
+            except:
+                print 'fail 1'
+            [xmin, xmax, ymin, ymax] = canvas.axis()    
+        
+      
+            if yscale =='symlog':
+                clonex.set_yscale(yscale,linthreshy=1e-9)
+            if xscale =='symlog':  
+                clonex.set_xscale(xscale,linthreshy=1e-9)
+            #if np.any(s.trans) and trans:
+            [xmin1, xmax1, ymin1, ymax1] = canvas.axis()   
+            if trans:
+                try:
+                    cloney = canvas.twiny()
+                #cloney.set_yscale(yscale)
+                    cloney.set_xscale(xscale)
+                    [xmin1, xmax1, ymin2, ymax2] = canvas.axis()
+
+                    if  xscale =='symlog':
+                        cloney.set_xscale(xscale,linthreshy=1e-9)
+                    if  yscale =='symlog':
+                        cloney.set_yscale(yscale,linthreshy=1e-9)
+                    if yscale =='linear':
+                        cloney.yaxis.set_major_formatter(formatter)
+                except:
+                    print 'fail trans'
+                
+            Ln_drive_scale = s.meta['w_Ln'][0]**-1
+            #Ln_drive_scale = 2.1e3
+        #clonex.set_ylim(Ln_drive_scale*ymin, Ln_drive_scale*ymax)
+            clonex.set_ylim(ynorm**-1*ymin, ynorm**-1*ymax)
+        
+            try:
+                if trans:
+                #k_factor = #scales from k_zeta to k_perp
+                    cloney.set_xlim(kfactor*xmin, kfactor*xmax)
+             
+                    cloney.set_ylim(ymin,ymax) #because cloney shares the yaxis with canvas it may overide them, this fixes that
+                    cloney.set_xlabel(r'$k_{\perp} \rho_{ci}$',fontsize=18)
+            except:
+                print 'moar fail'
+            #clonex.set_xscale(xscale)
+                
+      
+        
+        #ion_acoust_str = r"$\frac{c_s}{L_{\partial_r n}}}$"
+        
+            if comp=='gamma':
+                canvas.set_ylabel(r'$\frac{\gamma}{\omega_{ci}}$',fontsize=18,rotation='horizontal')
+                clonex.set_ylabel(r'$\frac{\gamma}{\frac{c_s}{L_n}}$', color='k',fontsize=18,rotation='horizontal')
+            if comp=='freq':
+                canvas.set_ylabel(r'$\frac{\omega}{\omega_{ci}}$',fontsize=18,rotation='horizontal')
+                clonex.set_ylabel(r'$\frac{\omega}{\frac{c_s}{L_n}}$', color='k',fontsize=18,rotation='horizontal') 
+
+            if comp=='amp':
+                canvas.set_ylabel(r'$A_k$',fontsize=18,rotation='horizontal')
+                clonex.set_ylabel(r'$\frac{A_k}{A_{max}}$', color='k',fontsize=18,rotation='horizontal') 
+
+            canvas.set_xlabel(r'$k_{\zeta} \rho_{ci}$',fontsize=18)
+        
+
+            title = comp+ ' computed from ' +field
+        #canvas.set_title(title,fontsize=14)
+            fig1.suptitle(title,fontsize=14)
+        
+        
+
+        
+        if not ownpage:
+            print 'probably for a movie'
+            fig1 = rootfig
+            # canvasjunk = fig1.add_subplot(1,1,1) 
+            # canvasjunk = canvas
+
+        
+        if save:
+            if file is None:
+                try:
+                    fig1.savefig(pp,format='pdf')
+                except:
+                    print 'pyplt doesnt like you'
+            else: 
+                try:
+                    fig1.savefig(file,dpi=200)
+                except:
+                    print 'no movie for you ;('
+
+        if ownpage:
+            fig1.close()
+            #plt.close(fig1)
+
+            
+            
 
     def plotmodes(self,pp,field='Ni',comp='amp',math='1',ylim=1,
                   yscale='symlog',clip=False,xaxis='t',xscale='linear',
@@ -866,7 +1165,34 @@ class LinResDraw(LinRes):
                      xaxis='t',xscale='linear',xrange=1):
         colors = ['b','g','r','c','m','y','k','b','g','r','c','m','y','k']
         plt.figure()
-   
+        
+    def savemovie(self,field='Ni',yscale='log',xscale='log',moviename='spectrum.avi'):
+        
+        print 'Making movie animation.mpg - this make take a while'
+        files = []
+                    
+        for t in range(self.nt[0]-1):
+               print t
+               filename = str('%03d' %(t+1) + '.png')
+               self.plotvsK(pp,yscale='log',t=[1,t+2],xscale='log',
+                          overplot=False,comp='amp',trans=True,file=filename)
+               files.append(filename)
+        
+        command = ('mencoder',
+                   'mf://*.png',
+                   '-mf',
+                   'type=png:w=800:h=600:fps=10',
+                   '-ovc',
+                   'lavc',
+                   '-lavcopts',
+                   'vcodec=mpeg4',
+                   '-oac',
+                   'copy',
+                   '-o',
+                   moviename)
+        subprocess.check_call(command)
+        os.system("rm *png")       
+
     def printmeta(self,pp,filename='output2.pdf'):
 
         import os
