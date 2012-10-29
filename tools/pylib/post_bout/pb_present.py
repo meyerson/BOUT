@@ -49,41 +49,14 @@ class LinResPresent(LinResDraw):
          dz0 = list(set(s.dz).union())[0]
          ss = subset(s.db,'dz',[dz0])
 
-         # plt.close(fig) 
-
+         # show initial condition
          s.plotvsK(pp,yscale='log',xscale='log',overplot=False,comp='amp',trans=True)
 
          
          spectrum=True
          if spectrum:
             ss.savemovie()
-            # print 'Making movie animation.mpg - this make take a while'
-            # files = []
-            # moviename='spectrum.avi'
-            # for t in range(ss.nt[0]/5-1):
-            #    print t
-            #    filename = str('%03d' %(t+1) + '.png')
-            #    ss.plotvsK(pp,yscale='log',t=[1,t+2],xscale='log',
-            #               overplot=False,comp='amp',trans=True,file=filename)
-            #    files.append(filename)
-            # command = ('mencoder',
-            #            'mf://*.png',
-            #            '-mf',
-            #            'type=png:w=800:h=600:fps=10',
-            #            '-ovc',
-            #            'lavc',
-            #            '-lavcopts',
-            #            'vcodec=mpeg4',
-            #            '-oac',
-            #            'copy',
-            #            '-o',
-            #            moviename)
-            # subprocess.check_call(command)
-            # os.system("rm *png")
-
-         #make a movie
-            
-         #s.plotvsK(pp,yscale='log',xscale='log',overplot=False,comp='amp',trans=True,movie=True)
+         
       except:
          print 'no scatter'
       #2D true NM spectrum with color code and boxes around spectral res regions log scale

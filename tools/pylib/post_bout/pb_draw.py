@@ -803,8 +803,8 @@ class LinResDraw(LinRes):
                     print 'no movie for you ;('
 
         if ownpage:
-            fig1.close()
-            #plt.close(fig1)
+            #fig1.close()
+            plt.close(fig1)
 
             
             
@@ -1174,7 +1174,7 @@ class LinResDraw(LinRes):
         for t in range(self.nt[0]-1):
                print t
                filename = str('%03d' %(t+1) + '.png')
-               self.plotvsK(pp,yscale='log',t=[1,t+2],xscale='log',
+               self.plotvsK('dont need it',yscale='log',t=[1,t+2],xscale='log',
                           overplot=False,comp='amp',trans=True,file=filename)
                files.append(filename)
         
