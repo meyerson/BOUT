@@ -118,9 +118,9 @@ class LinRes(object):
       self.cxx =[]
       self.maxN =[]
 
-      [self.cxx.append(read_cxx(path=elem,boutcxx='2fluid.cxx.ref')) for elem in self.path]
+      #[self.cxx.append(read_cxx(path=elem,boutcxx='2fluid.cxx.ref')) for elem in self.path]
       #[self.maxN.append(findlowpass(elem)) for elem in self.cxx]
-      
+      [self.cxx.append(read_cxx(path=elem,boutcxx='physics_code.cxx.ref')) for elem in self.path]
       
       self.maxZ = np.array(ListDictKey(alldb,'maxZ'))
       self.maxN = self.maxZ

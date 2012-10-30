@@ -1171,10 +1171,10 @@ class LinResDraw(LinRes):
         print 'Making movie animation.mpg - this make take a while'
         files = []
                     
-        for t in range(self.nt[0]-1):
+        for t in range(self.nt[0]-2):
                print t
                filename = str('%03d' %(t+1) + '.png')
-               self.plotvsK('dont need it',yscale='log',t=[1,t+2],xscale='log',
+               self.plotvsK('dont need pp',yscale='log',t=[1,t+2],xscale='log',
                           overplot=False,comp='amp',trans=True,file=filename)
                files.append(filename)
         
