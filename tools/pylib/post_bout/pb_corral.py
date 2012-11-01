@@ -370,7 +370,7 @@ class _model(object):  #NOT a derived class,but one that takes a class as input
         for i,k in enumerate(allk):
             #print i
          #M =np.matrix(np.random.rand(3,3),dtype=complex)
-            M = np.zeros([2,2],dtype=complex)
+            M = np.zeros([3,3],dtype=complex)
             M[0,0] = 0
             #k = k/np.sqrt(10)
             #L = (input_obj.L)*np.sqrt(10)
@@ -378,18 +378,22 @@ class _model(object):  #NOT a derived class,but one that takes a class as input
             if k == 0:
                 k= 1e-5
 
-            #print k
+            #print k {n,phi,v}
             M[0,1] = k/(input_obj.L[i,input_obj.nx/2,input_obj.ny/2])
             M[1,0] = (2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,(k)**-2)
             M[1,1]= -(2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,(k)**-2)
             
-            
+            #parallel dynamics
+            M[2,2] = k/(input_obj.L[i,input_obj.nx/2,input_obj.ny/2])
+            M[2,0] = -(2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])
+            M[0,2] = -(2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])
             #M[1,0] = (2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]
             #M[1,1]= -(2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]
             
             if haswak:
                 M[0,0] = -(2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1)
                 M[0,1] = ((2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1) + M[0,1])
+                
             if varL:
                 M[0,1] = Lval*M[0,1]     
             

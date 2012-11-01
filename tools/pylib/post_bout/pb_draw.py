@@ -1190,6 +1190,9 @@ class LinResDraw(LinRes):
                    'copy',
                    '-o',
                    moviename)
+
+        import subprocess,os
+
         subprocess.check_call(command)
         os.system("rm *png")       
 
