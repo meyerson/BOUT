@@ -52,7 +52,7 @@ NOUTS=(100 100 100 100 100 200 200 100)
 #llist=(5e-5 4e-4 2e-4 2e-5 8e-3 1e-3 5e-3)
 
 #tstep=(1e2 5e1 1e1 2e1 5e1)
-tstep=(1e1 1e1 1e1 1e1 1e1 1e2 1e2)
+tstep=(1e-1 1e-1 1e-1 1e-1 1e1 1e2 1e2)
 llist=(1e-3 5e-4 1e-4 5e-5 1e-5)
 #llist=(8e-3 8e-4 8e-5)
 #tstep=(1e1)

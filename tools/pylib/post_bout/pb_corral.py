@@ -370,7 +370,7 @@ class _model(object):  #NOT a derived class,but one that takes a class as input
         for i,k in enumerate(allk):
             #print i
          #M =np.matrix(np.random.rand(3,3),dtype=complex)
-            M = np.zeros([3,3],dtype=complex)
+            M = np.zeros([4,4],dtype=complex)
             M[0,0] = 0
             #k = k/np.sqrt(10)
             #L = (input_obj.L)*np.sqrt(10)
@@ -378,7 +378,7 @@ class _model(object):  #NOT a derived class,but one that takes a class as input
             if k == 0:
                 k= 1e-5
 
-            #print k {n,phi,v}
+            #print k {n,phi,v,ajpar}
             M[0,1] = k/(input_obj.L[i,input_obj.nx/2,input_obj.ny/2])
             M[1,0] = (2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,(k)**-2)
             M[1,1]= -(2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,(k)**-2)
@@ -390,6 +390,8 @@ class _model(object):  #NOT a derived class,but one that takes a class as input
             #M[1,0] = (2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]
             #M[1,1]= -(2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]
             
+            #ajpar dynamics - effectively parallel electron dynamics instead of 
+
             if haswak:
                 M[0,0] = -(2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1)
                 M[0,1] = ((2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,1) + M[0,1])

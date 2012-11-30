@@ -26,11 +26,23 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
+// #include "bout_types.hxx"
+// #include "dcomplex.hxx"
+
+// #include <string>
+// #include <list>
+
 #include "bout_types.hxx"
 #include "dcomplex.hxx"
+#include "boutexception.hxx"
 
 #include <string>
 #include <list>
+#include <cmath>
+#include <algorithm>
+
+using std::abs;
+using std::swap;
 
 BoutReal *rvector(int size);
 BoutReal *rvresize(BoutReal *v, int newsize);
@@ -52,9 +64,17 @@ void SWAP(BoutReal &a, BoutReal &b);
 void SWAP(BoutReal* &a, BoutReal* &b);
 void SWAP(dcomplex &a, dcomplex &b);
 void SWAP(int &a, int &b);
-int MAX(int a, int b);
-BoutReal MAX(BoutReal a, BoutReal b);
-BoutReal MIN(BoutReal a, BoutReal b);
+
+int BOUTMAX(int a, int b);
+// BoutReal MAX(BoutReal a, BoutReal b);
+// BoutReal MIN(BoutReal a, BoutReal b);
+
+//from upstream version
+BoutReal BOUTMAX(BoutReal a, BoutReal b);
+BoutReal BOUTMAX(BoutReal a, BoutReal b, BoutReal c);
+BoutReal BOUTMIN(BoutReal a, BoutReal b);
+BoutReal BOUTMIN(BoutReal a, BoutReal b, BoutReal c);
+
 bool is_pow2(int x); // Check if a number is a power of 2
 BoutReal SIGN(BoutReal a); // Return +1 or -1 (0 -> +1)
 BoutReal MINMOD(BoutReal a, BoutReal b);

@@ -1171,7 +1171,7 @@ class LinResDraw(LinRes):
         print 'Making movie animation.mpg - this make take a while'
         files = []
                     
-        for t in range(self.nt[0]-2):
+        for t in range(self.nt[0]-3):
                print t
                filename = str('%03d' %(t+1) + '.png')
                self.plotvsK('dont need pp',yscale='log',t=[1,t+2],xscale='log',
@@ -1196,7 +1196,7 @@ class LinResDraw(LinRes):
         subprocess.check_call(command)
         os.system("rm *png")       
 
-    def printmeta(self,pp,filename='output2.pdf'):
+    def printmeta(self,pp,filename='output2.pdf',debug=False):
 
         import os
         from pyPdf import PdfFileWriter, PdfFileReader
@@ -1302,12 +1302,13 @@ class LinResDraw(LinRes):
                 datastr = data[:,self.ny/2]
             #metasection.append(graphout('stuff',datastr,xaxis=xaxis))  
             #metasection.append(RL_Plot(datastr,xaxis))
+                
                 metasection.append(RL_Plot(datastr,xaxis,linelabel=str(elem)))
             #metasection.append(RL_Plot(datastr,xaxis,xlabel='xlabel'))
             elif data.shape == self.nx:
                 datastr = data
             #metasection.append(graphout('stuff',datastr,xaxis=xaxis))
-                metasection.append(RL_Plot(datastr,xaxis,linelabel=str(elem)))
+                #metasection.append(RL_Plot(datastr,xaxis,linelabel=str(elem)))
             else:
                 print elem, data
                 metasection.append(header(str(elem)+': '+str(data)+ ' '+ unit_label, 
@@ -1338,6 +1339,8 @@ class LinResDraw(LinRes):
       #                                    sep=0.1, style=ParaStyle))
 
       
+        if debug:
+            return Elements
         go()
         
         output = PdfFileWriter()

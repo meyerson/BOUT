@@ -50,9 +50,14 @@ tstep=(1e2 1e-1 1e1 1e-1 1e-1 5e-1) #bz_1_10 steps
 
 llist=(1e-3 5e-2 1e-2 5e-1 1e-1 1e0) #bz1_10
 
-NOUTS=(200 200)
-tstep=(1e-1 1e-2)
+NOUTS=(100 100)
+tstep=(1e0 1e0)
 llist=(1e-1 1e0)
+
+NOUTS=(100)
+tstep=(1e0)
+llist=(1e0)
+
 #works with TOL 1e-8
 #tstep=(1e-3)
 #llist=(1e-1)
@@ -87,7 +92,8 @@ shiftlist=(1.7e-3 5.7e-4 7e-4)
 
 
 i=0
-key='haswak+lownu+bz1_10+nl'
+key='haswak+lownu+boost+bz1_10'
+#key='haswak+lownu+4fld+bz1_10_euler'
 rm status_${key}.log
 
 for lval in ${llist[@]}
@@ -105,10 +111,12 @@ do
 
   cp hlmk.cxx   $current_dir/2fluid.cxx.ref
   cp hlmk.cxx   $current_dir/hlmk.cxx.ref
+  cp hlmk.cxx   $current_dir/physics_code.cxx.ref
 
   cp hlmk.cxx   $PWD/data_${lval}/hlmk.cxx.ref
+  #cp $data_dir/data_bz_${key}_${lval}/*restart* $current_dir
 
-  sed "s/ZMAX = 1/ZMAX = ${lval}/g" BOUT_$key.inp > temp.inp
+  sed "s/ZMAX = 1/ZMAX = ${lval}/g" BOUT_${key}.inp > temp.inp
   #sed "s/ZMAX = 1/ZMAX = 1/g" BOUT.inp > temp.inp
   sed "s/NOUT = 100/NOUT = ${NOUTS[$i]}/g" temp.inp > temp2.inp
   #sed "s/NOUT = 100/NOUT = 100/g" temp.inp > temp2.inp
@@ -130,8 +138,7 @@ do
   #cp BOUT.inp $current_dir/BOUT.inp
   echo "$((i++))"  
   
-  $MPIEXEC $NP ./hlmk -d $current_dir
-
+  $MPIEXEC $NP ./hlmk -d $current_dir 
   ln -s $current_dir $PWD/data_${lval}
   echo $current_dir >> status_${key}.log
   #ibrun -n $NP -o 0  ./2fluid 

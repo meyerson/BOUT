@@ -260,6 +260,14 @@ def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=Fal
              [2*math.pi*float(p['y_i'])/(L_y),
               (B/Bp)*2*math.pi*p['z_i']/L_z 
               + (Bt/B)*2*math.pi*float(p['y_i'])/(L_y)]]
+
+        #revised 
+        # k_r = [[p['y_i'],p['z_i']],
+        #      [2*math.pi*float(p['y_i'])/(L_y),
+        #       (Bp/B)*2*math.pi*p['z_i']/L_z 
+        #       - (Bt/Bp)*2*math.pi*float(p['y_i'])/(L_y)]]
+#revised
+        
         
         #what I think is the most general one, works in drift-instability again 
         # seems to work for Bz only helimak, now trying Bp = Bt

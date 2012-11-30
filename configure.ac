@@ -19,7 +19,7 @@
 #
 #####################################################################
 #
-# Process this file with autoconf to produce a configure script.
+#process this file with autoconf to produce a configure script.
 #
 # Changelog:
 # 
@@ -153,7 +153,7 @@ then
     echo "Error - can't find PETSc distribution"
     exit)
   fi
-
+@echo "petscmake"
 cat <<MFILE > petscmake$$
 PETSC_ARCH = ${PETSC_ARCH}
 PETSC_DIR  = ${PETSC_DIR}

@@ -129,7 +129,7 @@ def metadata(inpfile='BOUT.inp',path ='.',v=False):
     evolved = []
     ICscale = []
    
-    fieldkeys = ['[Ni]','[jpar]','[Te]','[Ti]','[Vi]','[rho]']
+    fieldkeys = ['[Ni]','[jpar]','[Te]','[Ti]','[Vi]','[rho]','[Ajpar]','[Apar]']
     
     defaultIC = float(inp['[All]'].get('scale',0.0))
 
@@ -277,6 +277,9 @@ def metadata(inpfile='BOUT.inp',path ='.',v=False):
     fmei = meta['fmei'].v
     
     meta['lpar'] =1e2*((d['Bxy']/d['Bpxy'])*d['dlthe']).sum(1)/meta['rho_s'].v #-[normed], average over flux surfaces, parallel length
+
+    #yes dlthe is always the vertical displacement 
+    #dlthe = (hthe0*2 pi)/nz
     #meta['lpar']=1e2*(d['Bxy']/d['Bpxy']).mean(1)*d['dlthe'].mean(1) #function of x
     meta['sig_par'] = 1.0/(fmei*0.51*meta['nu_hat'])
     #meta['heat_nue'] = ((2*np.pi/meta['lpar'])**2)/(fmei*meta['nu_hat'])

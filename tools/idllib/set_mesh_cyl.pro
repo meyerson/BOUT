@@ -32,7 +32,10 @@
 ;3.0e15,te0=15.,Bz0 = .10,bphi0 = 0,Zmax=6.0,ni_profile_type = 0,ti0 =
 ; 1.0, te_profile_type = 'CLM'
 
-;set_mesh_cyl,/export,Nr = 20, Nz = 16,rMin = 0.001, rMax = .03,ni0 =3.0e15,te0=15.,Bz0 = .10,bphi0 = 0,Zmax=6.0,ni_profile_type = 0,ti0 = 1.0, te_profile_type = 1
+;set_mesh_cyl,/export,Nr = 20, Nz = 16,rMin = 0.001, rMax = .03,ni0
+;=3.0e15,te0=15.,Bz0 = .10,bphi0 = 0,Zmax=6.0,ni_profile_type = 0,ti0
+;= 1.0, te_profile_type = 1
+
 
 pro CLM_grid,filename=filename
   set_mesh_cyl,/export,Nr = 36, Nz = 32,rMin = 0.001, rMax = .03,ni0 = $
@@ -60,8 +63,12 @@ pro Q_machine_grid,filename=filename
 end
 
 
-pro Helimak_atan_grid,grid_size = N,filename = filename,bphi0=bphi0,Bz0=Bz0 
+pro Helimak_atan_grid,grid_size = N,filename = filename,bphi0=bphi0,Bz0=Bz0, $
+                      cold = cold
   
+  if not keyword_set(cold) then cold = 0
+  
+
   if (keyword_set(N) NE 1) then N = 4
   
   Nz = 2^N
@@ -69,16 +76,30 @@ pro Helimak_atan_grid,grid_size = N,filename = filename,bphi0=bphi0,Bz0=Bz0
 
 
   ;later we'll have to sweep Bz0 space -> conection length like experiment
-  if (not keyword_set(bphi0)) then bphi0 =0.1
-  if (not keyword_set(Bz0)) then Bz0 =0.01
-
+  
+  
 
   temp = ["Helimak_atan_",string(2^N),"x",string(2^N),".nc"]
+  if cold then begin
+      bphi0 =0.0
+      Bz0 = 0.1
+      ni0 = 1.0e18
+      te0 = 2
+
+   endif else begin
+      if (not keyword_set(bphi0)) then bphi0 =0.1
+      if (not keyword_set(Bz0)) then Bz0 =0.01
+      ni0 = 1.0e17
+      te0 = 10
+  
+   endelse
+
   if (not keyword_set(filename)) then filename = strcompress(strjoin(temp),/remove_all)
  
+  
 
   set_mesh_cyl,/export,Nr = Nr, Nz = Nz,rMin = 0.7, rMax = 1.5,ni0 = $
-               1.0e17,te0=10.,Bz0 = Bz0,bphi0 = phi0,Zmax=2.0,$
+               ni0,te0=te0,Bz0 = Bz0,bphi0 = bphi0,Zmax=2.0,$
                ni_profile_type = 4,ti0 =1.0, te_profile_type = 0,$
                ti_profile_type = 0,phi_profile_type = 0,lam_n = .1
 
@@ -176,9 +197,15 @@ end
    ;print,r,chi,p.lam_n
    ;ni = (atan(chi *(r-.9))+!PI/2.)/(atan(chi *(p.rb-.9))+!PI/2.)
  
-   chi = -1./((18./11.)*p.lam_n/!pi)
-   ni = (18./(!pi*10.)) * atan(exp(chi*(r-p.rc))) + 1./10.0
-   ;print,r,mean(ni)
+   ;chi = -1./((18./11.)*p.lam_n/!pi)
+   ;ni = (18./(!pi*10.)) * atan(exp(chi*(r-p.rc))) + 1./10.0
+   
+   minL = -.100
+   sig = 1/.0030
+   ni = exp(1/(minL* sqrt(sig)) * atan(sqrt(sig)*(r-p.rc)))
+
+   print,r
+   print,p.rc
    
 end
 
@@ -460,7 +487,7 @@ pro set_mesh_cyl, d1, d2, d3, plotmesh=plotmesh, export=export, noreset=noreset,
     endif
     if phi_imp then begin
        phi_profile_type = 9 
-       phi0V = max(expr_prof.vfloat)
+       phi0V = max(expr_prof.vflt)
     endif                                   
     if Te_imp then begin
        Te_profile_type = 9

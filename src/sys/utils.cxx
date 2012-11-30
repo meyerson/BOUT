@@ -203,19 +203,23 @@ void SWAP(int &a, int &b)
   b = tmp;
 }
 
-int MAX(int a, int b)
+int BOUTMAX(int a, int b)
 {
   return (a > b) ? a : b;
 }
 
-BoutReal MAX(BoutReal a, BoutReal b)
+BoutReal BOUTMAX(BoutReal a, BoutReal b)
 {
   return (a > b) ? a : b;
 }
 
-BoutReal MIN(BoutReal a, BoutReal b)
+BoutReal BOUTMIN(BoutReal a, BoutReal b)
 {
   return (a < b) ? a : b;
+}
+
+BoutReal BOUTMIN(BoutReal a, BoutReal b, BoutReal c) {
+  return BOUTMIN(BOUTMIN(a,b),c);
 }
 
 bool is_pow2(int x)
@@ -231,7 +235,7 @@ BoutReal SIGN(BoutReal a)
 
 BoutReal MINMOD(BoutReal a, BoutReal b)
 {
-  return 0.5*(SIGN(a) + SIGN(b)) * MIN(fabs(a), fabs(b));
+  return 0.5*(SIGN(a) + SIGN(b)) * BOUTMIN(fabs(a), fabs(b));
 }
 
 /*

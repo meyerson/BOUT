@@ -67,9 +67,10 @@ upwind = FFT
 
 [solver]
 #type = euler
-type = cvode
+#type = cvode
 #type = rk4
-#type = petsc
+type = petsc
+#type = pvode
 
 # mudq, mldq, mukeep, mlkeep preconditioner options
 ATOL = 1.0e-12 # absolute tolerance

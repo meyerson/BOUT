@@ -33,7 +33,7 @@ class LinResPresent(LinResDraw):
    def __init__(self,alldb):
       LinResDraw.__init__(self,alldb)
 
-   def show(self,filter =True,quick=False,pdfname='output2.pdf',debug=False):
+   def show(self,filter =True,quick=False,pdfname='output2.pdf',debug=False,spectrum_movie=False):
       colors = ['b','g','r','c','m','y','k','b','g','r','c','m','y','k']
       pp = PdfPages('output.pdf')
        
@@ -49,12 +49,12 @@ class LinResPresent(LinResDraw):
          dz0 = list(set(s.dz).union())[0]
          ss = subset(s.db,'dz',[dz0])
 
-         # show initial condition
-         s.plotvsK(pp,yscale='log',xscale='log',overplot=False,comp='amp',trans=True)
+         # show initial condition and the first step after
+         s.plotvsK(pp,yscale='log',xscale='log',t=[0,1],overplot=False,comp='amp',trans=True)
 
          
-         spectrum=True
-         if spectrum:
+         
+         if spectrum_movie:
             ss.savemovie()
          
       except:

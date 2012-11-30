@@ -50,7 +50,7 @@ BoutReal beta_p;
 bool estatic, ZeroElMass; // Switch for electrostatic operation (true = no Apar)
 
 bool noDC,plusDC;
-bool nonlinear, haswak,par_damp,transport;
+bool nonlinear, haswak,par_damp,transport,boost;
 BoutReal zlowpass;
 int nzpass;
 int MZ;
@@ -130,6 +130,7 @@ int physics_init(bool restarting)
   OPTION(options,par_damp,false);
   OPTION(options,zlowpass,0);
   OPTION(options,transport,true);
+  OPTION(options,boost,false);
 
   OPTION(options, phi_flags,   0);
   OPTION(options, apar_flags,  0);
@@ -141,11 +142,13 @@ int physics_init(bool restarting)
   (globalOptions->getSection("ti"))->get("evolve", evolve_ti,   true);
   (globalOptions->getSection("Ajpar"))->get("evolve", evolve_ajpar, true);
   
-  OPTION(options,MZ,33);
+  OPTION(globalOptions,MZ,33);
   
   if (zlowpass != 0)
     nzpass = MZ*zlowpass;
   
+  
+
   if(ZeroElMass)
     evolve_ajpar = false; // Don't need ajpar - calculated from ohm's law
 
@@ -313,6 +316,7 @@ int physics_init(bool restarting)
   // Set boundary conditions
   jpar.setBoundary("jpar");
   phi.setBoundary("phi");
+  Apar.setBoundary("Apar");
   /************** SETUP COMMUNICATIONS **************/
 
   // add extra variables to communication
@@ -358,6 +362,8 @@ int physics_init(bool restarting)
 
 int physics_run(BoutReal t)
 {
+  //output.write("nzpass: %i \n",nzpass);
+  //nzpass
   // Solve EM fields
   int ncalls = solver->rhs_ncalls;
   rho.applyBoundary();
@@ -380,6 +386,7 @@ int physics_run(BoutReal t)
     Apar = 0.0;
   }else {
     solve_apar_tridag(Ajpar, Apar, apar_flags); // Linear Apar solver
+    Apar.applyBoundary();
   }
 
   // Communicate variables
@@ -441,6 +448,7 @@ int physics_run(BoutReal t)
     Gamma = vEB*Ni;
   }
   
+  
 
   // DENSITY EQUATION
 
@@ -448,15 +456,27 @@ int physics_run(BoutReal t)
   if(evolve_ni) {
  
     ddt(Ni) -=  vE_Grad(Ni0, phi);// + vE_Grad(Ni, phi0);// + vE_Grad(Ni, phi);
+    
     //ddt(Ni) -= Vpar_Grad_par(Ve, Ni0) + Vpar_Grad_par(Ve0, Ni);// + Vpar_Grad_par(Ve, Ni);
 
     if (nonlinear)
        ddt(Ni) -= vE_Grad(Ni, phi);
     
+     
+    if(boost){
+      ddt(Ni) -= 1.6e-2*DDZ(Ni);
+      ddt(Ni) += 5e-3*DDY(Ni);
+    }
+    
+    //ddt(Ni) -= (Te0*Grad_par_LtoC(Ni))/(fmei*0.51*nu);
+      //ddt(Ni) -= -1e-4*DDY(Ni);
+	
+      //	}
     //ddt(Ni) += Ni0*Div_par_CtoL(Ve);// + Ni*Div_par_CtoL(Ve0);// + Ni*Div_par(Vi);
     // ddt(Ni) -= Ni0*Div_par(Ve) + Ni*Div_par(Ve0);
     if (haswak)
       ddt(Ni) +=  Grad_par_CtoL(jpar);
+
     //ddt(Ni) += Grad_par(jpar);
     //ddt(Ni) += (2.0)*V_dot_Grad(b0xcv, pe);
     /*
@@ -544,6 +564,8 @@ int physics_run(BoutReal t)
     //ddt(rho) += mesh->Bxy*mesh->Bxy*Div_par(jpar, CELL_CENTRE);
     
     ddt(rho) += mesh->Bxy*mesh->Bxy*Grad_par_CtoL(jpar); 
+
+
     //ddt(rho) += Grad_par_CtoL(jpar); //for 2D the above line is equivalent
     // ddt(rho) += 2.0*mesh->Bxy*V_dot_Grad(b0xcv, pei);
     
@@ -580,7 +602,10 @@ int physics_run(BoutReal t)
     if (par_damp)
       ddt(rho) = lowPass_Y(ddt(rho),1);
 
-
+    if (boost) {
+	ddt(rho) -= 1.6e-2*DDZ(rho);
+	ddt(rho) += 5e-3*DDY(rho);
+    }
   }
   
 

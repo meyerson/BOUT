@@ -28,9 +28,9 @@
 #ifdef BOUT_HAS_PETSC_3_1
 
 #include <globals.hxx>
-
+#include <boutcomm.hxx>
 #include <stdlib.h>
-
+#include <utils.hxx>
 #include <interpolation.hxx> // Cell interpolation
 
 

@@ -1,18 +1,33 @@
+#include <mpi.h>
 #include <python2.6/Python.h>
 #include <bout.hxx>
-// #include <boutmain.hxx>
+//#include <boutmain.hxx>
 
 // #include <initialprofiles.hxx>
 // #include <derivs.hxx>
 // #include <interpolation.hxx>
+#include <boutmesh.hxx>
 
+#include <globals.hxx>
+#include <utils.hxx>
+#include <fft.hxx>
+#include <derivs.hxx>
+
+#include <dcomplex.hxx>
+#include <options.hxx>
+#include <boutexception.hxx>
+
+#include <typeinfo>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+
 int callPy(int argc, char *argv[])
 {
-
+  //rank = MPI::COMM_WORLD.Get_rank();
+  //MPI::Init(&argc, &argv);
+  //if (!BoutComm::getInstance()->isSet()) MPI_Init(&argc,&argv);
   int rank, size,i;
 
   PyObject *pName, *pModule, *pDict, *pFunc,*pDir;
@@ -22,8 +37,11 @@ int callPy(int argc, char *argv[])
   PyObject *path,*path1, *path2, *path3; 
 
   
-  rank = MPI::COMM_WORLD.Get_rank();
-  size = MPI::COMM_WORLD.Get_size();
+  //rank = MPI::COMM_WORLD.Get_rank();
+  //size = MPI::COMM_WORLD.Get_size();
+
+  MPI_Comm_size(BoutComm::get(), &size);
+  MPI_Comm_rank(BoutComm::get(), &rank);
    
   // we can run serial code on the master node . . .
   if (rank == 0)

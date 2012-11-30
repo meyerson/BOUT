@@ -1,5 +1,5 @@
 /**************************************************************************
- * Interface to PETSc 3.1 solver
+ * Interface to PETSc solver
  * NOTE: This class needs tidying, generalising to use FieldData interface
  *
  **************************************************************************
@@ -24,82 +24,77 @@
  *
  **************************************************************************/
 
-#ifndef BOUT_HAS_PETSC_3_1
+#ifndef BOUT_HAS_PETSC_3_2
 
-#include "emptysolver.hxx"
-typedef EmptySolver Petsc31Solver;
-
+#include "../emptysolver.hxx"
+typedef EmptySolver Petsc32Solver;
+ 
 #else
-class Petsc31Solver;
+class Petsc32Solver;
 
-#ifndef __PETSC31_SOLVER_H__
-#define __PETSC31_SOLVER_H__
+#ifndef __PETSC32_SOLVER_H__
+#define __PETSC32_SOLVER_H__
 #include "mpi.h"
+#include <petsc.h>
+
 #include "bout_types.hxx"
+#include <field2d.hxx>
+#include <field3d.hxx>
+#include <vector2d.hxx>
+#include <vector3d.hxx>
 
+#include <bout/solver.hxx>
 
-#include <petscts.h>
-
-#include "field2d.hxx"
-#include "field3d.hxx"
-#include "vector2d.hxx"
-#include "vector3d.hxx"
-
-#include "solver.hxx"
+#include <bout/petsclib.hxx>
 
 #include <vector>
 
 typedef PetscScalar BoutReal;
 typedef PetscInt integer;
-typedef PetscTruth boole;
+typedef PetscBool boole;
 #define OPT_SIZE 40
 
 using std::vector;
 
 typedef int (*rhsfunc)(BoutReal);
 
-EXTERN PetscErrorCode PreStep(TS);
-EXTERN PetscErrorCode PostStep(TS);
-EXTERN int jstruc(int NVARS, int NXPE, int MXSUB, int NYPE, int MYSUB, int MZ, int MYG, int MXG);
+extern BoutReal simtime;
+extern PetscErrorCode PetscMonitor(TS,PetscInt,PetscReal,Vec,void *ctx);
+extern int jstruc(int NVARS, int NXPE, int MXSUB, int NYPE, int MYSUB, int MZ, int MYG, int MXG);
 
-class Petsc31Solver : public Solver {
+class Petsc32Solver: public Solver {
  public:
-  Petsc31Solver();
-  ~Petsc31Solver();
-
-  int init(rhsfunc f, int argc, char **argv, bool restarting, int NOUT, BoutReal TIMESTEP);
+  Petsc32Solver();
+  ~Petsc32Solver();
+  
+  int setup(int argc, char **argv);
+  
+  int init(rhsfunc f, bool restarting, int NOUT, BoutReal TIMESTEP);
 
   int run(MonitorFunc f);
 
   // These functions used internally (but need to be public)
-  PetscErrorCode rhs(TS ts,PetscReal t,Vec globalin,Vec globalout);
-  friend PetscErrorCode PreStep(TS);
-  friend PetscErrorCode PostStep(TS);
+  PetscErrorCode rhs(TS ts,PetscReal t,Vec globalin,Vec globalout);  
+  friend PetscErrorCode PetscMonitor(TS,PetscInt,PetscReal,Vec,void *ctx);
 
  private:
+  PetscLib lib; 
+  
   Vec           u;
   TS            ts;
-  Mat           J;
+  Mat           J,Jmf;
   MatFDColoring matfdcoloring;
 
   int nout;   // The number of outputs
   BoutReal tstep; // Time between outputs
   MonitorFunc monitor; // Monitor function to call regularly
 
-  BoutReal next_time;  // When the monitor should be called next
-  bool outputnext; // true if the monitor should be called next time
+  BoutReal next_output;  // When the monitor should be called next
 
-  // Looping over variables. This should be in generic, but better...
-  void loop_vars_op(int jx, int jy, BoutReal *udata, int &p, SOLVER_VAR_OP op);
-  void loop_vars(BoutReal *udata, SOLVER_VAR_OP op);
-
-  // Move data between 
-  void load_vars(BoutReal *udata);
-  int save_vars(BoutReal *udata);
-  void save_derivs(BoutReal *dudata);
+  PetscBool interpolate; // Whether to interpolate or not
 };
 
 
-#endif // __PETSC31_SOLVER_H__
+#endif // __PETSC_SOLVER_H__
 
 #endif

@@ -4,10 +4,9 @@ meta
 from post_bout import pb_corral
 import post_bout as pb
 from pb_present import LinResPresent
-a = pb.corral(refresh=True,skew=True,IConly=0,debug=False,logname='status_haswak+lownu+bz1_10+nl.log')
+a = pb.corral(refresh=False,skew=True,IConly=0,debug=False,logname='status_haswak+lownu+4fld+bz1_10.log')
 y = LinResPresent(a.db)
-y.show(debug=False,pdfname='output_haswak+lownu+bz1_10+nl.pdf')
-
+y.show(debug=False,pdfname='output_haswak+lownu+4fld+bz1_10.pdf')
 
 
 
@@ -47,9 +46,9 @@ print DXRxy * gradNi0**-1
 
 
 from boututils import showdata
-showdata(ni[10:,2,:,:],movie=True)
+showdata(ni[1:,2,:,:],movie=True)
 z = np.array(np.gradient(ni))[0]
-showdata(z[:,2,:,:])
+showdata(z[40:,2,:,:])
 
 
 import post_bout as pb

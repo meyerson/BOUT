@@ -37,6 +37,9 @@
 ;hlmk_grids,/simple,/narrow,/local_r,Bz0=.1,bphi0=0.0,Te=2,Ni0 =
 ;1e16,grid_size = 5,gridname ='Helimak_Bz_COLD'
 
+;create a cold plasma with radial resolve
+;hlmk_grids,/simple,Bz0=.1,bphi0=0.0,Te=2,Ni0 = 1e18,grid_size = 5,gridname ='Helimak_Bz_COLD+DENSE+NARROW',/narrow 
+
 
 
 
