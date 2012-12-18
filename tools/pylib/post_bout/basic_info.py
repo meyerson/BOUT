@@ -133,7 +133,7 @@ def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=Fal
     
      #let's find the top N overall powerfull harmnonics
     net_peak = local_maxima(peak_hist,user_peak,bug=False)
-
+    
 
     print 'net_peak: ',net_peak,user_peak != 0
     #dom_mode = [{'amp':[],'amp_n':[],'phase':[],'freq':[],'gamma':[]} for x in net_peak]
@@ -164,12 +164,11 @@ def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=Fal
 
     #look at each mode annd pull out some usefull linear measures
     for i,p in enumerate(net_peak):
-        print i,p['y_i'],p['z_i']
-        amp =  (np.sqrt(power[:,:,p['y_i'],p['z_i']])/(kz_max*ky_max)).real
+        print i,p['y_i'],p['z_i'],fft_data.shape,fft_data[:,:,p['y_i'],p['z_i']].shape
         
-       
-        #phase = (np.angle(cross_pow[:,:,p['y_i'],p['z_i']],deg=False)).real
-        phase = -np.array(np.gradient((np.angle(fft_data[:,:,p['y_i'],p['z_i']],deg=False)).real)[0]) #nt x nx
+        amp =  (np.sqrt(power[:,:,p['y_i'],p['z_i']])/(kz_max*ky_max)).real
+    
+        phase = -np.array(np.gradient(np.squeeze(np.angle(fft_data[:,:,p['y_i'],p['z_i']],deg=False))).real)[0] #nt x nx
         
         #loop over radaii
         phasenew = []

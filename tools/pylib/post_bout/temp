@@ -44,9 +44,12 @@ Rxy = meta['Rxy']
 DXRxy =  pb.boutdata.collect('DXRxy')
 print DXRxy * gradNi0**-1
 
+path = '/tmp/hlmk/data_hlmk_3D_1e-1/'
+from boutdata import collect
+from boututils import savemovie
+gamma = collect("Gammax",yind=[4,5],path=path)
+savemovie(gamma[10:,2:-2,0,:])
 
-from boututils import showdata
-showdata(ni[1:,2,:,:],movie=True)
 z = np.array(np.gradient(ni))[0]
 showdata(z[40:,2,:,:])
 

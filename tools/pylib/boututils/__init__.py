@@ -8,7 +8,7 @@ print "Loading data utilities"
 
 # Load routines from separate files
 try:
-    from showdata import showdata
+    from showdata import showdata,savemovie
 except:
     print "No showdata"
 

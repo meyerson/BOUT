@@ -597,10 +597,11 @@ endfor
 
 
 if not keyword_set(NOPLOTS) then begin
-   !p.multi=[0,3,1,0,0]
-   plot, ni[1,*], title='Density profile, m^-3', charsize=2
-   plot, te[1,*], title='Te profile, eV', charsize=2
-   plot, phi[1,*], title='Phi0 profile, V', charsize=2
+   !p.multi=[0,2,2,0,0]
+   plot, rm[1,*,0],ni[1,*], title='Density profile, m^-3', charsize=2
+   plot, -rm[1,*,0]*deriv(rm[1,*,0],ni[1,*])/ni[1,*], title='inverse ni Gradient, m^-1',charsize=2
+   plot, rm[1,*,0],te[1,*], title='Te profile, eV', charsize=2
+   plot,rm[1,*,0], phi[1,*], title='Phi0 profile, V', charsize=2
    WAIT, 2.
    !p.multi=0
 endif

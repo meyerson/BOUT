@@ -64,7 +64,7 @@ from basic_info import basic_info, fft_info
 
 def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
          savemovie=False,IConly=0,transform=False,fast = False,
-         debug = False): 
+         debug = False,lowmem=False): 
     #lets collect the data
     print 'path :', path
     print 'in post_bout/post_bout.save'
@@ -75,7 +75,8 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
  
     
     meta = metadata(path=path)
-    
+    nx = meta['nx']
+
     #ICmodes = 
     print 'ok got meta'
     #return meta
@@ -86,10 +87,18 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
    
     all_modes = []
     print meta['evolved']['v']
+    
 
     for i,active in enumerate(meta['evolved']['v']): #loop over the fields
         print path, active
-        data[active] = collect(active,path=path)
+        chunk = 10
+        if not lowmem:
+            data[active] = collect(active,path=path)
+        else:
+            print meta['nx']
+            data[active] = collect(active,xind=[2,2],path=path)
+
+        
         if savemovie:
             movie(data,meta)
         # if transform:
@@ -120,6 +129,7 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
   
     #some attemps to automate peak finding
     for i,active in enumerate(meta['evolved']['v']):
+        #print data[active].shape
         modes_db,ave = basic_info(data[active],meta) #basic_info does not  correct for incomplete runs
        #print modes[0]['gamma']
         output[active] = {'ave':ave}
@@ -212,7 +222,7 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
             print nt,ntt
     #for incomplete runs    
             if nt > ntt: #if the run did not finish then rescale to keep data dims the same
-                
+                print 'rescale'
                 xx = np.array(range(0,ntt)) #dep var to interp FROM
                 xxnew = np.linspace(0,ntt-1,nt+1) #new dep var grid, nt points up to ntt-1
                 
@@ -259,7 +269,7 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
     # pickle.dump(output,json_out)
     # json_out.close()
 
-    print filename_db
+    print filename_db," done"
     
     
 def read(path='.',filename='post_bout.db',trysave=True,

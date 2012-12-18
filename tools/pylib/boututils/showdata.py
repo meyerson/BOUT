@@ -5,37 +5,44 @@
 #
 #
 
-try:
-    print "Trying to import GTK..."
-    import gobject
-    widget = "gtk"
-except:
-    print "failed\nTrying to import WX..."
-    try:
-        from wx import *
-        widget = "wx"
-    except:
-	    print "failed."
-	    raise
-
-
+#try:
 try:
     import matplotlib
+    import numpy as np
+    import matplotlib.pyplot as plt
+    import subprocess 
+    import os
+    
+except:
+    print "ERROR: Showdata needs numpy, matplotlib and gobject modules"
+    raise
+
+try:
+    from wx import *
+    widget = "wx"
+except:
+    print "failed wx import"
+    
+
+
+def showdata(data, scale=True, loop=False,movie=False):
+    try:
+        print "Trying to import GTK..."
+        import gobject
+        widget = "gtk"
+    except:
+        print "failed\nTrying to import WX..."
+   
+    
+   
     if widget == "gtk":
         matplotlib.use('GTKAgg')
     else:
         matplotlib.use('WXAgg') # do this before importing pylab
 
-    import numpy as np
-    import matplotlib.pyplot as plt
-    import subprocess 
-    import os
+ 
 
-except ImportError:
-    print "ERROR: Showdata needs numpy, matplotlib and gobject modules"
-    raise
 
-def showdata(data, scale=True, loop=False,movie=False):
     """Animate a dataset, with time as first dimension
     
     2D - Show a line plot

@@ -150,7 +150,7 @@ def collect(varname, xind=None, yind=None, zind=None, tind=None, path="."):
     ddims = map(lambda d: sizes[d], dims)
     
     # Create the data array
-    data = np.zeros(ddims)
+    data = np.zeros(ddims) #will fail here for large enough arrays
     
     for i in range(nfiles):
         # Get X and Y processor indices
