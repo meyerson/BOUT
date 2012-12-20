@@ -144,13 +144,23 @@ def showdata(data, scale=True, loop=False,movie=False):
       print "Sorry can't handle this number of dimensions"
         
 
-def savemovie(data,moviename='output.avi'):
+def savemovie(data,data2=None,moviename='output.avi',norm=True,
+              overcontour=True,aspect='auto',meta=None,mxg=2):
     size = data.shape
     ndims = len(size)
     print 'Saving pictures -  this make take a while'
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
+    if meta != None:
+        r= meta['Rxy']['v'][:,5]
+        #DZ = meta['dz']
+        DZ = .001
+            
+
+
+    #matplotlib.use('Agg')
+    
     files = []
     if ndims == 2:
     
@@ -165,30 +175,73 @@ def savemovie(data,moviename='output.avi'):
                 line.set_ydata(data[i,:])
                 if not scale:
                     ax.set_ylim([np.min(data[i,:]), np.max(data[i,:])])
-                fig.canvas.draw()
+                #fig.canvas.draw()
                 filename = str('%03d' % i) + '.png'
                 plt.savefig(filename, dpi=100)
                 files.append(filename)
           
     
-    elif ndims == 3:
+    elif ndims == 3: #typical nt x (nx or ny) X nz
+
+        nt,nx,nz = data.shape
+        
+        if norm: 
+            # amp = abs(data).max(1).max(1)
+            # fourDamp = np.repeat(amp,nx*ny)
+            # fourDamp = fourDamp.reshape(nt,nx,ny)
+            # data_n = data/fourDamp
+            data_n = normalize(data)
+        else:
+            data_n = data
+
+        if data2 != None:
+            data_c = data2
+            if norm:
+                data_c = normalize(data_c)
+        else:
+            data_c = data_n
+
         cmap = None
-        m = plt.imshow(data[0,:,:], interpolation='bilinear', cmap=cmap, animated=True)
-        c = plt.contour(data[0,:,:],8,colors='k')
+        #m = plt.imshow(data_n[0,:,:], interpolation='bilinear', cmap=cmap, animated=True,aspect=aspect)
+        if meta != None:
+            dzeta = (2*DZ*np.pi)/(nz-1)
+            x = np.outer(r,np.cos(dzeta*np.arange(0,nz)))
+            y = np.outer(r,np.sin(dzeta*np.arange(0,nz)))
+            mxg = meta['MXG']['v']
+            x = x[mxg:-mxg,:]
+            y = y[mxg:-mxg,:]
+            data_n = data_n[:,mxg:-mxg,:]
+            data_c = data_c[:,mxg:-mxg,:]
+        else:
+            x = np.arange(nx)
+            y = np.arange(nz)
+            data_n = np.transpose(data_n,[0,2,1])
+            data_c = np.transpose(data_c,[0,2,1])
+           
+            print x.shape,y.shape,data_n.shape
+
+        # m = plt.contourf(x,y,data_n[0,:,:],30,cmap=cmap)
+        # if overcontour:
+        #     c = plt.contour(x,y,data_c[0,:,:],8,colors='k')
         for i in np.arange(size[0]):
             print i
-            m.set_data(data[i,:,:])
+            #m.set_data(data_n[i,:,:])
+            m = plt.contourf(x,y,data_n[i,:,:],30,cmap=cmap)
+            
             #c = plt.contour(data[i,:,:],8,colors='k')
             #c.set_data(data[i,:,:])
-            for coll in c.collections:
-                try:
-                    plt.gca().collections.remove(coll)
-                except:
-                    print 'not in this collection'
+            # if overcontour:
+            #     for coll in c.collections:
+            #         try:
+            #             plt.gca().collections.remove(coll)
+            #         except:
+            #             print 'not in this collection'
 
-            c = plt.contour(data[i,:,:],8,colors='k')
-   
-            fig.canvas.draw()         
+
+            if overcontour:
+                c = plt.contour(x,y,data_c[i,:,:],8,colors='k')
+        
+            #fig.canvas.draw()         
             filename = str('%03d' % i) + '.png'
             plt.savefig(filename, dpi=100)
             files.append(filename)
@@ -216,6 +269,7 @@ def savemovie(data,moviename='output.avi'):
     print files
     #cleanup = ('rm',files)
     os.system("rm *png")
+    #matplotlib.use('pdf')
     #return 0
 
 def test():
@@ -243,3 +297,11 @@ def test():
     showdata(data2d, loop=True)
 
 
+def normalize(data):
+    nt,nx,ny = data.shape
+    amp = abs(data).max(1).max(1)
+    fourDamp = np.repeat(amp,nx*ny)
+    fourDamp = fourDamp.reshape(nt,nx,ny)
+    data_n = data/fourDamp
+    
+    return data_n

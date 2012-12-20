@@ -27,8 +27,8 @@ try:
     
     print 'in post_bout/__init__.py'
     
-    import matplotlib
-    matplotlib.use('pdf')
+    import matplotlib 
+    matplotlib.use('pdf') #savemovie must be called as a diff. sesssion
     
     import gobject
     import numpy as np
