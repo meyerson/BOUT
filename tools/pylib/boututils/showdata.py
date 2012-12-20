@@ -222,9 +222,9 @@ def savemovie(data,data2=None,moviename='output.avi',norm=True,
             print x.shape,y.shape,data_n.shape
         
         os.system("rm "+cache+"*png")
-        # m = plt.contourf(x,y,data_n[0,:,:],30,cmap=cmap)
+        m = plt.contourf(x,y,data_n[0,:,:],30,cmap=cmap)
         # if overcontour:
-        #     c = plt.contour(x,y,data_c[0,:,:],8,colors='k')
+        c = plt.contour(x,y,data_c[0,:,:],8,colors='k')
         for i in np.arange(size[0]):
             print i
             #m.set_data(data_n[i,:,:])
@@ -232,16 +232,17 @@ def savemovie(data,data2=None,moviename='output.avi',norm=True,
             
             #c = plt.contour(data[i,:,:],8,colors='k')
             #c.set_data(data[i,:,:])
-            # if overcontour:
-            #     for coll in c.collections:
-            #         try:
-            #             plt.gca().collections.remove(coll)
-            #         except:
-            #             print 'not in this collection'
-
-
             if overcontour:
+               
+                for coll in c.collections:
+                    try:
+                        plt.gca().collections.remove(coll)
+                    except:
+                        print 'not in this collection'
                 c = plt.contour(x,y,data_c[i,:,:],8,colors='k')
+
+           
+                
         
             #fig.canvas.draw()         
             filename = cache+str('%03d' % i) + '.png'
