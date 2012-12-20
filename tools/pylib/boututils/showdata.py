@@ -145,7 +145,8 @@ def showdata(data, scale=True, loop=False,movie=False):
         
 
 def savemovie(data,data2=None,moviename='output.avi',norm=True,
-              overcontour=True,aspect='auto',meta=None,mxg=2):
+              overcontour=True,aspect='auto',meta=None,mxg=2,
+              cache='/tmp/'):
     size = data.shape
     ndims = len(size)
     print 'Saving pictures -  this make take a while'
@@ -242,7 +243,7 @@ def savemovie(data,data2=None,moviename='output.avi',norm=True,
                 c = plt.contour(x,y,data_c[i,:,:],8,colors='k')
         
             #fig.canvas.draw()         
-            filename = str('%03d' % i) + '.png'
+            filename = cache+str('%03d' % i) + '.png'
             plt.savefig(filename, dpi=100)
             files.append(filename)
             #plt.clf()
@@ -252,7 +253,7 @@ def savemovie(data,data2=None,moviename='output.avi',norm=True,
     
     print 'Making movie animation.mpg - this make take a while'
     command = ('mencoder',
-               'mf://*.png',
+               'mf://'+cache+'*.png',
                '-mf',
                'type=png:w=800:h=600:fps=10',
                '-ovc',
