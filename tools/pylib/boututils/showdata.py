@@ -220,7 +220,8 @@ def savemovie(data,data2=None,moviename='output.avi',norm=True,
             data_c = np.transpose(data_c,[0,2,1])
            
             print x.shape,y.shape,data_n.shape
-
+        
+        os.system("rm"+cache+"*png")
         # m = plt.contourf(x,y,data_n[0,:,:],30,cmap=cmap)
         # if overcontour:
         #     c = plt.contour(x,y,data_c[0,:,:],8,colors='k')
@@ -269,7 +270,7 @@ def savemovie(data,data2=None,moviename='output.avi',norm=True,
     
     print files
     #cleanup = ('rm',files)
-    os.system("rm *png")
+    os.system("rm"+cache+"*png")
     #matplotlib.use('pdf')
     #return 0
 
