@@ -156,7 +156,7 @@ def savemovie(data,data2=None,moviename='output.avi',norm=True,
     if meta != None:
         r= meta['Rxy']['v'][:,5]
         #DZ = meta['dz']
-        DZ = .001
+        DZ = 1
             
 
 
