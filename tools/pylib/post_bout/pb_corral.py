@@ -118,6 +118,7 @@ class LinRes(object):
       self.cxx =[]
       self.maxN =[]
 
+      self.ave = np.array(ListDictKey(alldb,'ave'))
       #[self.cxx.append(read_cxx(path=elem,boutcxx='2fluid.cxx.ref')) for elem in self.path]
       #[self.maxN.append(findlowpass(elem)) for elem in self.cxx]
       [self.cxx.append(read_cxx(path=elem,boutcxx='physics_code.cxx.ref')) for elem in self.path]
@@ -384,10 +385,11 @@ class _model(object):  #NOT a derived class,but one that takes a class as input
             M[1,1]= -(2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]*complex(0,(k)**-2)
             
             #parallel dynamics
-            M[2,2] = k/(input_obj.L[i,input_obj.nx/2,input_obj.ny/2])
-            M[2,0] = -(2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])
-            M[0,2] = -(2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])
-            #M[1,0] = (2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]
+            #M[2,2] = k/(input_obj.L[i,input_obj.nx/2,input_obj.ny/2])
+            #M[2,0] = -(2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])
+            #M[0,2] = -(2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])
+            
+#M[1,0] = (2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]
             #M[1,1]= -(2*m*np.pi/input_obj.meta['lpar'][input_obj.nx/2])**2 * input_obj.meta['sig_par'][0]
             
             #ajpar dynamics - effectively parallel electron dynamics instead of 

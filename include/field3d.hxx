@@ -197,6 +197,7 @@ class Field3D : public Field, public FieldData {
   const Field3D abs() const;
   BoutReal min(bool allpe=false) const;
   BoutReal max(bool allpe=false) const;
+  BoutReal patchmax(bool allpe=false) const;
 
   // Friend operators
   friend const Field3D operator-(const BoutReal &lhs, const Field3D &rhs);
@@ -300,5 +301,6 @@ const Field3D sqrt(const Field3D &f);
 const Field3D abs(const Field3D &f);
 BoutReal min(const Field3D &f, bool allpe=false);
 BoutReal max(const Field3D &f, bool allpe=false);
+
 
 #endif /* __FIELD3D_H__ */

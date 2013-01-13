@@ -7,9 +7,8 @@
 
 #try:
 try:
-    import matplotlib
+
     import numpy as np
-    import matplotlib.pyplot as plt
     import subprocess 
     import os
     
@@ -18,10 +17,35 @@ except:
     raise
 
 try:
-    from wx import *
-    widget = "wx"
+    import gobject
+    widget = "gtk"
 except:
-    print "failed wx import"
+    try:
+        from wx import *
+        widget = "wx"
+    except:
+        print "showdata: Couldn't import gobject or wx"
+        raise
+    
+
+try:
+    import matplotlib
+    if widget == "gtk":
+        matplotlib.use('GTKAgg')
+    else:
+        matplotlib.use('WXAgg') # do this before importing pylab
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+except ImportError:
+    print "ERROR: Showdata needs numpy, matplotlib and gobject modules"
+    raise
+# try:
+#     from wx import *
+#     widget = "wx"
+# except:
+#     print "failed wx import"
     
 
 
@@ -155,8 +179,8 @@ def savemovie(data,data2=None,moviename='output.avi',norm=True,
 
     if meta != None:
         r= meta['Rxy']['v'][:,5]
-        #DZ = meta['dz']
-        DZ = 1
+        DZ = meta['dz']
+        #DZ = 1
             
 
 

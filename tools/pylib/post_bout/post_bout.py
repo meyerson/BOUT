@@ -82,12 +82,19 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
     #return meta
     output = OrderedDict()
     data = OrderedDict()
+    
+    data_nl = OrderedDict()
+
     data_r = OrderedDict()
 
    
     all_modes = []
     print meta['evolved']['v']
-    
+    print meta['collected']
+
+    #pick up some derived variabales as needed
+    for  i,active in enumerate(meta['collected']):
+        data[active] = collect(active,xind=[2,2],path=path)
 
     for i,active in enumerate(meta['evolved']['v']): #loop over the fields
         print path, active
@@ -95,9 +102,12 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
         if not lowmem:
             data[active] = collect(active,path=path)
         else:
-            print meta['nx']
             data[active] = collect(active,xind=[2,2],path=path)
 
+        if meta['nonlinear']['v'] == 'true':
+            data_nl[active] = collect(active+'_nl',path=path)
+            
+        print meta['nonlinear']['v']
         
         if savemovie:
             movie(data,meta)
@@ -168,9 +178,17 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
         print 'once again', active
         print all_modes
         print meta['ys_opt']['v'], meta['zs_opt']['v']
-        modes_db,ave = basic_info(data[active],meta,
-                                  user_peak = all_modes)   
+        
 
+        if meta['nonlinear']['v'] == 'true':
+            modes_db,ave = basic_info(data[active],meta,
+                                      user_peak = all_modes,
+                                      nonlinear = data_nl[active])   
+        else:
+            modes_db,ave = basic_info(data[active],meta,
+                                      user_peak = all_modes) 
+        
+        
         # if transform:
         #     print all_modes
         #     modes_db_r,ave_r = basic_info(data_r[active],meta,
@@ -204,6 +222,8 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
             x['Rxynorm'] = 100*x['Rxy']/meta['rho_s']['v']
             x['rho_s'] = meta['rho_s']['v']
             x['maxZ'] = maxZ
+
+            x['ave'] = ave
             #for now if there was rotation just loop a few keys
             x['transform'] = transform
             if transform:
@@ -259,6 +279,7 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
     pickle_db = open(filename_db,'wb')
 
     pickle.dump(allmodes_db,pickle_db)
+    #pickle.dump(output,pickle_db) #can I do this?
 
     pickle_db.close()
 

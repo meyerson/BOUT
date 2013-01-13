@@ -1,14 +1,18 @@
 import post_bout as pb
 meta
 
+
+logname='status_hlmk_3D.log'
+logname='status_haswak.log'
+logname='status_hlmk_precon.log'
 from post_bout import pb_corral
 import post_bout as pb
 from pb_present import LinResPresent
-a = pb.corral(refresh=False,skew=True,IConly=0,debug=False,logname='status_haswak+lownu+4fld+bz1_10.log')
+a = pb.corral(refresh=False,IConly=0,debug=False,logname=logname)
 y = LinResPresent(a.db)
-y.show(debug=False,pdfname='output_haswak+lownu+4fld+bz1_10.pdf')
+y.show(debug=False,pdfname='output_haswak.pdf')
 
-
+y.show(debug=False,pdfname='output_hlmk_3D.pdf')
 
 from post_bout import pb_corral
 import post_bout as pb
@@ -17,7 +21,17 @@ a = pb.corral(refresh=False,skew=True,IConly=0,debug=False)
 y = LinResPresent(a.db)
 y.show(debug=False,pdfname='output_haswak_lownu_bz.pdf')
 
+logname='status_hlmk_3D.log'
 
+from post_bout import pb_corral
+import post_bout as pb
+from pb_present import LinResPresent
+a = pb.corral(refresh=False,skew=True,IConly=0,debug=False,logname=logname)
+from matplotlib.backends.backend_pdf import PdfPages
+pp = PdfPages('nl.pdf')
+y = LinResPresent(a.db)
+y.plotnlrhs(pp)
+pp.close()
 
 
 import post_bout as pb
@@ -50,9 +64,23 @@ path = '/tmp/hlmk/data_hlmk_3D_1e-1/'
 meta = metadata(path=path)
 
 from boutdata import collect
-from boututils import savemovie
-gamma = collect("Gammax",yind=[5,5],path=path)
-ni = collect("Ni",yind=[5,5],path=path)
+from boututils import savemovie,showdata
+import numpy as np
+ni = np.squeeze(collect("Ni",yind=[5,5]))
+ddtni = np.squeeze((np.gradient(ni))[0])
+ddt = np.squeeze(collect("ddtNi",yind=[5,5]))
+nl = np.squeeze(collect("Ni_nl",yind=[5,5]))
+
+
+
+from boutdata import collect
+from boututils import showdata
+ni = collect("Ni")
+rho = collect("rho")
+import matplotlib.pyplot as plt
+
+
+savemovie(rho[:,:,5,:],ni[:,:,5,:],moviename="rho_ni.avi",meta=meta)
 
 savemovie(gamma[:,:,0,:],ni[:,:,0,:],moviename="Gammax_with_ni.avi",meta=meta)
 
@@ -83,9 +111,43 @@ img00 = fig.add_subplot(1,1,1)
 img00.contourf(old[0,2,:,:],interpolation='bilinear', cmap=None)
 fig.savefig(pp, format='pdf')
 plt.close(fig)
+
+from boutdata import collect
+from boututils import savemovie,showdata
+from post_bout import normed as n 
+ni = n.normed(collect("Ni"))
+rho = n.normed(collect("rho"))
+ddtni = n.normed(collect("ddtNi"))
+ddtrho = n.normed(collect("ddtrho"))
+jpar = n.normed(collect("jpar"))
+phi = n.normed(collect("phi"))
+
+
+jparLtoC
+jparC4
+jparC2
+jparW3
+jparU1
+
+showdata(ddtni[:,2,:,:])
+showdata(jpar[:,2,:,:])
+showdata(phi[:,2,:,:])
+showdata(rho[:,2,:,:])
+
+showdata(ddtrho[:,2,:,:])
+showdata(ni[:,2,:,:])
+
+showdata(ddtrho[:,2,:,:])
+ddtni = collect("ddtNi")
+import matplotlib.pyplot as plt
 fig = plt.figure()
 img00 = fig.add_subplot(1,1,1)
-img00.contourf(new[0,2,:,:],interpolation='bilinear', cmap=None)
+img00.contourf(ddtni[3,2,:,:],interpolation='bilinear', cmap=None)
+fig.show()
+
+
+
+
 fig.savefig(pp, format='pdf')
 plt.close(fig)
 pp.close()

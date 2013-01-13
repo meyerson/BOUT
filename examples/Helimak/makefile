@@ -1,6 +1,6 @@
 
 BOUT_TOP	= ../..
 
-SOURCEC		= hlmk.cxx
+SOURCEC		= hlmk_beta.cxx
 
 include $(BOUT_TOP)/make.config

@@ -56,7 +56,7 @@ class BoutMesh : public Mesh {
   //dcomplex* sumY(dcomplex**&);
   //BoutReal* filterY(BoutReal*& f);
   //BoutReal* filterY(BoutReal*& f,bool lowpass ,bool noDC, int M0);
-  int filterY(BoutReal*& f);
+  int filterY(BoutReal*& f,int ymax);
   int filterY(BoutReal*& f,bool lowpass ,bool noDC, int M0);
 
   bool surfaceClosed(int jx);

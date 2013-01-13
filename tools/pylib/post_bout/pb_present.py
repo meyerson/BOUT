@@ -1,5 +1,7 @@
 from pb_draw import LinResDraw,subset
 from pb_corral import LinRes
+from pb_nonlinear import NLinResDraw
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -29,15 +31,16 @@ import multiprocessing
 import subprocess 
 #uses  LinResDraw to make a pdf
 
-class LinResPresent(LinResDraw):
+class LinResPresent(LinResDraw,NLinResDraw):
    def __init__(self,alldb):
       LinResDraw.__init__(self,alldb)
+      NLinResDraw.__init__(self,alldb)
 
    def show(self,filter =True,quick=False,pdfname='output2.pdf',debug=False,spectrum_movie=False):
       colors = ['b','g','r','c','m','y','k','b','g','r','c','m','y','k']
       pp = PdfPages('output.pdf')
-       
-      #start by removing modes above the maxN threshold
+
+            #start by removing modes above the maxN threshold
       modelist =[]
       [modelist.append(list(self.modeid[p])) for p in range(self.nmodes) if self.mn[p][1] <= self.maxN[p] ]
    
@@ -50,17 +53,19 @@ class LinResPresent(LinResDraw):
          ss = subset(s.db,'dz',[dz0])
 
          # show initial condition and the first step after
-         s.plotvsK(pp,yscale='log',xscale='log',t=[0,1],overplot=False,comp='amp',trans=True)
+         s.plotvsK(pp,yscale='log',xscale='log',t=[0,1,-1],overplot=False,comp='amp',trans=True)
 
          
          
          if spectrum_movie:
             ss.savemovie()
          
+
       except:
          print 'no scatter'
       #2D true NM spectrum with color code and boxes around spectral res regions log scale
-                     
+      
+                   
 
       plt.figure()
       i = 0
@@ -84,6 +89,12 @@ class LinResPresent(LinResDraw):
        
       plt.close() 
   
+      # for elem in self.meta['evolved']['v']:
+      #    s.plotnl(pp
+      
+      if self.meta['nonlinear']['v'] == 'true':
+         self.plotnlrhs(pp)
+
 
       for elem in self.meta['evolved']['v']:
          s.plotmodes(pp,yscale='symlog',comp='phase',linestyle='.',field=elem,summary=False)
@@ -142,10 +153,10 @@ class LinResPresent(LinResDraw):
       
       try:
          s.plotfreq2(pp,xscale='log',yscale='linear',overplot=True)
-         s.plotfreq2(pp,xscale='log',yscale='symlog',overplot=False)
+         #s.plotfreq2(pp,xscale='log',yscale='symlog',overplot=False)
          s.plotfreq2(pp,xscale='log',yscale='symlog',field='rho',overplot=True)
        
-         s.plotfreq2(pp,xscale='log',yscale='linear')
+         #s.plotfreq2(pp,xscale='log',yscale='linear')
       except:
          print 'something terrible'
 

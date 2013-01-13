@@ -127,14 +127,17 @@ def metadata(inpfile='BOUT.inp',path ='.',v=False):
     #print IC
        
     evolved = []
+    collected =[]
     ICscale = []
    
-    fieldkeys = ['[Ni]','[jpar]','[Te]','[Ti]','[Vi]','[rho]','[Ajpar]','[Apar]']
+    fieldkeys = ['[Ni]','[jpar]','[Te]','[Ti]','[Vi]','[rho]','[Ajpar]','[Apar]','[vEB]']
     
     defaultIC = float(inp['[All]'].get('scale',0.0))
 
+    print inp.keys()
+
     for section in inp.keys(): #loop over section keys 
-       #print section
+       print 'section: ', section
        if section in fieldkeys: #pick the relevant sections
           print section
           #print type(inp[section].get('evolve','True'))
@@ -143,8 +146,11 @@ def metadata(inpfile='BOUT.inp',path ='.',v=False):
               print 'ok reading'
               evolved.append(section.strip('[]'))
               ICscale.append(float(inp[section].get('scale',defaultIC)))
-             
-           
+            
+          if inp[section].get('collect','True').lower().strip() == 'true':
+             collected.append(section.strip('[]'))
+              
+          
    
 
                 
@@ -169,6 +175,7 @@ def metadata(inpfile='BOUT.inp',path ='.',v=False):
           return metaString
     
     meta['evolved'] = ValUnit(evolved,'')
+    meta['collected'] = collected
     meta['IC']= np.array(ICscale)
     d = {}
 

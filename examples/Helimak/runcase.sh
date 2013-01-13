@@ -50,13 +50,13 @@ tstep=(1e2 1e-1 1e1 1e-1 1e-1 5e-1) #bz_1_10 steps
 
 llist=(1e-3 5e-2 1e-2 5e-1 1e-1 1e0) #bz1_10
 
-NOUTS=(100 100)
+NOUTS=(200 200)
 tstep=(1e0 1e0)
 llist=(1e-1 1e0)
 
-NOUTS=(100)
-tstep=(1e0)
-llist=(1e0)
+# NOUTS=(100)
+# tstep=(1e0)
+# llist=(1e0)
 
 #works with TOL 1e-8
 #tstep=(1e-3)
@@ -92,8 +92,10 @@ shiftlist=(1.7e-3 5.7e-4 7e-4)
 
 
 i=0
-key='haswak+lownu+boost+bz1_10'
+#key='haswak+lownu+boost+bz1_10'
 #key='haswak+lownu+4fld+bz1_10_euler'
+key='haswak'
+
 rm status_${key}.log
 
 for lval in ${llist[@]}

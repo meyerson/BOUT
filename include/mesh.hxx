@@ -160,7 +160,7 @@ class Mesh {
   //virtual dcomplex* sumY(dcomplex**&) = 0;
   //virtual BoutReal* filterY(BoutReal*& f) = 0;
   //virtual BoutReal* filterY(BoutReal*& f,bool lowpass,bool noDC ,int M0) = 0;
-  virtual int filterY(BoutReal*& f) = 0;
+  virtual int filterY(BoutReal*& f, int ymax) = 0;
   virtual int filterY(BoutReal*& f,bool lowpass,bool noDC ,int M0) = 0;
   
   virtual bool surfaceClosed(int jx) = 0; ///< Test if a surface is closed (periodic in Y)

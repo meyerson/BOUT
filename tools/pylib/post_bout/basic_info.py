@@ -2,7 +2,7 @@
 import numpy as np
 import math
 
-def basic_info(data,meta,rescale=True,rotate=False,user_peak=0):
+def basic_info(data,meta,rescale=True,rotate=False,user_peak=0,nonlinear=None):
     
     print 'in basic_info'
     #from . import read_grid,parse_inp,read_inp,show
@@ -11,7 +11,8 @@ def basic_info(data,meta,rescale=True,rotate=False,user_peak=0):
     ndims = len(dims)
     
     
-    
+    mxg = meta['MXG']['v']
+
     if ndims ==4:
         nt,nx,ny,nz = data.shape
         print nt,nx,ny
@@ -20,6 +21,7 @@ def basic_info(data,meta,rescale=True,rotate=False,user_peak=0):
 
     dc = data.mean(1).mean(1).mean(1) # there MUST be a way to indicate all axis at once
     amp = abs(data).max(1).max(1).max(1)
+    dt = meta['dt']['v']
 
     if rescale:
         amp_o = amp - dc
@@ -28,11 +30,25 @@ def basic_info(data,meta,rescale=True,rotate=False,user_peak=0):
         dc_n = dc/amp_o
         data_n = data/fourDamp
         
-        ave = {'data':data,'amp':amp,'dc':dc,'amp_o':amp_o}
+        dfdt = np.gradient(data)[0]
+        dfdt = abs(dfdt).max(1).max(1).max(1)
+
+        
+
+        ave = {'amp':amp,'dc':dc,'amp_o':amp_o,'dfdt':dfdt}
         
     else:
         print "no rescaling"
         ave = {'amp':amp,'dc':dc}
+
+    if nonlinear != None: #add nonlinear part if user provides
+        nl =  abs(nonlinear[:,mxg:-1.0*mxg,:,:]).max(1).max(1).max(1)
+        nl_norm = (nl/dfdt) *dt
+
+        ave['nl'] =nl
+        ave['nl_norm'] = nl_norm
+
+
     if rotate:
         print 'rotate stuff'
         # will need to provide some grid geometry to do this one
@@ -168,7 +184,9 @@ def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=Fal
         
         amp =  (np.sqrt(power[:,:,p['y_i'],p['z_i']])/(kz_max*ky_max)).real
     
-        phase = -np.array(np.gradient(np.squeeze(np.angle(fft_data[:,:,p['y_i'],p['z_i']],deg=False))).real)[0] #nt x nx
+        print (np.angle(fft_data[:,:,p['y_i'],p['z_i']],deg=False)).real
+
+        phase = -np.array(np.gradient(np.squeeze(np.angle(fft_data[:,:,p['y_i'],p['z_i']],deg=False)))[0].real) #nt x nx
         
         #loop over radaii
         phasenew = []

@@ -324,9 +324,12 @@ int physics_init(bool restarting)
   comms.add(Apar);
 
   if(transport) {
-    dump.add(Gamma.x,"Gammax",1);
-    dump.add(Gamma.y,"Gammay",1);
-    dump.add(Gamma.z,"Gammaz",1);
+    // dump.add(Gamma.x,"Gammax",1);
+    // dump.add(Gamma.y,"Gammay",1);
+    // dump.add(Gamma.z,"Gammaz",1);
+    dump.add(vEB.x,"vEBx",1);
+    dump.add(vEB.y,"vEBy",1);
+    dump.add(vEB.z,"vEBz",1);
   }
 
   // Add any other variables to be dumped to file

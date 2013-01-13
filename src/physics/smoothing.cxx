@@ -293,7 +293,7 @@ const Field3D lowPass_Y(const Field3D &var, int ymax)
 	buffer_y[jy] =  var[jx][jy][jz]; //x and z fixed now
       
       //filter_y = mesh->filterY(buffer_y);
-      stat = mesh->filterY(buffer_y);
+      stat = mesh->filterY(buffer_y,ymax);
 
       for(jy=0;jy<mesh->ngy;jy++) 
 	result[jx][jy][jz] = buffer_y[jy];

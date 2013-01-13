@@ -2288,11 +2288,11 @@ const Field2D BoutMesh::averageY(const Field2D &f)
 }
 
 //dcomplex* BoutMesh::sumY(dcomplex **&f) 
-int BoutMesh::filterY(BoutReal *&f){
-  bool lowpass = false; //notch filter
+int BoutMesh::filterY(BoutReal *&f,int ymax =1){
+  bool lowpass = true; //low-pass filter
   bool noDC = true;
-  int M0 = 1;
-  return filterY(f, lowpass,noDC,M0);
+  int M0 = ymax;
+  return filterY(f,lowpass,noDC,M0);
 }
 
 //BoutReal* BoutMesh::filterY(BoutReal *&f)
@@ -2331,14 +2331,23 @@ int BoutMesh::filterY(BoutReal *&f, bool lowpass,bool noDC,int M0)
   if ( rank == 0) { 
     rfft(rd, ncy, fy); 
    
-    for(int jy=M0+1;jy<=ncy/2;jy++){
-      if (lowpass) //lowpass filter
-	   fy[jy] = 0.0;
-      else //notch filter
+    // for(int jy=M0+1;jy<=ncy/2;jy++){
+    //   if (lowpass) //lowpass filter
+    // 	   fy[jy] = 0.0;
+    //   else //notch filter
+    // 	if(jy != M0) 
+    // 	  fy[jy] = 0.0;
+    // }
+    
+    if (lowpass)
+      for(int jy=M0+1;jy<=ncy/2;jy++)
+	fy[jy] = 0.0;
+    else //notch filter
+      for(int jy=1;jy<=ncy/2;jy++)
 	if(jy != M0) 
 	  fy[jy] = 0.0;
-    }
-    
+
+
     if (noDC) //remove DC comp,just in case better to use filtering in z, if interest in just removing DC
       fy[0] = 0; 
 	
@@ -2366,7 +2375,7 @@ BoutSurfaceIter::BoutSurfaceIter(BoutMesh* mi)
 int BoutSurfaceIter::ysize()
 {
   int xglobal = m->XGLOBAL(xpos);
-  int yglobal = m->YGLOBAL(MYG);
+  int mglobal = m->YGLOBAL(MYG);
   
   if((xglobal < m->ixseps_lower) && ((yglobal <= m->jyseps1_1) || (yglobal > m->jyseps2_2))) {
     // Lower PF region

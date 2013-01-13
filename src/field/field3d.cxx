@@ -1857,7 +1857,6 @@ BoutReal Field3D::max(bool allpe) const
 
   return result;
 }
-
 ///////////////////// FieldData VIRTUAL FUNCTIONS //////////
 
 int Field3D::getData(int x, int y, int z, void *vptr) const
@@ -2815,6 +2814,57 @@ bool finite(const Field3D &f)
   return true;
 }
 
+// BoutReal Field3D::patchmax(bool allpe) const
+// {
+// #ifdef CHECK
+//   if(block == NULL)
+//     throw BoutException("Field3D: patchmax() method on empty data");
+//   if(allpe) {
+//     msg_stack.push("Field3D::patchMax() over all PEs");
+//   }else
+//     msg_stack.push("Field3D::patchMax()");
+// #endif
+  
+//   BoutReal result = block->data[0][0][0];
+  
+//   #pragma omp parallel 
+//   {
+//     BoutReal r = 0;
+//     BoutReal rb = 0;
+//     #pragma omp for nowait
+//     for(int j=0;j<mesh->ngx*mesh->ngy*mesh->ngz;j++){
+//       rb = block->data[0][0][j];
+//       if (!finite(rb))
+// 	rb = 0;
+   
+//       if(rb > r)
+//         r = rb;
+// 	    }
+//     #pragma omp critical
+//     {
+//       output.write("filter: %d\n", r)
+//       if(finite(r))
+// 	if(r > result){
+// 	  output.write("filter: %d\n", r);
+// 	  result = r;
+// 	}
+//     }
+//   }
+
+//   if(allpe) {
+//     // MPI reduce
+//     BoutReal localresult = result;
+//     MPI_Allreduce(&localresult, &result, 1, MPI_DOUBLE, MPI_MAX, BoutComm::get());
+//   }
+  
+// #ifdef CHECK
+//   msg_stack.pop();
+// #endif
+  
+//   return result;
+// }
+
+
 const Field3D yfilter(const Field3D &var, int N0)
 {
   //return 0;
@@ -2872,3 +2922,57 @@ const Field3D yfilter(const Field3D &var, int N0)
   return result;
 }
 
+BoutReal Field3D::patchmax(bool allpe) const
+{
+#ifdef CHECK
+  if(block == NULL)
+    throw BoutException("Field3D: patchmax() method on empty data");
+  if(allpe) {
+    msg_stack.push("Field3D::patchMax() over all PEs");
+  }else
+    msg_stack.push("Field3D::patchMax()");
+#endif
+  
+  BoutReal result;// = block->data[0][0][0];
+  
+  #pragma omp parallel 
+  {
+    BoutReal r = 0;
+    BoutReal rb = 0;
+    #pragma omp for nowait
+    for(int j=0;j<mesh->ngx*mesh->ngy*mesh->ngz;j++){
+      if (finite(block->data[0][0][j]))
+	rb = block->data[0][0][j];
+      else
+	rb =0;
+      
+      
+
+      if(rb > r)
+        r = rb;
+    }
+    
+    #pragma omp critical
+    {
+      //output.write("r: %g\n", r);
+      if(r > result){
+	//output.write("r: %g\n", r);
+	result = r;
+      }
+    }
+    
+  }
+  
+  if(allpe) {
+    // MPI reduce
+    BoutReal localresult = result;
+    MPI_Allreduce(&localresult, &result, 1, MPI_DOUBLE, MPI_MAX, BoutComm::get());
+  }
+  
+#ifdef CHECK
+  msg_stack.pop();
+#endif
+  
+  return result;
+  //return 0;
+}

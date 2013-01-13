@@ -30,6 +30,7 @@ from matplotlib.ticker import ScalarFormatter, FormatStrFormatter, MultipleLocat
 class LinResDraw(LinRes):
     def __init__(self,alldb):
         LinRes.__init__(self,alldb)
+
        
     
  
@@ -828,7 +829,7 @@ class LinResDraw(LinRes):
   
         adj = fig2.subplots_adjust(hspace=0.4,wspace=0.4)
         fig2.suptitle('Dominant mode '+ comp+' for  '+ field)
-        props = dict( alpha=0.8, edgecolors='none' )
+        props = dict( alpha=0.8, edgecolors='none')
         
         
         allcurves = fig1.add_subplot(1,1,1)
