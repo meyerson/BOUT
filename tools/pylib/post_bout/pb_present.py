@@ -99,6 +99,7 @@ class LinResPresent(LinResDraw,NLinResDraw):
       for elem in self.meta['evolved']['v']:
          s.plotmodes(pp,yscale='symlog',comp='phase',linestyle='.',field=elem,summary=False)
          s.plotmodes(pp,yscale='symlog',field=elem,summary=False)
+         s.plotmodes(pp,yscale='symlog',field=elem,comp='gamma_i',summary=False)
 
       #s.plotmodes(pp,yscale='symlog',summary=False)
       

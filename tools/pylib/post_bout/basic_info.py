@@ -187,16 +187,22 @@ def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=Fal
         print (np.angle(fft_data[:,:,p['y_i'],p['z_i']],deg=False)).real
 
         phase = -np.array(np.gradient(np.squeeze(np.angle(fft_data[:,:,p['y_i'],p['z_i']],deg=False)))[0].real) #nt x nx
+
+        gamma_instant = np.array(np.gradient(np.log(np.squeeze(amp)))[0])
         
         #loop over radaii
         phasenew = []
+        gammanew =[]
         from scipy.interpolate import interp2d,interp1d
         from scipy import interp
-        for phase_r in np.transpose(phase):
+        gamma_t = np.transpose(gamma_instant)
+        for i ,phase_r in enumerate(np.transpose(phase)):
+            gamma_r = gamma_t[i]
             jumps = np.where(abs(phase_r) > np.pi/32)
             print jumps
             if len(jumps[0]) != 0:
-                        
+                
+                
                 all_pts = np.array(range(0,nt))
                 good_pts = (np.where(abs(phase_r) < np.pi/3))[0] 
                 #print good_pts,good_pts
@@ -205,13 +211,18 @@ def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=Fal
                 #phasenew.append(f(all_pts))
                 try:
                     phase_r = (interp(all_pts,good_pts,phase_r[good_pts]))
+                    gamma_r = (interp(all_pts,good_pts,gamma_r[good_pts]))
                 except:
                     'no phase smoothing'
             phasenew.append(phase_r)
+            gammanew.append(gamma_r)
 
         phase = np.transpose(phasenew)/dt    
+        
+        gamma_i = np.transpose(gammanew)/dt
        
-       
+      
+        
 
         amp_n = (np.sqrt(power[:,:,p['y_i'],p['z_i']])/(kz_max*ky_max*amp)).real
         #amp_n = dom_mode[i]['amp_n'] #nt x nx
@@ -301,10 +312,11 @@ def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=Fal
         # k = [[p['y_i'],p['z_i']],
         #      [(float(p['y_i'])/(hthe0_n_x)),
         #       2*math.pi*float(p['z_i'])/L_norm]]
+        
 
         dom_mode_db.append({'modeid':i,'k':k[1],'gamma':gamma,'freq': freq,
                             'amp': amp,'amp_n':amp_n,'phase':phase,'mn':k[0],
-                            'nt':nt,'k_r':k_r[1]})
+                            'nt':nt,'k_r':k_r[1],'gamma_i':gamma_i})
 
     
     return dom_mode_db

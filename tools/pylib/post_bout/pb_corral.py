@@ -102,9 +102,12 @@ def corral(cached=True,refresh=False,debug=False,IConly=1,
 class LinRes(object):
    def __init__(self,alldb):
       #self.raw = data
-      self.db = alldb
+      self.db = alldb['modes'] #
+      
+      self.mode_db = alldb['modes']
+      self.ave_db = alldb['ave']
 
-      #self.modekeys = data[0]['fields']['Ni']['modes'][0].keys()
+            #self.modekeys = data[0]['fields']['Ni']['modes'][0].keys()
       print len(alldb)
       
       self.meta = np.array(ListDictKey(alldb,'meta'))[0]
@@ -119,6 +122,7 @@ class LinRes(object):
       self.maxN =[]
 
       self.ave = np.array(ListDictKey(alldb,'ave'))
+
       #[self.cxx.append(read_cxx(path=elem,boutcxx='2fluid.cxx.ref')) for elem in self.path]
       #[self.maxN.append(findlowpass(elem)) for elem in self.cxx]
       [self.cxx.append(read_cxx(path=elem,boutcxx='physics_code.cxx.ref')) for elem in self.path]
@@ -163,6 +167,7 @@ class LinRes(object):
       self.dc= []
       #self.freq = np.array(ListDictKey(alldb,'k'))
       self.gamma = np.array(ListDictKey(alldb,'gamma'))
+      self.gamma_i = np.array(ListDictKey(alldb,'gamma_i'))
      
       self.freq  = np.array(ListDictKey(alldb,'freq'))
       

@@ -115,12 +115,12 @@ plt.close(fig)
 from boutdata import collect
 from boututils import savemovie,showdata
 from post_bout import normed as n 
-ni = n.normed(collect("Ni"))
-rho = n.normed(collect("rho"))
-ddtni = n.normed(collect("ddtNi"))
-ddtrho = n.normed(collect("ddtrho"))
-jpar = n.normed(collect("jpar"))
-phi = n.normed(collect("phi"))
+ni,ni_amp = n.normed(collect("Ni",xind=[2,2]))
+rho,rho_amp = n.normed(collect("rho",xind=[2,2]))
+ddtni,x = n.normed(collect("ddtNi",xind=[2,2]))
+ddtrho,x = n.normed(collect("ddtrho",xind=[2,2]))
+jpar,jpar_amp = n.normed(collect("jpar",xind=[2,2]))
+phi,phi_amp = n.normed(collect("phi",xind=[2,2]))
 
 
 jparLtoC
@@ -129,13 +129,13 @@ jparC2
 jparW3
 jparU1
 
-showdata(ddtni[:,2,:,:])
-showdata(jpar[:,2,:,:])
-showdata(phi[:,2,:,:])
-showdata(rho[:,2,:,:])
+showdata(ddtni[:,0,:,:])
+showdata(jpar[:,0,:,:])
+showdata(phi[:,0,:,:])
+showdata(rho[:,0,:,:])
 
-showdata(ddtrho[:,2,:,:])
-showdata(ni[:,2,:,:])
+showdata(ddtrho[:,0,:,:])
+showdata(ni[:,0,:,:])
 
 showdata(ddtrho[:,2,:,:])
 ddtni = collect("ddtNi")
