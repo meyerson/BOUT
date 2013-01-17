@@ -94,7 +94,7 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
 
     #pick up some derived variabales as needed
     for  i,active in enumerate(meta['collected']):
-        data[active] = collect(active,xind=[2,2],path=path)
+        data[active] = collect(active,path=path)
 
     for i,active in enumerate(meta['evolved']['v']): #loop over the fields
         print path, active
@@ -168,13 +168,13 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
     #rebuild with all the relevant modes
     output = OrderedDict()
 
-    output['meta'] = meta
-    output['ave'] = {}
+    #output['meta'] = meta
+    #output['ave'] = {}
     allmodes_db =[]
-
-
     
-    for i,active in enumerate(meta['evolved']['v']): 
+    all_fields = list(set(meta['evolved']['v']+meta['collected']))
+
+    for i,active in enumerate(all_fields): 
         print 'once again', active
         print all_modes
         print meta['ys_opt']['v'], meta['zs_opt']['v']
@@ -187,25 +187,9 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
         else:
             modes_db,ave = basic_info(data[active],meta,
                                       user_peak = all_modes) 
-        
-        
-        # if transform:
-        #     print all_modes
-        #     modes_db_r,ave_r = basic_info(data_r[active],meta,
-        #                               user_peak = all_modes) #for now dat
-       #     a_r must maintain same shape as data
-        
-        # if debug:
-        #     return modes_db_r,modes_db
-        #print modes_db_r.__class__,len(modes_db_r)
-        # if transform:
-        #     for j,x in enumerate(modes_db_r):
-        #         x['amp_r'] = modes_db_r[j]['amp']
-        #         x['phase_r'] = modes_db_r[j]['phase']
-        #         x['kr']= modes_db_r[j]['k']
-        #         x['freq_r']= modes_db_r[j]['freq']
-        #         x['gamma_r'] =modes_db_r[j]['gamma']
-        #     allmodes_db.append(modes_db_r)
+            
+        #output[active] = {}
+
         for j,x in enumerate(modes_db):
             print 'j: ',j
             x['field'] = active
@@ -223,7 +207,7 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
             x['rho_s'] = meta['rho_s']['v']
             x['maxZ'] = maxZ
 
-            x['ave'] = ave
+            x['ave'] = ave #yes do this to keep things flat
             #for now if there was rotation just loop a few keys
             x['transform'] = transform
             if transform:
@@ -253,8 +237,10 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
                 x['nt'] = nt
                 amp = x['amp'] #2d array ntt x nx
                 phase = x['phase']
+                gamma = x['gamma_i']
                 ampnew=[] #will be a nx x nt 2d array
                 phasenew =[]
+                gammanew =[]
                 for mode_r in np.transpose(amp):
                     f = interp1d(xx,mode_r)
                     ampnew.append(f(xxnew))
@@ -262,12 +248,18 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
                 for mode_r in np.transpose(phase):
                     f = interp1d(xx,mode_r)
                     phasenew.append(f(xxnew))
+
+                for mode_r in np.transpose(gamma):
+                    f = interp1d(xx,mode_r)
+                    gammanew.append(f(xxnew))
+   
                  
                 x['amp'] = np.transpose(ampnew)
                 x['phase'] = np.transpose(phasenew)
+                x['gamma_i'] = np.transpose(gammanew)
                 print x['phase'].shape
 
-        output['ave'][active] = {'ave':ave}
+        output[active] = {'ave':ave,'meta':meta}
         allmodes_db.append(modes_db)
  
 
@@ -278,7 +270,9 @@ def save(path='/home/cryosphere/BOUT/examples/Q3/data_short',
     
     pickle_db = open(filename_db,'wb')
 
-    pickle.dump(allmodes_db,pickle_db)
+    pickle.dump(allmodes_db,pickle_db) #mode info
+    pickle.dump(output,pickle_db) #average and meta info 
+
     #pickle.dump(output,pickle_db) #can I do this?
 
     pickle_db.close()
@@ -313,11 +307,13 @@ def read(path='.',filename='post_bout.db',trysave=True,
         #pkl_file = open(filepath, 'rb')
         pkl_file_db = open(filepath_db, 'rb')
         #output = pickle.load(pkl_file)
-        output_db = pickle.load(pkl_file_db)
+        #first in, first out
+        mode_db = pickle.load(pkl_file_db)
+        ave_db = pickle.load(pkl_file_db)
         
         meta = metadata(path=path)
         #update the meta data incase read_inp was altered . . .
-        for i,x in enumerate(output_db):
+        for i,x in enumerate(mode_db):
             x['dz']=meta['dz'] 
             x['IC']=meta['IC']
             x['L']=meta['L']
@@ -365,7 +361,8 @@ def read(path='.',filename='post_bout.db',trysave=True,
                 x['gamma'] = [gamma_est,f0,sig1,res]
     
         pkl_file_db.close()
-        return output_db
+        #return output_db
+        return mode_db, ave_db
     else:
         return 0
 

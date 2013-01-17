@@ -2,15 +2,21 @@ import post_bout as pb
 meta
 
 
+s = subset(a,'dz',[0.1])
+
 logname='status_hlmk_3D.log'
 logname='status_haswak.log'
 logname='status_hlmk_precon.log'
-from post_bout import pb_corral
+from post_bout import pb_corral, subset
 import post_bout as pb
 from pb_present import LinResPresent
-a = pb.corral(refresh=False,IConly=0,debug=False,logname=logname)
+from ListDict import *
+a = pb.corral(refresh=True,IConly=0,debug=False,logname=logname)
+
 y = LinResPresent(a.db)
 y.show(debug=False,pdfname='output_haswak.pdf')
+
+a,b = pb.corral(refresh=False,IConly=0,debug=True,logname=logname)
 
 y.show(debug=False,pdfname='output_hlmk_3D.pdf')
 
@@ -18,6 +24,7 @@ from post_bout import pb_corral
 import post_bout as pb
 from pb_present import LinResPresent
 a = pb.corral(refresh=False,skew=True,IConly=0,debug=False)
+xx,yy = pb.corral(refresh=False)
 y = LinResPresent(a.db)
 y.show(debug=False,pdfname='output_haswak_lownu_bz.pdf')
 
@@ -26,12 +33,15 @@ logname='status_hlmk_3D.log'
 from post_bout import pb_corral
 import post_bout as pb
 from pb_present import LinResPresent
-a = pb.corral(refresh=False,skew=True,IConly=0,debug=False,logname=logname)
+a = pb.corral(refresh=True,skew=True,IConly=0,debug=False,logname=logname)
 from matplotlib.backends.backend_pdf import PdfPages
 pp = PdfPages('nl.pdf')
 y = LinResPresent(a.db)
 y.plotnlrhs(pp)
 pp.close()
+
+
+filename='post_bout.db'
 
 
 import post_bout as pb

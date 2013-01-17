@@ -43,3 +43,23 @@ def ListDictFilt(input,key,valuelist):
 
 def copyf(dictlist, key, valuelist):
       return [dictio for dictio in dictlist if dictio[key] in valuelist]
+
+
+
+
+
+
+# def subset(obj):
+#     #def __init__(self,alldb,key,valuelist,model=False):
+#     selection = ListDictFilt(obj.mode_db,obj.key,valuelist)
+#     if len(selection) !=0:
+#         LinRes.__init__(obj,selection)
+#         self.skey = key
+#         if model==True:
+#             self.model()
+#         else:
+#             LinRes.__init__(self,alldb)
+#             if model==True:
+#                 self.model()
+   
+            

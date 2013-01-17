@@ -854,7 +854,7 @@ class LinResDraw(LinRes):
           #find the "biggest" mode for this dz
             d = data[:,s.nt[0]-1,:] #nmode X nx array
          #d = s.gamma[:,2,:]
-            where = d == d.max()
+            where = d == np.nanmax(d)
             z = where.nonzero() #mode index and n index
             imax = z[0][0]
             #xi_max = z[1][0]

@@ -1,6 +1,7 @@
 from pb_draw import LinResDraw,subset
 from pb_corral import LinRes
 from pb_nonlinear import NLinResDraw
+from pb_transport import Transport
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -31,10 +32,11 @@ import multiprocessing
 import subprocess 
 #uses  LinResDraw to make a pdf
 
-class LinResPresent(LinResDraw,NLinResDraw):
+class LinResPresent(LinResDraw,NLinResDraw,Transport):
    def __init__(self,alldb):
       LinResDraw.__init__(self,alldb)
       NLinResDraw.__init__(self,alldb)
+      Transport.__init__(self,alldb)
 
    def show(self,filter =True,quick=False,pdfname='output2.pdf',debug=False,spectrum_movie=False):
       colors = ['b','g','r','c','m','y','k','b','g','r','c','m','y','k']
@@ -94,12 +96,18 @@ class LinResPresent(LinResDraw,NLinResDraw):
       
       if self.meta['nonlinear']['v'] == 'true':
          self.plotnlrhs(pp)
-
+ 
+      if self.meta['transport']['v'] == 'true':
+         self.plotnlrms(pp)
 
       for elem in self.meta['evolved']['v']:
          s.plotmodes(pp,yscale='symlog',comp='phase',linestyle='.',field=elem,summary=False)
          s.plotmodes(pp,yscale='symlog',field=elem,summary=False)
-         s.plotmodes(pp,yscale='symlog',field=elem,comp='gamma_i',summary=False)
+         print elem
+         try:
+            s.plotmodes(pp,yscale='symlog',field=elem,comp='gamma_i',summary=False)
+         except:
+            print 'gamma_i plot for '+elem+' failed'
 
       #s.plotmodes(pp,yscale='symlog',summary=False)
       

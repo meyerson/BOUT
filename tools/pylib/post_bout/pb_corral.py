@@ -62,14 +62,15 @@ def corral(cached=True,refresh=False,debug=False,IConly=1,
   
    #if done:
      
-   alldata = []
-   alldb =[]
+   all_ave = []
+   all_modes =[]
    print 'last_one: '
    for i,val in enumerate(runs):
       print val
-      db = post_bout.read(path=val)
+      mode_db,ave_db = post_bout.read(path=val)
       #alldata.append(array)
-      alldb.append(db)
+      all_modes.append(mode_db)
+      all_ave.append(ave_db)
          
          #build the end database
          
@@ -80,13 +81,15 @@ def corral(cached=True,refresh=False,debug=False,IConly=1,
    def islist(input):
       return isinstance(input,list)
 
-   alldb = filter(islist,alldb)
+   all_modes = filter(islist,all_modes)
+   #all_ave = filter(islist,all_ave)
 
-   alldb = sum(alldb,[])
+   #alldb = sum(alldb,[])
    #alldata = np.array(alldata)
-   
+   all_modes = sum(all_modes,[])
+
    nt = []
-   for mode in alldb:
+   for mode in all_modes:
       nt.append(len(mode['amp']))
       nt = [max(nt)]
    
@@ -95,66 +98,68 @@ def corral(cached=True,refresh=False,debug=False,IConly=1,
    i = 0
     
    if debug:
-       return alldb
+       return all_modes,all_ave
    else:
-       return LinRes(alldb)
+       return LinRes(all_modes)
    
 class LinRes(object):
-   def __init__(self,alldb):
-      #self.raw = data
-      self.db = alldb['modes'] #
-      
-      self.mode_db = alldb['modes']
-      self.ave_db = alldb['ave']
+    def __init__(self,all_modes):
 
+        
+        self.mode_db = all_modes
+        self.db = all_modes
+        #self.ave_db = all_ave
+        
+        alldb = self.db
             #self.modekeys = data[0]['fields']['Ni']['modes'][0].keys()
-      print len(alldb)
+        #print len(alldb)
+        
+        self.meta = np.array(ListDictKey(self.db,'meta'))[0]
       
-      self.meta = np.array(ListDictKey(alldb,'meta'))[0]
-      
-      self.keys = alldb[0].keys()
+
+        self.keys = (self.mode_db)[0].keys()
       #self.avekeys = data[0]['fields']['Ni']['ave'].keys()
       
       #self.nrun = len(alldb) #number of runs
       
-      self.path= np.array(ListDictKey(alldb,'path'))
-      self.cxx =[]
-      self.maxN =[]
-
-      self.ave = np.array(ListDictKey(alldb,'ave'))
+        self.path= np.array(ListDictKey(self.db,'path'))
+        self.cxx =[]
+        self.maxN =[]
+        
+        self.ave = np.array(ListDictKey(alldb,'ave'))
 
       #[self.cxx.append(read_cxx(path=elem,boutcxx='2fluid.cxx.ref')) for elem in self.path]
       #[self.maxN.append(findlowpass(elem)) for elem in self.cxx]
-      [self.cxx.append(read_cxx(path=elem,boutcxx='physics_code.cxx.ref')) for elem in self.path]
-      
-      self.maxZ = np.array(ListDictKey(alldb,'maxZ'))
-      self.maxN = self.maxZ
+        [self.cxx.append(read_cxx(path=elem,boutcxx='physics_code.cxx.ref')) for elem in self.path]
+        
+        self.maxZ = np.array(ListDictKey(alldb,'maxZ'))
+        self.maxN = self.maxZ
       #self.maxN = findlowpass(self.cxx) #low pass filt from .cxx
 
-      self.nx = np.array(ListDictKey(alldb,'nx'))[0]
-      self.ny = np.array(ListDictKey(alldb,'ny'))[0]
-      self.nz = np.array(ListDictKey(alldb,'nz'))[0]
+        self.nx = np.array(ListDictKey(alldb,'nx'))[0]
+        self.ny = np.array(ListDictKey(alldb,'ny'))[0]
+        self.nz = np.array(ListDictKey(alldb,'nz'))[0]
 
       #self.nt = int(data[0]['meta']['NOUT']['v']+1)
-      self.Rxy = np.array(ListDictKey(alldb,'Rxy'))
-      self.Rxynorm = np.array(ListDictKey(alldb,'Rxynorm'))
-      self.nt = np.array(ListDictKey(alldb,'nt'))
+        self.Rxy = np.array(ListDictKey(alldb,'Rxy'))
+        self.Rxynorm = np.array(ListDictKey(alldb,'Rxynorm'))
+        self.nt = np.array(ListDictKey(alldb,'nt'))
 
      
-      self.dt = np.array(ListDictKey(alldb,'dt')) 
-      self.nfields = np.array(ListDictKey(alldb,'nfields')) 
+        self.dt = np.array(ListDictKey(alldb,'dt')) 
+        self.nfields = np.array(ListDictKey(alldb,'nfields')) 
 
-      self.field = np.array(ListDictKey(alldb,'field'))
-      
-      self.k = np.array(ListDictKey(alldb,'k'))
-      self.k_r = np.array(ListDictKey(alldb,'k_r'))
+        self.field = np.array(ListDictKey(alldb,'field'))
+        
+        self.k = np.array(ListDictKey(alldb,'k'))
+        self.k_r = np.array(ListDictKey(alldb,'k_r'))
 
-      self.mn = np.array(ListDictKey(alldb,'mn'))
+        self.mn = np.array(ListDictKey(alldb,'mn'))
 
       #return ListDictKey(alldb,'phase')
 
       #self.phase = np.array(ListDictKey(alldb,'phase'))
-      self.phase = ListDictKey(alldb,'phase')
+        self.phase = ListDictKey(alldb,'phase')
 
       # self.amp= np.array(ListDictKey(alldb,'amp'))
       # self.amp_n=np.array(ListDictKey(alldb,'amp_n'))
@@ -162,36 +167,36 @@ class LinRes(object):
       # self.freq = np.array(ListDictKey(alldb,'k'))
       # self.gamma = np.array(ListDictKey(alldb,'gamma'))
       
-      self.amp= ListDictKey(alldb,'amp')
-      self.amp_n = ListDictKey(alldb,'amp_n')
-      self.dc= []
+        self.amp= ListDictKey(alldb,'amp')
+        self.amp_n = ListDictKey(alldb,'amp_n')
+        self.dc= []
       #self.freq = np.array(ListDictKey(alldb,'k'))
-      self.gamma = np.array(ListDictKey(alldb,'gamma'))
-      self.gamma_i = np.array(ListDictKey(alldb,'gamma_i'))
+        self.gamma = np.array(ListDictKey(alldb,'gamma'))
+        self.gamma_i = np.array(ListDictKey(alldb,'gamma_i'))
      
-      self.freq  = np.array(ListDictKey(alldb,'freq'))
-      
-      self.IC = np.array(ListDictKey(alldb,'IC'))
-      self.dz = np.array(ListDictKey(alldb,'dz'))
-      self.meta['dz'] = np.array(list(set(self.dz).union()))
+        self.freq  = np.array(ListDictKey(alldb,'freq'))
+        
+        self.IC = np.array(ListDictKey(alldb,'IC'))
+        self.dz = np.array(ListDictKey(alldb,'dz'))
+        self.meta['dz'] = np.array(list(set(self.dz).union()))
 
-      self.nmodes = self.dz.size
+        self.nmodes = self.dz.size
     
-      self.MN = np.array(ListDictKey(alldb,'MN'))
+        self.MN = np.array(ListDictKey(alldb,'MN'))
       #self.MN = np.float32(self.mn) 
       #self.MN[:,1] = self.mn[:,1]/self.dz
-      self.nrun =  len(set(self.path).union())
-      self.L = np.array(ListDictKey(alldb,'L'))
+        self.nrun =  len(set(self.path).union())
+        self.L = np.array(ListDictKey(alldb,'L'))
       #self.C_s = 
-      self.modeid = np.array(ListDictKey(alldb,'modeid'))
+        self.modeid = np.array(ListDictKey(alldb,'modeid'))
 
-      self.trans = np.array(ListDictKey(alldb,'transform'))
-
-      if np.any(self.trans):
-          self.phase_r = ListDictKey(alldb,'phase_r')
-          self.gamma_r = np.array(ListDictKey(alldb,'gamma_r'))
-          self.amp_r = ListDictKey(alldb,'amp_r')
-          self.freq_r = np.array(ListDictKey(alldb,'freq_r'))
+        self.trans = np.array(ListDictKey(alldb,'transform'))
+      
+        if np.any(self.trans):
+            self.phase_r = ListDictKey(alldb,'phase_r')
+            self.gamma_r = np.array(ListDictKey(alldb,'gamma_r'))
+            self.amp_r = ListDictKey(alldb,'amp_r')
+            self.freq_r = np.array(ListDictKey(alldb,'freq_r'))
           
       # try:
       #     self.model(haswak=False) #
@@ -199,10 +204,10 @@ class LinRes(object):
       #     self.M = 0
 
       #try:
-      try: #analytic model based on simple matrix
-          self.models=[]
+        try: #analytic model based on simple matrix
+            self.models=[]
           #self.models.append(_model(self)) #create a list to contain models
-          self.models.append(_model(self,haswak=True,name='haswak')) #another model
+            self.models.append(_model(self,haswak=True,name='haswak')) #another model
           #self.models.append(_model(self,haswak=True,name='haswak_0',m=0))
           # for Ln in range(10):
           #     Lval = 10**((.2*Ln -1)/10)
@@ -212,28 +217,28 @@ class LinRes(object):
           #     self.models.append(_model(self,varL=True,name='varL'+str(Lval),Lval=Lval,haswak=True))
           
 
-      except:
-          self.M = 0
-
-      try: #analytic models based on user defined complex omega
-          self.ref=[]
-          self.ref.append(_ref(self))
+        except:
+            self.M = 0
+          
+        try: #analytic models based on user defined complex omega
+            self.ref=[]
+            self.ref.append(_ref(self))
           #self.ref.append(_ref(self,haswak=False,name='drift'))
  #demand a complex omega to compare
           #self.ref.append(_ref(self,haswas=True,name='haswak'))
-      except:
-          self.ref =0
+        except:
+            self.ref =0
      # self.models.append(_model(self,haswak2=True,name='haswak2')) 
       
       # except:
       #     print 'FAIL'
    
-   def _amp(self,tind,xind):
+    def _amp(self,tind,xind):
       #first select modes that actually have valid (tind,xind)
       #indecies
       #s = subset(self.db,'modeid',modelist)
-      return np.array([self.amp[i][tind,xind] 
-                       for i in range(self.nmodes)])
+        return np.array([self.amp[i][tind,xind] 
+                         for i in range(self.nmodes)])
    
    
    # def model(self,field='Ni',plot=False,haswak=False):
@@ -288,12 +293,12 @@ class LinRes(object):
    #       self.eigvec.append(eigvec)
    #       self.omegaA.append(omega)
 
-   class __model__(object):
-       def __init__(self):
-           self.M = 0
+    class __model__(object):
+        def __init__(self):
+            self.M = 0
        
 class subset(LinRes):
-   def __init__(self,alldb,key,valuelist,model=False):
+    def __init__(self,alldb,key,valuelist,model=False):
       selection = ListDictFilt(alldb,key,valuelist)
       if len(selection) !=0:
          LinRes.__init__(self,selection)
@@ -304,6 +309,37 @@ class subset(LinRes):
          LinRes.__init__(self,alldb)
          if model==True:
             self.model()
+
+# class subset(originClass):
+#     def __init__(self,alldb,key,valuelist,model=False):
+#       selection = ListDictFilt(alldb,key,valuelist)
+#       if len(selection) !=0:
+#          originClass.__init__(self,selection,input_obj.ave_db)
+#          self.skey = key
+#          if model==True:
+#             self.model()
+#       else:
+#          origin.__init__(self,alldb)
+#          if model==True:
+#             self.model()
+
+#not sure if this is the best way . . . 
+
+
+# class subset(object):  
+#     def __init__(self,input_obj,key,valuelist,model=False):
+#         selection = ListDictFilt(input_obj.mode_db,key,valuelist)
+#         if len(selection) !=0:
+#             import copy
+#             self = copy.copy(input_obj)
+#             self.__init__(selection,input_obj.ave_db)
+#             self.skey = key
+#             if model==True:
+#                 self.model()
+#         else:
+#             self = input_obj
+#             if model==True:
+#                 self.model()
 
 class _ref(object): #NOT a derived obj, just takes one as a var
     def __init__(self,input_obj,name='haswak',haswak=True):

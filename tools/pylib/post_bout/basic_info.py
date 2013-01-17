@@ -30,6 +30,7 @@ def basic_info(data,meta,rescale=True,rotate=False,user_peak=0,nonlinear=None):
         dc_n = dc/amp_o
         data_n = data/fourDamp
         
+        print data.shape
         dfdt = np.gradient(data)[0]
         dfdt = abs(dfdt).max(1).max(1).max(1)
 
@@ -180,11 +181,11 @@ def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=Fal
 
     #look at each mode annd pull out some usefull linear measures
     for i,p in enumerate(net_peak):
-        print i,p['y_i'],p['z_i'],fft_data.shape,fft_data[:,:,p['y_i'],p['z_i']].shape
+       # print i,p['y_i'],p['z_i'],fft_data.shape,fft_data[:,:,p['y_i'],p['z_i']].shape
         
         amp =  (np.sqrt(power[:,:,p['y_i'],p['z_i']])/(kz_max*ky_max)).real
     
-        print (np.angle(fft_data[:,:,p['y_i'],p['z_i']],deg=False)).real
+        #print (np.angle(fft_data[:,:,p['y_i'],p['z_i']],deg=False)).real
 
         phase = -np.array(np.gradient(np.squeeze(np.angle(fft_data[:,:,p['y_i'],p['z_i']],deg=False)))[0].real) #nt x nx
 
@@ -199,7 +200,7 @@ def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=Fal
         for i ,phase_r in enumerate(np.transpose(phase)):
             gamma_r = gamma_t[i]
             jumps = np.where(abs(phase_r) > np.pi/32)
-            print jumps
+            #print jumps
             if len(jumps[0]) != 0:
                 
                 

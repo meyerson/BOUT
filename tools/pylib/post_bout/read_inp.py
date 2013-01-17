@@ -130,7 +130,12 @@ def metadata(inpfile='BOUT.inp',path ='.',v=False):
     collected =[]
     ICscale = []
    
-    fieldkeys = ['[Ni]','[jpar]','[Te]','[Ti]','[Vi]','[rho]','[Ajpar]','[Apar]','[vEB]']
+    fieldkeys = ['[Ni]','[Te]','[Ti]','[Vi]','[rho]',
+                 '[Ajpar]','[Apar]','[vEBx]','[vEBy]','[vEBz]',
+                 '[jpar]','[phi]']
+    
+
+   
     
     defaultIC = float(inp['[All]'].get('scale',0.0))
 
@@ -147,12 +152,18 @@ def metadata(inpfile='BOUT.inp',path ='.',v=False):
               evolved.append(section.strip('[]'))
               ICscale.append(float(inp[section].get('scale',defaultIC)))
             
-          if inp[section].get('collect','True').lower().strip() == 'true':
+          if inp[section].get('collect','False').lower().strip() == 'true':
              collected.append(section.strip('[]'))
-              
-          
-   
+    
+        
+    
 
+    try:         
+       if inp['[physics]'].get('transport','False').lower().strip() == 'true':
+          vEBstr = ['vEBx','vEBy','vEBz','vEBrms']     
+          [collected.append(item) for item in vEBstr]
+    except:
+       print 'no [physics] key'
                 
     meta = OrderedDict()
     
