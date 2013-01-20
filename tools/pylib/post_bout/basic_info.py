@@ -230,7 +230,10 @@ def fft_info(data,user_peak,dimension=[3,4],rescale=False,wavelet=False,show=Fal
    
         #let just look over the nx range
         #lnamp = np.log(amp[nt/2:,2:-2])
-        lnamp = np.log(amp[nt/2:,:])
+        try:
+            lnamp = np.log(amp[nt/2:,:])
+        except:
+            print 'some log(0) stuff in basic_info'
 
         t = dt*np.array(range(nt)) #dt matters obviouslyww
         r = np.polyfit(t[nt/2:],lnamp,1,full=True)

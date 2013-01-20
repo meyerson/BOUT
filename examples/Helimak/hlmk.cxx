@@ -264,6 +264,7 @@ int physics_init(bool restarting)
   DXRxy = DDX(Rxy);
   gradNi0 = DDX(Ni0);
   
+  output.write("mesh->Bxy = %e\n", mesh->Bxy[2][2]);
   /**************** SET EVOLVING VARIABLES *************/
 
   // Tell BOUT++ which variables to evolve

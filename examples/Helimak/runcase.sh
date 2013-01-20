@@ -51,7 +51,7 @@ tstep=(1e2 1e-1 1e1 1e-1 1e-1 5e-1) #bz_1_10 steps
 llist=(1e-3 5e-2 1e-2 5e-1 1e-1 1e0) #bz1_10
 
 NOUTS=(200 200)
-tstep=(1e0 1e0)
+tstep=(1e-3 1e-3)
 llist=(1e-1 1e0)
 
 # NOUTS=(100)

@@ -16,7 +16,7 @@ NOUT = 100       # number of time-steps
 TIMESTEP = 5e2
 
 archive = 100
-restart = false
+restart = true
 boost = false
 
 
@@ -34,8 +34,9 @@ ZMAX = 1
 MXG= 2	
 MYG = 2
 
-NXPE = 1
-NYPE = 4
+
+NXPE = 2
+NYPE = 2
 
 #StaggerGrids = True
 
@@ -102,12 +103,12 @@ type = cvode
 # mudq, mldq, mukeep, mlkeep preconditioner options
 #AOL = 1.0e-12# absolute tolerance
 #RTOL = 1.0e-7  # relative tolerance
-ATOL = 1.0e-6 # absolute tolerance
-RTOL = 1.0e-8 # relative tolerance
+ATOL = 1.0e-10 # absolute tolerance
+RTOL = 1.0e-3 # relative tolerance
 use_precon =false
 diagnose = true
 rightprec = false
-#use_jacobian = true	  
+use_jacobian = true	  
 mxstep = 5000
 start_timestep = 10
 phys_precon = false
