@@ -54,7 +54,10 @@ int physics_init(bool restarting)
   // read options
   phi.setLocation(CELL_CENTRE);
   
-
+  //overide
+  //beta = 1e-5;
+  //mu = 1e-2;
+  //nu = 1e-2;
 
   bout_solve(u, "u");
   comms.add(u);
@@ -78,7 +81,7 @@ int physics_run(BoutReal t)
 {
   // Run communications
   mesh->communicate(comms);
-
+  //output.write("mesh->dx): %g \n",beta);
   phi = invert_laplace(u, phi_flags);
   phi.applyBoundary("neumann");
   //phi.applyBoundary("dirichlet");
@@ -86,19 +89,21 @@ int physics_run(BoutReal t)
   //f = lowPass(f,1);
   //f = lowPass(g,1);
   mesh->communicate(comms);
- 
+  //mesh->communicate(phi);
   ddt(u)=0;
   ddt(n)=0;
  
-  brkt = mybracket(phi,n);
-  //brkt.applyBoundary("neumann");
-  brkt.applyBoundary("dirichlet");
+  // brkt = mybracket(phi,n);
+  // //brkt.applyBoundary("neumann");
+  // brkt.applyBoundary("dirichlet");
 
   ddt(u) -= mybracket(phi,u);
   ddt(u) += alpha * phi;
   ddt(u) += nu * Laplacian(u);
-  ddt(u) -= beta * DDY(n)/n; 
-  ddt(u).applyBoundary("dirichlet");
+  //ddt(u) -= beta * DDY(n)/n; 
+  //ddt(u) -= beta* Grad_par(n)/n; 
+  ddt(u) -= Grad_par(n); 
+  //ddt(u).applyBoundary("dirichlet");
 
   //mesh->communicate(comms); no don't do this here
   //.applyBoundary();
@@ -106,11 +111,9 @@ int physics_run(BoutReal t)
  
 
   ddt(n) -= mybracket(phi,n);
-  
-
   ddt(n) += mu * Laplacian(n);
   ddt(n) -= alpha* n;
-  ddt(n).applyBoundary("dirichlet");
+  //ddt(n).applyBoundary("dirichlet");
 
   //ddt(n) -= VDDZ(n,n) + mu*VDDY(u,n);
 
