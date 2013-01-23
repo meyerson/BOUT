@@ -10,7 +10,7 @@
 # settings used by the core code
 
 NOUT = 300      # number of time-steps
-TIMESTEP = 1.0e-1# time between outputs
+TIMESTEP = 1.0e-6# time between outputs
 
 ShiftXderivs = false # use shifted radial derivatives?
 TwistShift = false  # use twist-shift condition?
@@ -70,9 +70,11 @@ type = cvode
 # mudq, mldq, mukeep, mlkeep preconditioner options
 #ATOL = 1.0e-12 # absolute tolerance
 #RTOL = 1.0e-7  # relative tolerance
-ATOL = 1.0e-3 # absolute tolerance
-RTOL = 1.0e-1  # relative tolerance
-use_precon = no
+ATOL = 1.0e-8 # absolute tolerance
+RTOL = 1.0e-4  # relative tolerance
+use_precon = false #work in progress
+use_jacobian = false #speeds things up some measurably
+use_constraint = true
 	  
 cvode_mxstep = 15000
 ##################################################
@@ -87,8 +89,10 @@ filter = 0 #fraction of modes to filter, between 1 and 0
 [physics]
 phi_flags = 0
 alpha = 0
-nu = 1e-2
-mu = 1e-2
+#nu = 1e-2
+#mu = 1e-2
+nu = 0
+mu = 0
 beta =1 
 
 
@@ -162,5 +166,6 @@ bndry_xout = relax(dirichlet(1e-2))
 #function = gauss((x-.2)/.02)*gauss(y/.2) + 1e-7
 #dipole
 #function = gauss((z-3.14)/.2)*sin((z-3.14)/.3)*gauss(y-3)
-
+[phi]
+scale =0
 #scale = 0;

@@ -16,7 +16,7 @@ NOUT = 100       # number of time-steps
 TIMESTEP = 5e2
 
 archive = 100
-restart = true
+restart = false
 boost = false
 
 
@@ -35,8 +35,8 @@ MXG= 2
 MYG = 2
 
 
-NXPE = 2
-NYPE = 2
+NXPE = 1
+NYPE = 4
 
 #StaggerGrids = True
 

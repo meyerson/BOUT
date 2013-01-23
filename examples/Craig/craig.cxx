@@ -6,6 +6,7 @@
 
 #include <bout.hxx>
 #include <boutmain.hxx>
+
 #include <derivs.hxx>
 #include <initialprofiles.hxx>
 #include <invert_laplace.hxx>
@@ -18,12 +19,24 @@ Field3D phi,brkt;
 int phi_flags;
 
 
+//Constrained 
+Field3D C_phi;
+
 //other params
 BoutReal alpha, nu, mu,gam, beta;
+
+
+//solver options
+bool use_jacobian, use_precon;
+
+//experimental
+bool use_constraint;
 
 FieldGroup comms; // Group of variables for communications
 
 const Field3D mybracket(const Field3D &phi, const Field3D &A);
+int jacobian(BoutReal t); // Jacobian-vector multiply
+int precon(BoutReal t, BoutReal cj, BoutReal delta); // Preconditioner
 
 int physics_init(bool restarting)
 {
@@ -41,18 +54,26 @@ int physics_init(bool restarting)
   // mesh->get(V0, "v");
   // g.covariant = false;
   // mesh->get(g, "g");
-  Options *options = Options::getRoot();
-  options = options->getSection("physics");
+  Options *globaloptions = Options::getRoot();
+  Options *options = globaloptions->getSection("physics");
+  Options *solveropts = globaloptions->getSection("solver");
+
   OPTION(options, phi_flags, 0);
   OPTION(options, alpha,3e-5);
   OPTION(options, nu, 2e-3);
   //OPTION(options, mu, 0.040);
   OPTION(options, mu, 2e-3);
-  OPTION(options, gam, 1);
+  OPTION(options, gam, 1e1);
   OPTION(options, beta, 6e-4);
 
+
+  OPTION(solveropts,use_precon,false);
+  OPTION(solveropts,use_jacobian,true);
+  OPTION(solveropts,use_constraint,false);
+
+
   // read options
-  phi.setLocation(CELL_CENTRE);
+  //phi.setLocation(CELL_CENTRE);
   
   //overide
   //beta = 1e-5;
@@ -62,15 +83,34 @@ int physics_init(bool restarting)
   bout_solve(u, "u");
   comms.add(u);
   phi = invert_laplace(u, phi_flags); 
-  comms.add(phi);
+
   bout_solve(n, "n");
+
+  if (use_constraint)
+    bout_solve(phi,"phi");
+  else
+    dump.add(phi,"phi",1);
+   
+  //
 
   comms.add(n);
    
   //brkt = b0xGrad_dot_Grad(phi, u);
 
-  dump.add(phi,"phi",1);
+  //dump.add(phi,"phi",1);
   dump.add(brkt,"brkt",1);
+
+
+
+  if (use_jacobian)
+    solver->setJacobian(jacobian);
+
+  if (use_precon)
+    solver->setPrecon(precon);
+    
+  output.write("use jacobian %i \n",use_jacobian);
+  output.write("use precon %i \n",use_precon);
+  output.write("DONE WITH PHYSICS_INIT\n");
 
   return 0;
 }
@@ -82,7 +122,14 @@ int physics_run(BoutReal t)
   // Run communications
   mesh->communicate(comms);
   //output.write("mesh->dx): %g \n",beta);
-  phi = invert_laplace(u, phi_flags);
+  if (use_constraint){
+    ddt(phi)=0;
+    ddt(phi) += invert_laplace((Laplacian(phi) - u),phi_flags);
+    ddt(phi) = gam * ddt(phi);
+  }else{
+    phi = invert_laplace(u, phi_flags);
+
+  }
   phi.applyBoundary("neumann");
   //phi.applyBoundary("dirichlet");
   // Density
@@ -93,9 +140,12 @@ int physics_run(BoutReal t)
   ddt(u)=0;
   ddt(n)=0;
  
-  // brkt = mybracket(phi,n);
+
+ 
+
+  //brkt = (Laplacian(phi) - u).max()/(u.max());
   // //brkt.applyBoundary("neumann");
-  // brkt.applyBoundary("dirichlet");
+  //brkt.applyBoundary("dirichlet");
 
   ddt(u) -= mybracket(phi,u);
   ddt(u) += alpha * phi;
@@ -200,4 +250,60 @@ const Field3D mybracket(const Field3D &phi, const Field3D &A)
   msg_stack.pop(msg_pos);
 #endif
   return result;
+}
+
+
+
+/* computes Jv, where ddt() is holding v and the system state holds Jv */ 
+int jacobian(BoutReal t) {
+  mesh->communicate(ddt(u),ddt(n));
+  
+
+  ddt(phi) = invert_laplace(ddt(u), phi_flags); 
+
+  mesh->communicate(ddt(phi));
+
+  u=0;
+  n=0;
+
+  u -= mybracket(ddt(phi),ddt(u));
+  //ddt(u) += alpha * phi;
+  u += nu * Laplacian(ddt(u));
+  //ddt(u) -= beta * DDY(n)/n; 
+  //ddt(u) -= beta* Grad_par(n)/n; 
+  u -= Grad_par(ddt(n)); 
+  //ddt(u).applyBoundary("dirichlet");
+
+  //mesh->communicate(comms); no don't do this here
+  //.applyBoundary();
+  //brkt = VDDY(DDY(phi), n) +  VDDZ(DDZ(phi), n) ;
+ 
+
+  n -= mybracket(ddt(phi),ddt(n));
+  n += mu * Laplacian(ddt(n));
+  //n -= alpha* n;
+  
+  n.applyBoundary();
+  u.applyBoundary();
+  return 0;
+}
+
+/* computes P^-1 r, where ddt() holds (-r) and the system state hold P^-1 r*/
+
+int precon(BoutReal t, BoutReal gamma, BoutReal delta) {
+  // mesh->communicate(rhscomms);
+  mesh->communicate(ddt(n),ddt(u));
+
+  n= 0;
+  u =0;
+
+  n += ddt(n);
+  // mesh->communicate(n);
+  // Ni -= (mesh->Bxy*mesh->Bxy*ddt(Ni) - ddt(rho))/(mesh->Bxy*mesh->Bxy);
+
+  u += ddt(u);
+  u -= gamma * Grad_par(ddt(n)); 
+ 
+return 0;
+ 
 }
