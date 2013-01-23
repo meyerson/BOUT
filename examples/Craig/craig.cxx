@@ -38,6 +38,9 @@ const Field3D mybracket(const Field3D &phi, const Field3D &A);
 int jacobian(BoutReal t); // Jacobian-vector multiply
 int precon(BoutReal t, BoutReal cj, BoutReal delta); // Preconditioner
 
+//int precon_phi(BoutReal t, BoutReal cj, BoutReal delta);
+//int jacobian_constrain(BoutReal t); // Jacobian-vector multiply
+
 int physics_init(bool restarting)
 {
   // // 2D initial profiles
@@ -85,22 +88,23 @@ int physics_init(bool restarting)
   phi = invert_laplace(u, phi_flags); 
 
   bout_solve(n, "n");
-
-  if (use_constraint)
-    bout_solve(phi,"phi");
-  else
-    dump.add(phi,"phi",1);
-   
-  //
-
   comms.add(n);
-   
+  //u.setBoundary("u");
+  //n.setBoundary("n");
+
   //brkt = b0xGrad_dot_Grad(phi, u);
 
   //dump.add(phi,"phi",1);
   dump.add(brkt,"brkt",1);
+  if (use_constraint){
+    //solver->setPrecon(precon_phi);
+    //solver->setJacobian(jacobian_constrain);
+    phi.setBoundary("phi");
+    //bout_solve(phi,"phi");
+  }else
+    dump.add(phi,"phi",1);
 
-
+  comms.add(phi); //super duper important 
 
   if (use_jacobian)
     solver->setJacobian(jacobian);
@@ -121,15 +125,13 @@ int physics_run(BoutReal t)
 {
   // Run communications
   mesh->communicate(comms);
+  phi = invert_laplace(u, phi_flags);
   //output.write("mesh->dx): %g \n",beta);
-  if (use_constraint){
-    ddt(phi)=0;
-    ddt(phi) += invert_laplace((Laplacian(phi) - u),phi_flags);
-    ddt(phi) = gam * ddt(phi);
-  }else{
-    phi = invert_laplace(u, phi_flags);
+  // if (use_constraint){
+  //   ddt(phi)=0;
+  //   ddt(phi) -= gam * (phi - invert_laplace(u,phi_flags));
+  // }
 
-  }
   phi.applyBoundary("neumann");
   //phi.applyBoundary("dirichlet");
   // Density
@@ -143,10 +145,13 @@ int physics_run(BoutReal t)
 
  
 
-  //brkt = (Laplacian(phi) - u).max()/(u.max());
+  //brkt = ((Laplacian(phi) - u).max())/(u.max()+1e-10);
+  // brkt = invert_laplace(u, phi_flags);
+  // brkt = ((phi - brkt))/(brkt + 1e-10);
   // //brkt.applyBoundary("neumann");
   //brkt.applyBoundary("dirichlet");
-
+  brkt = mybracket(phi,n);
+  //brkt = DDX(phi);
   ddt(u) -= mybracket(phi,u);
   ddt(u) += alpha * phi;
   ddt(u) += nu * Laplacian(u);
@@ -160,11 +165,13 @@ int physics_run(BoutReal t)
   //brkt = VDDY(DDY(phi), n) +  VDDZ(DDZ(phi), n) ;
  
 
-  ddt(n) -= mybracket(phi,n);
-  ddt(n) += mu * Laplacian(n);
-  ddt(n) -= alpha* n;
+  
+  //ddt(n) -= mybracket(phi,n);
+  // ddt(n) += mu * Laplacian(n);
+  // ddt(n) -= alpha* n;
   //ddt(n).applyBoundary("dirichlet");
-
+  //ddt(u).applyBoundary("neumann");
+  //mesh->communicate(ddt(n),ddt(u));
   //ddt(n) -= VDDZ(n,n) + mu*VDDY(u,n);
 
   // if (driver){

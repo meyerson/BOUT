@@ -10,22 +10,22 @@
 # settings used by the core code
 
 NOUT = 300      # number of time-steps
-TIMESTEP = 1.0e-6# time between outputs
+TIMESTEP = 1.0e-3# time between outputs
 
 ShiftXderivs = false # use shifted radial derivatives?
-TwistShift = false  # use twist-shift condition?
+TwistShift = false  # use twisxt-shift condition?
 
 restart = false
 
-MZ = 1    # number of points in z direction (2^n + 1)
+MZ = 1    # number of points in z direction(2^n + 1)
 ZMIN = 0.0
 ZMAX = 20.372
 #ZMAX = 1
 MXG = 2
 MYG = 2
 
-NXPE = 1
-NYPE = 4
+NXPE = 2
+NYPE = 2
 
 #grid = "/home/cryosphere/BOUT/tools/cyl_and_helimak_grids/primitive.nc"
 #grid = "/home/cryosphere/BOUT/tools/cyl_and_helimak_grids/primitive_1x128.nc"
@@ -70,11 +70,11 @@ type = cvode
 # mudq, mldq, mukeep, mlkeep preconditioner options
 #ATOL = 1.0e-12 # absolute tolerance
 #RTOL = 1.0e-7  # relative tolerance
-ATOL = 1.0e-8 # absolute tolerance
-RTOL = 1.0e-4  # relative tolerance
+ATOL = 1.0e-2 # absolute tolerance
+RTOL = 1.0e-1  # relative tolerance
 use_precon = false #work in progress
-use_jacobian = false #speeds things up some measurably
-use_constraint = true
+use_jacobian = false#speeds things up some measurably
+use_constraint = false
 	  
 cvode_mxstep = 15000
 ##################################################
@@ -89,10 +89,10 @@ filter = 0 #fraction of modes to filter, between 1 and 0
 [physics]
 phi_flags = 0
 alpha = 0
-#nu = 1e-2
-#mu = 1e-2
-nu = 0
-mu = 0
+nu = 1e-2
+mu = 1e-2
+#nu = 0
+#mu = 0
 beta =1 
 
 
